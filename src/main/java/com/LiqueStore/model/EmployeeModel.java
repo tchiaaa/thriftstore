@@ -1,7 +1,10 @@
 package com.LiqueStore.model;
 
 import jakarta.persistence.*;
+import org.springframework.format.annotation.DateTimeFormat;
 
+import java.sql.Date;
+import java.sql.Time;
 import java.sql.Timestamp;
 
 @Entity
@@ -12,12 +15,20 @@ public class EmployeeModel {
     private int id;
     private String username;
     private String fullname;
-    private int age;
+    private String email;
+    private Date birthdate;
     private String password;
-    private int accessrightid;
+    private String phonenumber;
     private String status;
     private Timestamp firstjoindate;
     private Timestamp lastupdate;
+    @DateTimeFormat(pattern = "HH:mm")
+    private Time jam_masuk;
+    private String jadwal_libur;
+
+    @ManyToOne
+    @JoinColumn(name = "accessrightid", referencedColumnName = "id")
+    private AccessRightModel accessRight;
 
     public EmployeeModel() {
     }
@@ -46,12 +57,28 @@ public class EmployeeModel {
         this.fullname = fullname;
     }
 
-    public int getAge() {
-        return age;
+    public String getEmail() {
+        return email;
     }
 
-    public void setAge(int age) {
-        this.age = age;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public Date getBirthdate() {
+        return birthdate;
+    }
+
+    public void setBirthdate(Date birthdate) {
+        this.birthdate = birthdate;
+    }
+
+    public String getPhonenumber() {
+        return phonenumber;
+    }
+
+    public void setPhonenumber(String phonenumber) {
+        this.phonenumber = phonenumber;
     }
 
     public String getPassword() {
@@ -62,12 +89,12 @@ public class EmployeeModel {
         this.password = password;
     }
 
-    public int getAccessrightid() {
-        return accessrightid;
+    public AccessRightModel getAccessRight() {
+        return accessRight;
     }
 
-    public void setAccessrightid(int accessrightid) {
-        this.accessrightid = accessrightid;
+    public void setAccessRight(AccessRightModel accessRight) {
+        this.accessRight = accessRight;
     }
 
     public String getStatus() {
@@ -92,5 +119,21 @@ public class EmployeeModel {
 
     public void setLastupdate(Timestamp lastupdate) {
         this.lastupdate = lastupdate;
+    }
+
+    public Time getJam_masuk() {
+        return jam_masuk;
+    }
+
+    public void setJam_masuk(Time jam_masuk) {
+        this.jam_masuk = jam_masuk;
+    }
+
+    public String getJadwal_libur() {
+        return jadwal_libur;
+    }
+
+    public void setJadwal_libur(String jadwal_libur) {
+        this.jadwal_libur = jadwal_libur;
     }
 }
