@@ -1,37 +1,62 @@
-import React, { useCallback, useState } from 'react';
-import { TextField, Button, Grid, Typography, Box, Drawer, CssBaseline, Autocomplete } from '@mui/material';
+import React, { useCallback, useContext, useEffect, useState } from 'react';
+import { TextField, Button, Grid, Typography, Box, Drawer, CssBaseline, Autocomplete, Fade, Modal, Backdrop } from '@mui/material';
 import axios from 'axios';
 import { useDropzone } from 'react-dropzone';
 import AdminSidebar from './sidebar';
+import { EmployeeContext } from '../employeeContext';
+import { AccountCircle } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
+
+const styleModal = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+  textAlign: 'center'
+};
 
 const Inventori = () => {
   const [name, setname] = useState('');
-  const [typeid, setTypeid] = useState('');
-  const [weight, setWeight] = useState('');
-  const [price, setPrice] = useState('');
+  const [tipeBarang, settipeBarang] = useState('');
+  const [typeData, setTypeData] = useState([]);
+  const [employeeId, setemployeeId] = useState('');
+  const [customWeight, setcustomWeight] = useState('');
+  const [customCapitalPrice, setcustomCapitalPrice] = useState('');
+  const [customDefaultPrice, setcustomDefaultPrice] = useState('');
   const [size, setSize] = useState('');
-
+  const [files, setFiles] = useState([]);
+  const navigate = useNavigate('');
   const [errors, setErrors] = useState({});
-  
+  const { employeeData } = useContext(EmployeeContext);
+  const { clearEmployeeData } = useContext(EmployeeContext);
+  const [openLogout, setOpenLogout] = useState(false);
+  const handleOpenLogout = () => setOpenLogout(true);
+  const handleCloseLogout = () => setOpenLogout(false);
+
   const validate = () => {
     let tempErrors = {};
-    if (!name || name.length > 25) {
+    if (!name || name.length > 255) {
       tempErrors.name = 'Nama barang harus diisi dan maksimal 25 karakter';
     }
-    if (!name || name.length > 255) {
-      tempErrors.name = 'name harus diisi dan maksimal 255 karakter';
+    if (!tipeBarang) {
+      tempErrors.tipeBarang = 'Tipe barang harus diisi';
     }
-    if (!typeid) {
-      tempErrors.typeid = 'typeid harus diisi';
-    }
-    if (!weight) {
+    if (!customWeight) {
       tempErrors.birthdate = 'Berat barang harus diisi';
     }
-    if (!price) {
-      tempErrors.price = 'Tanggal pertama bekerja harus diisi';
+    if (!customCapitalPrice) {
+      tempErrors.customCapitalPrice = 'Harga modal barang harus diisi';
+    }
+    if (!customDefaultPrice) {
+      tempErrors.customDefaultPrice = 'Harga jual barang harus diisi';
     }
     if (!size) {
-      tempErrors.size = 'Tanggal pertama bekerja harus diisi';
+      tempErrors.size = 'Ukuran barang harus diisi';
     }
 
     setErrors(tempErrors);
@@ -40,15 +65,95 @@ const Inventori = () => {
 
   const onDrop = useCallback((acceptedFiles) => {
     // Handle the files
+    const validFiles = acceptedFiles.filter((file) => /\.(jpg|jpeg|png|gif)$/i.test(file.name));
     console.log(acceptedFiles);
+    if (validFiles.length > 0) {
+      // const details = acceptedFiles.map(file => ({
+      //     path: file.path || ""
+      // }));
+      // const fileNames = details.map(file => file.path);
+      // setFiles(fileNames);
+      setFiles(validFiles);
+    } else {
+      console.error('Invalid file types detected. Please upload only image files.');
+    }
   }, []);
-  const { getRootProps, getInputProps, isDragActive } = useDropzone({ onDrop });
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({ accept: 'image/*', onDrop  });
+
+  useEffect(() => {
+    if (employeeData) {
+      console.log(employeeData);
+      setemployeeId(employeeData.id);
+      // Fetch data from the backend
+      const fetchData = async () => {
+        try {
+          const response = await axios.get('http://localhost:8080/daftarTipe');
+          console.log(response.data);
+          setTypeData(response.data);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
+
+      fetchData();
+    }
+  }, [employeeData]);
+
+  const optionsTipe = typeData.map(item => ({
+    label: item.nama,
+    value: item.id,
+    capital_price: item.capitalprice,
+    default_price: item.defaultprice,
+    berat: item.weight,
+  }));
+
+  const handleAutocompleteChange = (event, newValue) => {
+    console.log(newValue);
+    settipeBarang(newValue); // Mengatur nilai item yang dipilih
+    if (newValue) {
+      // Mengatur nilai TextField berdasarkan item yang dipilih
+      setcustomWeight(newValue.berat.toString());
+      setcustomCapitalPrice(newValue.capital_price.toString());
+      setcustomDefaultPrice(newValue.default_price.toString());
+    } else {
+      // Reset nilai TextField jika tidak ada yang dipilih
+      setcustomWeight('');
+      setcustomCapitalPrice('');
+      setcustomDefaultPrice('');
+    }
+  };
 
   const handleSubmit = async (e) => {
       e.preventDefault();
       if (validate()) {
+        const typeId = tipeBarang.value;
+        console.log(employeeId);
+        console.log(typeId);
+        console.log(customWeight);
+        console.log(customCapitalPrice);
+        console.log(customDefaultPrice);
+        console.log(files);
+
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('typeId', typeId);
+        formData.append('employeeId', employeeId);
+        formData.append('customWeight', customWeight);
+        formData.append('customCapitalPrice', customCapitalPrice);
+        formData.append('customDefaultPrice', customDefaultPrice);
+        formData.append('size', size);
+    
+        Array.from(files).forEach(file => {
+          formData.append('files', file);
+        });
+        console.log([...formData]);
+
         try {
-          const response = await axios.post('http://localhost:8080/inventori', {  });
+          const response = await axios.post('http://localhost:8080/tambahInventori', formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            }
+          });
           console.log(response.data);
         } catch (error) {
           setErrors(error.response);
@@ -56,6 +161,11 @@ const Inventori = () => {
     } else {
       console.log("Validation failed");
     }
+  };
+  const handleLogout = () => {
+    clearEmployeeData();
+    setOpenLogout(false);
+    navigate('/login');
   };
 
   const drawerWidth = 300;
@@ -83,6 +193,43 @@ const Inventori = () => {
         component="main"
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
+        <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle />}>
+            {employeeData ? (
+                <pre>{employeeData.fullname}</pre>
+            ) : (
+              <p>No employee data found</p>
+            )}
+        </Button>
+        <Modal
+          aria-labelledby="spring-modal-title"
+          aria-describedby="spring-modal-description"
+          open={openLogout}
+          onClose={handleCloseLogout}
+          closeAfterTransition
+          slots={{ backdrop: Backdrop }}
+          slotProps={{
+            backdrop: {
+              TransitionComponent: Fade,
+            },
+          }}
+          >
+          <Fade in={openLogout}>
+            <Box sx={styleModal}>
+              <AccountCircle style={{ fontSize: 100 }} />
+              <Typography id="spring-modal-title" variant="h6" component="h2">
+                Apakah anda yakin ingin keluar?
+              </Typography>
+              <Box sx={{ mt: 2 }}>
+                <Button variant="outlined" onClick={handleLogout}>
+                  Ya
+                </Button>
+                <Button variant="outlined" onClick={handleCloseLogout} sx={{ ml: 2, backgroundColor: 'orange', color: 'white' }}>
+                  Tidak
+                </Button>
+              </Box>
+            </Box>
+          </Fade>
+        </Modal>
         <form>
           <Grid container spacing={3} marginTop={5}>
             <Grid item xs={12}>
@@ -96,25 +243,25 @@ const Inventori = () => {
             </Grid>
             <Grid item xs={12}>
               <Typography>Jenis Barang *</Typography>
-              {/* <Autocomplete
+              <Autocomplete
                 fullWidth
-                options={optid}
+                options={optionsTipe}
                 getOptionLabel={(option) => option.label}
                 getOptionSelected={(option, value) => option.value === value} 
                 renderInput={(params) => <TextField {...params} />}
-                value={optid.find((option) => option.value === id)}
-                error={!!errors.id}
-                onChange={(e, value) => setid(value ? value.value : '')} 
-              /> */}
+                value={optionsTipe.find((option) => option.value === tipeBarang)}
+                error={!!errors.tipeBarang}
+                onChange={handleAutocompleteChange}
+              />
             </Grid>
             <Grid item xs={12}>
               <Typography>Berat Barang *</Typography>
               <TextField
                 fullWidth
                 type='number'
-                value={weight}
-                error={!!errors.weight}
-                onChange={(e) => setWeight(e.target.value)}
+                value={customWeight}
+                error={!!errors.customWeight}
+                onChange={(e) => setcustomWeight(e.target.value)}
               />
             </Grid>
             <Grid item xs={12}>
@@ -122,9 +269,9 @@ const Inventori = () => {
               <TextField
                 fullWidth
                 type='number'
-                value={price}
-                error={!!errors.price}
-                onChange={(e) => setPrice(e.target.value)}
+                value={customCapitalPrice}
+                error={!!errors.customCapitalPrice}
+                onChange={(e) => setcustomCapitalPrice(e.target.value)}
               />
             </Grid>
             <Grid item xs={12}>
@@ -132,9 +279,9 @@ const Inventori = () => {
               <TextField
                 fullWidth
                 type='number'
-                value={price}
-                error={!!errors.price}
-                onChange={(e) => setPrice(e.target.value)}
+                value={customDefaultPrice}
+                error={!!errors.customDefaultPrice}
+                onChange={(e) => setcustomDefaultPrice(e.target.value)}
               />
             </Grid>
             <Grid item xs={12}>

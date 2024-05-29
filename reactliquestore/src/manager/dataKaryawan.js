@@ -20,9 +20,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import { visuallyHidden } from '@mui/utils';
 import axios from 'axios';
 import styled from 'styled-components';
-import { Button, CssBaseline, Drawer } from '@mui/material';
+import { Alert, Backdrop, Button, CssBaseline, Drawer, Modal, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import SupervisorSidebar from './sidebar';
+import { useSpring, animated } from '@react-spring/web';
 
 const RootContainer = styled.div`
   display: flex;
@@ -126,6 +127,59 @@ EnhancedTableHead.propTypes = {
   rowCount: PropTypes.number.isRequired,
 };
 
+const Fade = React.forwardRef(function Fade(props, ref) {
+  const {
+    children,
+    in: open,
+    onClick,
+    onEnter,
+    onExited,
+    ownerState,
+    ...other
+  } = props;
+  const style = useSpring({
+    from: { opacity: 0 },
+    to: { opacity: open ? 1 : 0 },
+    onStart: () => {
+      if (open && onEnter) {
+        onEnter(null, true);
+      }
+    },
+    onRest: () => {
+      if (!open && onExited) {
+        onExited(null, true);
+      }
+    },
+  });
+
+  return (
+    <animated.div ref={ref} style={style} {...other}>
+      {React.cloneElement(children, { onClick })}
+    </animated.div>
+  );
+});
+
+Fade.propTypes = {
+  children: PropTypes.element.isRequired,
+  in: PropTypes.bool,
+  onClick: PropTypes.any,
+  onEnter: PropTypes.func,
+  onExited: PropTypes.func,
+  ownerState: PropTypes.any,
+};
+
+const styleModal = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+};
+
 export default function DataKaryawan() {
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('calories');
@@ -134,8 +188,38 @@ export default function DataKaryawan() {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [rows, setRows] = useState([]);
   const navigate = useNavigate();
+  const [showSuccessInsert, setShowSuccessInsert] = useState(false);
+  const [messageInsert, setMessageInsert] = useState('');
+  const [showSuccessUpdate, setShowSuccessUpdate] = useState(false);
+  const [messageUpdate, setMessageUpdate] = useState('');
+  const [showSuccessDelete, setShowSuccessDelete] = useState(false);
+  const [messageDelete, setMessageDelete] = useState('');
+  const [showError, setShowError] = useState(false);
+  const [msgError, setMsgError] = useState();
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   useEffect(() => {
+    const storedMessageInsert = localStorage.getItem('berhasilInsertKaryawan');
+    const storedMessageUpdate = localStorage.getItem('berhasilUpdateKaryawan');
+    if (storedMessageInsert) {
+      setShowSuccessInsert(true);
+      setMessageInsert(storedMessageInsert);
+      setTimeout(() => {
+        setShowSuccessInsert(false);
+      }, 5000);
+      localStorage.removeItem('berhasilInsertKaryawan')
+    }
+    else if (storedMessageUpdate) {
+      setShowSuccessUpdate(true);
+      setMessageUpdate(storedMessageUpdate);
+      setTimeout(() => {
+        setShowSuccessUpdate(false);
+      }, 5000);
+      localStorage.removeItem('berhasilUpdateKaryawan')
+    }
+
     // Fetch data from the backend
     const fetchData = async () => {
       try {
@@ -191,7 +275,24 @@ export default function DataKaryawan() {
     console.log(rowData);
     navigate('/manager/dataKaryawan/editKaryawan', { state: { updateCrew: rowData } });
   };
-  const handleDelete = () => {
+  const handleConfirmDelete = async (id) => {
+    try {
+      const response = await axios.delete(`http://localhost:8080/deleteKaryawan/${id}`);
+      console.log('Employee deleted:', response.data);
+      setShowSuccessDelete(true);
+      setMessageDelete("Berhasil Hapus Karyawan");
+      setTimeout(() => {
+        setShowSuccessDelete(false);
+      }, 5000);
+      setOpen(false);
+    } catch (error) {
+      console.error('Error deleting employee:', error);
+      setMsgError("Gagal Hapus Karyawan");
+      setShowError(true);
+      setTimeout(() => {
+        setShowError(false);
+      }, 5000);
+    }
   };
 
   return (
@@ -219,6 +320,26 @@ export default function DataKaryawan() {
       >
         <Toolbar />
         <RootContainer>
+          {showSuccessInsert && (
+            <Alert variant="filled" severity="success" style={{ marginTop: 20 }}>
+              { messageInsert }
+            </Alert>
+          )}
+          {showSuccessUpdate && (
+            <Alert variant="filled" severity="success" style={{ marginTop: 20 }}>
+              { messageUpdate }
+            </Alert>
+          )}
+          {showSuccessDelete && (
+            <Alert variant="filled" severity="success" style={{ marginTop: 20 }}>
+              { messageDelete }
+            </Alert>
+          )}
+          {showError && (
+            <Alert variant="filled" severity="danger" style={{ marginTop: 20 }}>
+              { msgError }
+            </Alert>
+          )}
           <Box sx={{ width: '100%' }}>
               <Paper sx={{ width: '100%', mb: 2 }}>
               <TableContainer>
@@ -236,6 +357,7 @@ export default function DataKaryawan() {
                   <TableBody>
                       {visibleRows.map((row) => {
                       return (
+                          <>
                           <TableRow
                           hover
                           tabIndex={-1}
@@ -275,12 +397,43 @@ export default function DataKaryawan() {
                               </IconButton>
                             </Tooltip>
                             <Tooltip title="Delete">
-                              <IconButton onClick={handleDelete}>
+                              <IconButton onClick={handleOpen}>
                                 <DeleteIcon />
                               </IconButton>
                             </Tooltip>
                           </TableCell>
                           </TableRow>
+                          
+                          <Modal
+                            aria-labelledby="spring-modal-title"
+                            aria-describedby="spring-modal-description"
+                            open={open}
+                            onClose={handleClose}
+                            closeAfterTransition
+                            slots={{ backdrop: Backdrop }}
+                            slotProps={{
+                              backdrop: {
+                                TransitionComponent: Fade,
+                              },
+                            }}
+                          >
+                            <Fade in={open}>
+                              <Box sx={styleModal}>
+                                <Typography id="spring-modal-title" variant="h6" component="h2">
+                                  Apakah kamu yakin ingin membuang data ini?
+                                </Typography>
+                                <Box sx={{ mt: 2 }}>
+                                  <Button variant="outlined" onClick={() => handleConfirmDelete(row.id)} sx={{ mr: 2, backgroundColor: 'orange', color: 'white' }}>
+                                    Ya
+                                  </Button>
+                                  <Button variant="outlined" onClick={handleClose}>
+                                    Tidak
+                                  </Button>
+                                </Box>
+                              </Box>
+                            </Fade>
+                          </Modal>
+                          </>
                       );
                       })}
                       {emptyRows > 0 && (

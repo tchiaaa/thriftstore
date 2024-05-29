@@ -1,3 +1,4 @@
+import { LocalShippingOutlined, ShoppingBagOutlined } from '@mui/icons-material';
 import { Typography } from '@mui/material';
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
@@ -23,13 +24,12 @@ const AdminSidebar = () => {
       <List>
         <Typography fontSize={50} color={'#ffd600'}>Lique Admin
         </Typography>
-        <ListItem button component={Link} to="/admin/pemesanan">
-          <ListItemText primary="Pemesanan" />
-        </ListItem>
-        <ListItem button component={Link} to="/admin/penyimpanan">
-          <ListItemText primary="Penyimpanan" />
+        <ListItem button component={Link} to="/admin/stok">
+          <ShoppingBagOutlined />&nbsp;&nbsp;&nbsp;
+          <ListItemText primary="Stok" />
         </ListItem>
         <ListItem button component={Link} to="/admin/pemesanan">
+          <LocalShippingOutlined />&nbsp;&nbsp;&nbsp;
           <ListItemText primary="Pemesanan dan pengiriman" />
         </ListItem>
       </List>

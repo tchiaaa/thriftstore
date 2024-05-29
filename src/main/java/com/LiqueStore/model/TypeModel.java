@@ -5,17 +5,24 @@ import jakarta.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
-@Table(name = "payment")
+@Table(name = "type")
 public class TypeModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String nama;
     private int weight;
-    private int price;
+    private int capitalprice;
+    private int defaultprice;
     private Timestamp lastupdate;
+    private String varian;
+    private String typecode;
 
     public TypeModel() {
+    }
+
+    public TypeModel(int id) {
+        this.id = id;
     }
 
     public int getId() {
@@ -42,12 +49,20 @@ public class TypeModel {
         this.weight = weight;
     }
 
-    public int getPrice() {
-        return price;
+    public int getCapitalprice() {
+        return capitalprice;
     }
 
-    public void setPrice(int price) {
-        this.price = price;
+    public void setCapitalprice(int capitalprice) {
+        this.capitalprice = capitalprice;
+    }
+
+    public int getDefaultprice() {
+        return defaultprice;
+    }
+
+    public void setDefaultprice(int defaultprice) {
+        this.defaultprice = defaultprice;
     }
 
     public Timestamp getLastupdate() {
@@ -56,5 +71,21 @@ public class TypeModel {
 
     public void setLastupdate(Timestamp lastupdate) {
         this.lastupdate = lastupdate;
+    }
+
+    public String getVarian() {
+        return varian;
+    }
+
+    public void setVarian(String varian) {
+        this.varian = varian;
+    }
+
+    public String getTypecode() {
+        return typecode;
+    }
+
+    public void setTypecode(String typecode) {
+        this.typecode = typecode;
     }
 }

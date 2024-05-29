@@ -1,19 +1,23 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { EmployeeProvider } from './employeeContext';
 import './App.css';
 import LoginPage from './login';
-import DashboardAdmin from './admin/dashboardAdmin';
 import DashboardSupervisor from './supervisor/dashboardSupervisor';
 import Presensi from './supervisor/presensi';
 import DashboardManager from './manager/dashboardManager';
 import DashboardCustomer from './customer/dashboardCustomer';
 import DataKaryawan from './manager/dataKaryawan';
-import EditKaryawan from './supervisor/editKaryawan';
+import EditKaryawan from './manager/editKaryawan';
 import GajiKaryawan from './manager/gajiKaryawan';
 import TambahKaryawan from './manager/tambahKaryawan';
 import Inventori from './admin/inventori';
+import ReviewStok from './supervisor/reviewStok';
+import TipeStok from './supervisor/tipeStok';
+import Pemesanan from './admin/pemesanan';
 
 function App() {
   return (
+    <EmployeeProvider>
     <Router>
       <Routes>
         <Route path="/" element={<LoginPage />} />
@@ -23,11 +27,12 @@ function App() {
         <Route path="/supervisor/karyawan/presensi" element={<DashboardSupervisor />} />
         <Route path="/supervisor/karyawan/presensi/passcode" element={<Presensi />} />
         <Route path="/supervisor/karyawan/dataKaryawan" element={<DataKaryawan />} />
+        <Route path="/supervisor/stok/reviewStok" element={<ReviewStok />} />
+        <Route path="/supervisor/stok/tipeStok" element={<TipeStok />} />
 
         {/* ADMIN */}
-        <Route path="/admin/dashboard" element={<DashboardAdmin />} />
-        <Route path="/admin/pemesanan" element={<DashboardAdmin />} />
-        <Route path="/admin/penyimpanan" element={<Inventori />} />
+        <Route path="/admin/pemesanan" element={<Pemesanan />} />
+        <Route path="/admin/stok" element={<Inventori />} />
 
         {/* MANAGER */}
         <Route path="/manager/dashboard" element={<DashboardManager />} />
@@ -40,6 +45,7 @@ function App() {
         <Route path="/customer/dashboard" element={<DashboardCustomer />} />
       </Routes>
     </Router>
+    </EmployeeProvider>
   );
 }
 

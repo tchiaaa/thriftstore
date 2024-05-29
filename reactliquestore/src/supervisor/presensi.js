@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { styled } from 'styled-components';
-import { Alert, Box, Button, CssBaseline, Drawer, Grid, Toolbar } from '@mui/material';
+import { Alert, Backdrop, Box, Button, CssBaseline, Drawer, Fade, Grid, Modal, Toolbar, Typography } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import SupervisorSidebar from './sidebar';
+import { EmployeeContext } from '../employeeContext';
+import { AccountCircle } from '@mui/icons-material';
 
 const RootContainer = styled.div`
   display: flex;
@@ -32,6 +34,17 @@ const buttonStyle = {
   border: '1px solid black',
   borderRadius: "50%",
   fontSize: "20px"
+};
+
+const buttonStyleEmpty = {
+  marginTop: '10px',
+  width: '70px',
+  height: '70px',
+  color: 'black',
+  border: '1px solid black',
+  borderRadius: "50%",
+  fontSize: "20px",
+  display: 'none'
 };
 
 const buttonStyleBackspace = {
@@ -64,6 +77,19 @@ const Circle = styled.div`
   margin: 5px;
 `;
 
+const styleModal = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+  textAlign: 'center'
+};
+
 const Presensi = () => {
   const navigate = useNavigate();
   const [passcode, setPasscode] = useState('');
@@ -73,7 +99,12 @@ const Presensi = () => {
   const [showError, setShowError] = useState(false);
   const [msgSuccess, setMsgSuccess] = useState();
   const [msgError, setMsgError] = useState();
-
+  const [openLogout, setOpenLogout] = useState(false);
+  const handleOpenLogout = () => setOpenLogout(true);
+  const handleCloseLogout = () => setOpenLogout(false);
+  const { employeeData } = useContext(EmployeeContext);
+  const { clearEmployeeData } = useContext(EmployeeContext);
+  
   const handleNumberClick = async (number) => {
     if (!showCircles) setShowCircles(true);
     console.log(digitCount);
@@ -112,6 +143,12 @@ const Presensi = () => {
     navigate('/supervisor/karyawan/presensi');
   };
 
+  const handleLogout = () => {
+    clearEmployeeData();
+    setOpenLogout(false);
+    navigate('/login');
+  };
+
   const drawerWidth = 300;
 
   return (
@@ -137,6 +174,44 @@ const Presensi = () => {
         component="main"
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
+        <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle />}>
+          {employeeData ? (
+              <pre>{employeeData.fullname}</pre>
+          ) : (
+            <p>No employee data found</p>
+          )}
+        </Button>
+        <Modal
+          aria-labelledby="spring-modal-title"
+          aria-describedby="spring-modal-description"
+          open={openLogout}
+          onClose={handleCloseLogout}
+          closeAfterTransition
+          slots={{ backdrop: Backdrop }}
+          slotProps={{
+            backdrop: {
+              TransitionComponent: Fade,
+            },
+          }}
+          >
+          <Fade in={openLogout}>
+            <Box sx={styleModal}>
+              <AccountCircle style={{ fontSize: 100 }} />
+              <Typography id="spring-modal-title" variant="h6" component="h2">
+                Apakah anda yakin ingin keluar?
+              </Typography>
+              <Box sx={{ mt: 2 }}>
+                <Button variant="outlined" onClick={handleLogout}>
+                  Ya
+                </Button>
+                <Button variant="outlined" onClick={handleCloseLogout} sx={{ ml: 2, backgroundColor: 'orange', color: 'white' }}>
+                  Tidak
+                </Button>
+              </Box>
+            </Box>
+          </Fade>
+        </Modal>
+        <br></br>
         <Toolbar />
         <center><RootContainer>
           {showSuccess && (
@@ -161,10 +236,17 @@ const Presensi = () => {
           )}
           <InputContainer>
             <Grid container>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((number) => (
-                <Grid item xs={4} key={number}>
-                  <Button style={buttonStyle} onClick={() => handleNumberClick(number)}>{number}</Button>
-                </Grid>
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0].map((number) => (
+                number !== '' ? (
+                  <Grid item xs={4} key={number}>
+                    <Button style={buttonStyle} onClick={() => handleNumberClick(number)}>
+                      {number}
+                    </Button>
+                  </Grid>
+                ) : <Grid item xs={4} key={number}>
+                <Button style={buttonStyleEmpty}>
+                </Button>
+              </Grid>
               ))}
               <Grid item xs={4}>
                 <Button style={buttonStyleBackspace} onClick={handleBackspaceClick}>←</Button>

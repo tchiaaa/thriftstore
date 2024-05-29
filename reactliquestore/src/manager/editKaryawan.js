@@ -1,18 +1,19 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { TextField, Button, Grid, Typography, Box, Drawer, CssBaseline, Autocomplete, Alert } from '@mui/material';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import Sidebar from './sidebar';
-import { AccountCircle } from '@mui/icons-material';
+import { useLocation, useNavigate } from 'react-router-dom';
+import SupervisorSidebar from './sidebar';
 import { EmployeeContext } from '../employeeContext';
+import { format } from 'date-fns';
 
-const TambahKaryawan = () => {
+const EditKaryawan = () => {
   const navigate = useNavigate('');
   const optHarilibur = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'];
   const optid = [
     { label: 'admin', value: '1' },
     { label: 'supervisor', value: '2' },
   ];
+  const [id, setId] = useState('');
   const [username, setUsername] = useState('');
   const [fullname, setFullname] = useState('');
   const [email, setEmail] = useState('');
@@ -23,10 +24,47 @@ const TambahKaryawan = () => {
   const [jadwal_libur, setJadwal_libur] = useState('');
   const [accessRight, setAccessRight] = useState('');
   const [errors, setErrors] = useState({});
-  const { employeeData } = useContext(EmployeeContext);
-  const { clearEmployeeData } = useContext(EmployeeContext);
+  // const { employeeData } = useContext(EmployeeContext);
+  // const { clearEmployeeData } = useContext(EmployeeContext);
+  const location = useLocation();
+  const updateCrew = location.state.updateCrew;
   const [showError, setShowError] = useState(false);
   const [msgError, setMsgError] = useState();
+
+  const removeSeconds = (timeString) => {
+    if (timeString) {
+      const timeParts = timeString.split(':');
+      return `${timeParts[0]}:${timeParts[1]}`;
+    }
+    return '';
+  };
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/getEditDataKaryawan?idEmployee=${updateCrew.id}`);
+        console.log(response.data);
+        setId(response.data.id);
+        setFullname(response.data.fullname);
+        setAccessRight(response.data.accessRight.id);
+        const formattedBirthDate = format(new Date(response.data.birthdate), 'yyyy-MM-dd');
+        setBirthdate(formattedBirthDate);
+        setPhonenumber(response.data.phonenumber);
+        setEmail(response.data.email);
+        setUsername(response.data.username);
+        const formattedFirstJoinDate = format(new Date(response.data.firstjoindate), 'yyyy-MM-dd');
+        setFirstjoindate(formattedFirstJoinDate);
+        const formattedEntryhour = removeSeconds(response.data.jam_masuk);
+        setEntryhour(formattedEntryhour);
+        setJadwal_libur(response.data.jadwal_libur);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, [updateCrew.id]);
+  
 
   const validate = () => {
     let tempErrors = {};
@@ -57,39 +95,47 @@ const TambahKaryawan = () => {
     if (!jadwal_libur || jadwal_libur.length > 10) {
       tempErrors.jadwal_libur = '=Jadwal libur harus diisi dan maksimal 20 karakter';
     }
-    
+
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
 
+
   const handleSubmit = async (e) => {
-      e.preventDefault();
-      if (validate()) {
-        const jam_masuk = `${entryhour}:00`;
-        try {
-          const response = await axios.post('http://localhost:8080/tambahKaryawan', { fullname, accessRight, birthdate, phonenumber, email, username, firstjoindate, jam_masuk, jadwal_libur });
-          console.log(response.data);
-          localStorage.setItem('berhasilInsertKaryawan', "Berhasil Tambah Karyawan");
-          redirectBack();
-        } catch (error) {
-          setErrors(error.response);
-          setMsgError("Gagal Tambah Karyawan");
-          setShowError(true);
-          setTimeout(() => {
-            setShowError(false);
-          }, 5000);
-        }
+    e.preventDefault();
+    if (validate()) {
+      const jam_masuk = `${entryhour}:00`;
+
+      console.log(id);
+      console.log(fullname);
+      console.log(accessRight);
+      console.log(birthdate);
+      console.log(phonenumber);
+      console.log(email);
+      console.log(username);
+      console.log(firstjoindate);
+      console.log(jam_masuk);
+      console.log(jadwal_libur);
+      try {
+        const response = await axios.post('http://localhost:8080/editKaryawan', { fullname, accessRight, birthdate, phonenumber, email, username, firstjoindate, jam_masuk, jadwal_libur, id });
+        console.log(response.data);
+        localStorage.setItem('berhasilUpdateKaryawan', "Berhasil Ubah Data Karyawan");
+        redirectBack();
+      } catch (error) {
+        setErrors(error.response);
+        setMsgError("Gagal Ubah Data Karyawan");
+        setShowError(true);
+        setTimeout(() => {
+          setShowError(false);
+        }, 5000);
+      }
     } else {
       console.log("Validation failed");
     }
   };
 
   const redirectBack = () => {
-    navigate('/supervisor/karyawan/dataKaryawan');
-  };
-  const handleLogout = () => {
-    clearEmployeeData();
-    navigate('/login');
+    navigate('/manager/dataKaryawan');
   };
   const drawerWidth = 300;
 
@@ -109,20 +155,13 @@ const TambahKaryawan = () => {
           }}
           open
         >
-          <Sidebar />
+          <SupervisorSidebar />
         </Drawer>
       </Box>
       <Box
         component="main"
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
-        <Button style={{float: 'right'}} color="inherit" onClick={handleLogout} startIcon={<AccountCircle />}>
-            {employeeData ? (
-                <pre>{employeeData.fullname}</pre>
-            ) : (
-              <p>No employee data found</p>
-            )}
-        </Button>
         <form>
           <Grid container spacing={3} marginTop={5}>
             {showError && (
@@ -162,17 +201,6 @@ const TambahKaryawan = () => {
                 onChange={(e) => setBirthdate(e.target.value)}
               />
             </Grid>
-            {/* <Grid item xs={6}>
-              <Typography>Age *</Typography>
-              <TextField
-                fullWidth
-                type='number'
-                name="age"
-                value={age}
-                error={!!errors.age}
-                onChange={(e) => setAge(e.target.value)}
-              />
-            </Grid> */}
             <Grid item xs={12}>
               <Typography>Nomor HP *</Typography>
               <TextField
@@ -246,4 +274,4 @@ const TambahKaryawan = () => {
   );
 };
 
-export default TambahKaryawan;
+export default EditKaryawan;

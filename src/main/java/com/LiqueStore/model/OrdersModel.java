@@ -8,38 +8,41 @@ import java.sql.Timestamp;
 @Table(name = "orders")
 public class OrdersModel {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;
-    private int itemid;
+    private String id;
     private String namapembeli;
-    private int nomorwa;
+    private String nomorwa;
     private String usernamepembeli;
     private int price;
-    private int paymentid;
     private Timestamp checkoutdate;
     private Timestamp paymentdate;
     private Timestamp packingdate;
     private Timestamp deliverypickupdate;
     private Timestamp deliverydonedate;
     private String status;
+    @ManyToOne
+    @JoinColumn(name = "itemid", referencedColumnName = "id")
+    private ItemModel itemId;
+    @ManyToOne
+    @JoinColumn(name = "paymentid", referencedColumnName = "id")
+    private PaymentModel paymentId;
 
     public OrdersModel() {
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 
-    public int getItemid() {
-        return itemid;
+    public ItemModel getItemId() {
+        return itemId;
     }
 
-    public void setItemid(int itemid) {
-        this.itemid = itemid;
+    public void setItemId(ItemModel itemId) {
+        this.itemId = itemId;
     }
 
     public String getNamapembeli() {
@@ -50,11 +53,11 @@ public class OrdersModel {
         this.namapembeli = namapembeli;
     }
 
-    public int getNomorwa() {
+    public String getNomorwa() {
         return nomorwa;
     }
 
-    public void setNomorwa(int nomorwa) {
+    public void setNomorwa(String nomorwa) {
         this.nomorwa = nomorwa;
     }
 
@@ -74,12 +77,12 @@ public class OrdersModel {
         this.price = price;
     }
 
-    public int getPaymentid() {
-        return paymentid;
+    public PaymentModel getPaymentId() {
+        return paymentId;
     }
 
-    public void setPaymentid(int paymentid) {
-        this.paymentid = paymentid;
+    public void setPaymentId(PaymentModel paymentId) {
+        this.paymentId = paymentId;
     }
 
     public Timestamp getCheckoutdate() {

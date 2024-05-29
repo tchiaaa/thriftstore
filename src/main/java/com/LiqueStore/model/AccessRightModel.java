@@ -1,5 +1,6 @@
 package com.LiqueStore.model;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import jakarta.persistence.*;
 
 @Entity
@@ -11,6 +12,10 @@ public class AccessRightModel {
     private String position;
 
     public AccessRightModel() {
+    }
+
+    public AccessRightModel(int id) {
+        this.id = id;
     }
 
     public int getId() {

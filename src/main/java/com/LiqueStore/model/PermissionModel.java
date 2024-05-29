@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
-@Table(name = "payment")
+@Table(name = "permission")
 public class PermissionModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

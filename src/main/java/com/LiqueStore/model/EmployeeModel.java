@@ -33,6 +33,10 @@ public class EmployeeModel {
     public EmployeeModel() {
     }
 
+    public EmployeeModel(int id) {
+        this.id = id;
+    }
+
     public int getId() {
         return id;
     }
