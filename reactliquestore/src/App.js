@@ -14,6 +14,8 @@ import Inventori from './admin/inventori';
 import ReviewStok from './supervisor/reviewStok';
 import TipeStok from './supervisor/tipeStok';
 import Pemesanan from './admin/pemesanan';
+import CheckoutPage from './customer/checkoutPage';
+import PaymentPage from './customer/paymentPage';
 
 function App() {
   return (
@@ -43,6 +45,8 @@ function App() {
 
         {/* CUSTOMER */}
         <Route path="/customer/dashboard" element={<DashboardCustomer />} />
+        <Route path="/customer/checkoutPage" element={<CheckoutPage />} />
+        <Route path="/customer/paymentPage" element={<PaymentPage />} />
       </Routes>
     </Router>
     </EmployeeProvider>

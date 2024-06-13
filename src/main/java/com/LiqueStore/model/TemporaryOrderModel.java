@@ -2,6 +2,8 @@ package com.LiqueStore.model;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "temporaryorder")
 public class TemporaryOrderModel {
@@ -11,10 +13,10 @@ public class TemporaryOrderModel {
     private String orderid;
     private String username;
     private String phonenumber;
-    private String itemidall;
     private int totalprice;
     private int totalweight;
-    private String waitinglist;
+    private List<String> waitinglist;
+    private List<String> itemidall;
     @ManyToOne
     @JoinColumn(name = "colourid", referencedColumnName = "id")
     private OrderColourModel colourid;
@@ -51,14 +53,6 @@ public class TemporaryOrderModel {
         this.phonenumber = phonenumber;
     }
 
-    public String getItemidall() {
-        return itemidall;
-    }
-
-    public void setItemidall(String itemidall) {
-        this.itemidall = itemidall;
-    }
-
     public int getTotalprice() {
         return totalprice;
     }
@@ -75,19 +69,27 @@ public class TemporaryOrderModel {
         this.totalweight = totalweight;
     }
 
-    public String getWaitinglist() {
-        return waitinglist;
-    }
-
-    public void setWaitinglist(String waitinglist) {
-        this.waitinglist = waitinglist;
-    }
-
     public OrderColourModel getColourid() {
         return colourid;
     }
 
     public void setColourid(OrderColourModel colourid) {
         this.colourid = colourid;
+    }
+
+    public List<String> getWaitinglist() {
+        return waitinglist;
+    }
+
+    public void setWaitinglist(List<String> waitinglist) {
+        this.waitinglist = waitinglist;
+    }
+
+    public List<String> getItemidall() {
+        return itemidall;
+    }
+
+    public void setItemidall(List<String> itemidall) {
+        this.itemidall = itemidall;
     }
 }

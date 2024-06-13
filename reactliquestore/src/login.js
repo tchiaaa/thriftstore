@@ -7,12 +7,30 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { EmployeeContext } from './employeeContext';
 import { Box, Grid } from '@mui/material';
-import styled from 'styled-components';
+
+const containerStyle = {
+  backgroundColor: 'black',
+  color: 'white',
+  borderRadius: 25,
+  boxShadow: '10px 10px 5px grey',
+};
+
+const textfieldStyle = {
+  input: {
+    color: 'white',
+    border: '1px solid white',
+    borderRadius: '10px',
+  },
+  placeholder: {
+    color: 'lightgray',
+  }
+};
 
 const btnLogin = {
+  marginTop: 5,
   justifyContent: 'center',
   borderRadius: '10px',
-  backgroundColor: 'orange',
+  backgroundColor: '#FE8A01',
   color: 'black',
   border: '3px solid black'
 };
@@ -60,16 +78,18 @@ function LoginPage() {
   };
 
   return (
-    <Container component="main" maxWidth="sm">
+    <Container component="main" maxWidth="sm" style={containerStyle}>
       <Box sx={{ marginTop: 10, display: 'flex', flexDirection: 'column', padding: 5, borderRadius: 5}}>
         <Typography component="h1" variant="h4">Login</Typography>
         <Box sx={{display: 'flex'}}>
           <Typography>Don't have an account?</Typography>&nbsp;&nbsp;&nbsp;
-          <Typography sx={{ color: 'orange' }}>Sign up here</Typography>
+          <Typography sx={{ color: '#FE8A01' }}>Sign up here</Typography>
         </Box>
         <Grid container marginTop={5}>
           <TextField
-            label="Username"
+            sx={textfieldStyle}
+            className='input'
+            placeholder="Username"
             value={username}
             margin="normal"
             required
@@ -78,7 +98,8 @@ function LoginPage() {
             onChange={(e) => setUsername(e.target.value)}
           />
           <TextField
-            label="Password"
+            sx={textfieldStyle}
+            placeholder="Password"
             variant="outlined"
             type="password"
             value={password}
@@ -88,8 +109,8 @@ function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
           />
           {error && <Typography color="error">{error}</Typography>}
-          <Button style={btnLogin} fullWidth onClick={handleSubmit}>Login</Button><br></br>
-          <Typography sx={{ color: 'orange' }}>Forgot Password ?</Typography>
+          <Button style={btnLogin} fullWidth onClick={handleSubmit}>Login</Button>
+          <Typography sx={{ color: '#FE8A01', marginTop: 3, textAlign: 'center' }}>Forgot Password ?</Typography>
         </Grid>
       </Box>
   </Container>

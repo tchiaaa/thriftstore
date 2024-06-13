@@ -39,7 +39,7 @@ const btnTambahKaryawan = {
     justifyContent: 'center',
     width: '15vw',
     borderRadius: '10px',
-    backgroundColor: 'orange',
+    backgroundColor: '#FE8A01',
     color: 'black',
     border: '3px solid black'
 };
@@ -468,7 +468,7 @@ export default function ReviewStok() {
                 <Button variant="outlined" onClick={handleLogout}>
                   Ya
                 </Button>
-                <Button variant="outlined" onClick={handleCloseLogout} sx={{ ml: 2, backgroundColor: 'orange', color: 'white' }}>
+                <Button variant="outlined" onClick={handleCloseLogout} sx={{ ml: 2, backgroundColor: '#FE8A01', color: 'white' }}>
                   Tidak
                 </Button>
               </Box>

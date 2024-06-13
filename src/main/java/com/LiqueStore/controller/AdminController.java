@@ -8,15 +8,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.sql.Timestamp;
+import com.midtrans.service.MidtransSnapApi;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
-
-//import static jdk.internal.jrtfs.JrtFileAttributeView.AttrID.size;
 
 @RestController
 @RequestMapping
@@ -31,6 +28,8 @@ public class AdminController {
     private OrdersRepository ordersRepository;
     @Autowired
     private OrderColourRepository orderColourRepository;
+    @Autowired
+    private TemporaryOrderRepository temporaryOrderRepository;
     @Autowired
     private FileStorageService fileStorageService;
 
@@ -85,6 +84,13 @@ public class AdminController {
         return ResponseEntity.ok(savedItem);
     }
 
+    @GetMapping("/getColour")
+    public ResponseEntity<?> getColour() {
+        List<OrderColourModel> getAllColour = orderColourRepository.findAll();
+        logger.info(String.valueOf(getAllColour));
+        return ResponseEntity.ok(getAllColour);
+    }
+
     @GetMapping("/getItem")
     public ResponseEntity<?> getItem() {
         List<ItemModel> getAllItem = itemRepository.findAll();
@@ -92,22 +98,41 @@ public class AdminController {
         return ResponseEntity.ok(getAllItem);
     }
 
-    @PostMapping("/tambahOrder")
-    public ResponseEntity<?> tambahOrder(@RequestParam("namapembeli") String namaPembeli,
-                                         @RequestParam("itemid") int itemId,
-                                         @RequestParam("price") int price,
-                                         @RequestParam("usernamepembeli") String usernamePembeli,
-                                         @RequestParam("nomorwa") String nomorWa){
-        OrdersModel addOrder = new OrdersModel();
-        addOrder.setNamapembeli(namaPembeli);
-//        addOrder.setItemid(itemId);
-        addOrder.setPrice(price);
-        addOrder.setUsernamepembeli(usernamePembeli);
-        addOrder.setNomorwa(nomorWa);
-        addOrder.setStatus("berhasil");
-        OrdersModel savedOrder = ordersRepository.save(addOrder);
-        logger.info(String.valueOf(savedOrder));
-        return ResponseEntity.ok(savedOrder);
+    @PostMapping("/inputTemporaryOrder")
+    public ResponseEntity<?> inputTemporaryOrder(@RequestParam("id") int id,
+                                         @RequestParam("username") String username,
+                                         @RequestParam("phonenumber") String phonenumber,
+                                         @RequestParam("itemidall") List<String> itemidall,
+                                         @RequestParam("totalweight") int totalweight,
+                                         @RequestParam("totalprice") int totalprice,
+                                         @RequestParam("waitinglist") List<String> waitinglist,
+                                         @RequestParam("colourid") int colourid){
+        String ctrId = String.format("%03d", id + 1);
+        logger.info(ctrId);
+        String hurufDepanWarna = "";
+        // Ambil tanggal hari ini
+        LocalDate today = LocalDate.now();
+        // Format tanggal menjadi YYMMDD
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyMMdd");
+        String formattedDate = today.format(formatter);
+        Optional<OrderColourModel> optionalOrderColourModel = orderColourRepository.findById(colourid);
+        if (optionalOrderColourModel.isPresent()){
+            OrderColourModel orderColourModel = optionalOrderColourModel.get();
+            hurufDepanWarna = orderColourModel.getColourcode();
+        }
+        String orderid = hurufDepanWarna + ctrId + formattedDate;
+        TemporaryOrderModel addTemporaryOrder = new TemporaryOrderModel();
+        addTemporaryOrder.setColourid(new OrderColourModel(colourid));
+        addTemporaryOrder.setOrderid(orderid);
+        addTemporaryOrder.setUsername(username);
+        addTemporaryOrder.setPhonenumber(phonenumber);
+        addTemporaryOrder.setTotalprice(totalprice);
+        addTemporaryOrder.setTotalweight(totalweight);
+        addTemporaryOrder.setWaitinglist(waitinglist);
+        addTemporaryOrder.setItemidall(itemidall);
+        TemporaryOrderModel savedTemporaryOrder = temporaryOrderRepository.save(addTemporaryOrder);
+        logger.info(String.valueOf(savedTemporaryOrder));
+        return ResponseEntity.ok(savedTemporaryOrder);
     }
 
     @PostMapping("/tambahWarna")
@@ -120,19 +145,5 @@ public class AdminController {
         orderColourRepository.save(addColour);
         logger.info(String.valueOf(addColour));
         return ResponseEntity.ok(addColour);
-    }
-
-    @GetMapping("/getColour")
-    public ResponseEntity<?> getColour() {
-        List<OrderColourModel> getAllColour = orderColourRepository.findAll();
-        logger.info(String.valueOf(getAllColour));
-        return ResponseEntity.ok(getAllColour);
-    }
-
-    @GetMapping("/pilihWarna")
-    public ResponseEntity<?> pilihWarna(@PathVariable int id) {
-        Optional<OrderColourModel> optionalOrderColourModel = orderColourRepository.findById(id);
-        logger.info(String.valueOf(optionalOrderColourModel));
-        return ResponseEntity.ok(optionalOrderColourModel);
     }
 }

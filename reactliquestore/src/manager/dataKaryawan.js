@@ -36,7 +36,7 @@ const btnTambahKaryawan = {
     justifyContent: 'center',
     width: '15vw',
     borderRadius: '10px',
-    backgroundColor: 'orange',
+    backgroundColor: '#FE8A01',
     color: 'black',
     border: '3px solid black'
 };
@@ -372,7 +372,7 @@ export default function DataKaryawan() {
                           <TableCell align="center">{row.email}</TableCell>
                           <TableCell align="center">{row.username}</TableCell>
                           <TableCell align="center">{row.firstjoindate}</TableCell>
-                          <TableCell align="center">{row.lastupdate}</TableCell>
+                          <TableCell align="center">{row.lastupdate || '-'}</TableCell>
                           <TableCell align="center">
                           {row.status === "bekerja" && (
                             <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: '#4caf50'}}>
@@ -423,7 +423,7 @@ export default function DataKaryawan() {
                                   Apakah kamu yakin ingin membuang data ini?
                                 </Typography>
                                 <Box sx={{ mt: 2 }}>
-                                  <Button variant="outlined" onClick={() => handleConfirmDelete(row.id)} sx={{ mr: 2, backgroundColor: 'orange', color: 'white' }}>
+                                  <Button variant="outlined" onClick={() => handleConfirmDelete(row.id)} sx={{ mr: 2, backgroundColor: '#FE8A01', color: 'white' }}>
                                     Ya
                                   </Button>
                                   <Button variant="outlined" onClick={handleClose}>

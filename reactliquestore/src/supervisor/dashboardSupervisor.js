@@ -130,7 +130,7 @@ const DashboardSupervisor = () => {
                 <Button variant="outlined" onClick={handleLogout}>
                   Ya
                 </Button>
-                <Button variant="outlined" onClick={handleCloseLogout} sx={{ ml: 2, backgroundColor: 'orange', color: 'white' }}>
+                <Button variant="outlined" onClick={handleCloseLogout} sx={{ ml: 2, backgroundColor: '#FE8A01', color: 'white' }}>
                   Tidak
                 </Button>
               </Box>

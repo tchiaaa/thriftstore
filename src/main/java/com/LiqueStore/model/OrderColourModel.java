@@ -14,6 +14,10 @@ public class OrderColourModel {
     public OrderColourModel() {
     }
 
+    public OrderColourModel(int id) {
+        this.id = id;
+    }
+
     public int getId() {
         return id;
     }
