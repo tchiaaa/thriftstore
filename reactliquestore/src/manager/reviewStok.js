@@ -306,7 +306,7 @@ export default function ReviewStok() {
 
   const fetchDataInventori = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/supervisor/dataInventori');
+      const response = await axios.get('http://localhost:8080/manager/dataInventori');
       console.log(response.data);
       setRows(response.data);
     } catch (error) {
@@ -315,7 +315,7 @@ export default function ReviewStok() {
   };
   const fetchDataTipeBarang = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/supervisor/daftarTipe');
+      const response = await axios.get('http://localhost:8080/manager/daftarTipe');
       console.log(response.data);
       setTypeData(response.data);
     } catch (error) {
@@ -420,7 +420,7 @@ export default function ReviewStok() {
       console.log([...formData]);
 
       try {
-        const response = await axios.post('http://localhost:8080/supervisor/tambahInventori', formData, {
+        const response = await axios.post('http://localhost:8080/manager/tambahInventori', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }

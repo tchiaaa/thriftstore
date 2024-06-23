@@ -3,16 +3,17 @@ package com.LiqueStore.model;
 import jakarta.persistence.*;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 @Entity
 @Table(name = "orders")
 public class OrdersModel {
     @Id
     private String id;
-    private String namapembeli;
-    private String nomorwa;
-    private String usernamepembeli;
-    private int price;
+    private List<String> itemidall;
+    private String username;
+    private String phonenumber;
+    private int totalprice;
     private Timestamp checkoutdate;
     private Timestamp paymentdate;
     private Timestamp packingdate;
@@ -20,8 +21,8 @@ public class OrdersModel {
     private Timestamp deliverydonedate;
     private String status;
     @ManyToOne
-    @JoinColumn(name = "itemid", referencedColumnName = "id")
-    private ItemModel itemId;
+    @JoinColumn(name = "customerid", referencedColumnName = "id")
+    private CustomerModel customerId;
     @ManyToOne
     @JoinColumn(name = "paymentid", referencedColumnName = "id")
     private PaymentModel paymentId;
@@ -37,52 +38,36 @@ public class OrdersModel {
         this.id = id;
     }
 
-    public ItemModel getItemId() {
-        return itemId;
+    public List<String> getItemidall() {
+        return itemidall;
     }
 
-    public void setItemId(ItemModel itemId) {
-        this.itemId = itemId;
+    public void setItemidall(List<String> itemidall) {
+        this.itemidall = itemidall;
     }
 
-    public String getNamapembeli() {
-        return namapembeli;
+    public String getUsername() {
+        return username;
     }
 
-    public void setNamapembeli(String namapembeli) {
-        this.namapembeli = namapembeli;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-    public String getNomorwa() {
-        return nomorwa;
+    public String getPhonenumber() {
+        return phonenumber;
     }
 
-    public void setNomorwa(String nomorwa) {
-        this.nomorwa = nomorwa;
+    public void setPhonenumber(String phonenumber) {
+        this.phonenumber = phonenumber;
     }
 
-    public String getUsernamepembeli() {
-        return usernamepembeli;
+    public int getTotalprice() {
+        return totalprice;
     }
 
-    public void setUsernamepembeli(String usernamepembeli) {
-        this.usernamepembeli = usernamepembeli;
-    }
-
-    public int getPrice() {
-        return price;
-    }
-
-    public void setPrice(int price) {
-        this.price = price;
-    }
-
-    public PaymentModel getPaymentId() {
-        return paymentId;
-    }
-
-    public void setPaymentId(PaymentModel paymentId) {
-        this.paymentId = paymentId;
+    public void setTotalprice(int totalprice) {
+        this.totalprice = totalprice;
     }
 
     public Timestamp getCheckoutdate() {
@@ -131,5 +116,21 @@ public class OrdersModel {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public CustomerModel getCustomerId() {
+        return customerId;
+    }
+
+    public void setCustomerId(CustomerModel customerId) {
+        this.customerId = customerId;
+    }
+
+    public PaymentModel getPaymentId() {
+        return paymentId;
+    }
+
+    public void setPaymentId(PaymentModel paymentId) {
+        this.paymentId = paymentId;
     }
 }

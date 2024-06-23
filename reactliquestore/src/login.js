@@ -1,12 +1,12 @@
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { EmployeeContext } from './employeeContext';
 import { Box, Grid } from '@mui/material';
+import { useAuth } from './authContext';
+import { Link } from 'react-router-dom';
 
 const containerStyle = {
   backgroundColor: 'black',
@@ -39,42 +39,35 @@ function LoginPage() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState();
-  const navigate = useNavigate();
-  const { setEmployeeData } = useContext(EmployeeContext);
+  const [errors, setErrors] = useState({});
+  const { login } = useAuth();
 
+  const validate = () => {
+    let tempErrors = {};
+    if (!username){
+      tempErrors.username = "Username harus diisi";
+    }
+    if (!password){
+      tempErrors.password = "password harus diisi";
+    }
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0;
+  };
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post('http://localhost:8080/login', { username, password });
-      console.log(response.data[0]);
-      redirectBasedOnRole(response.data[0]);
-    } catch (error) {
-      setError('Invalid username or password');
+    if (validate()){
+      const formData = new FormData();
+      formData.append("username", username);
+      formData.append("password", password);
+      try {
+        const response = await axios.post('http://localhost:8080/login', formData);
+        console.log(response.data[0]);
+        login(response.data[0]);
+      } catch (error) {
+        setError("invalid username or password");
+      }
     }
-  };
-
-  const redirectBasedOnRole = (getEmployee) => {
-    setEmployeeData(getEmployee);
-    switch (getEmployee.accessRight.id) {
-      case 1:
-        navigate('/admin/pemesanan');
-        break;
-      case 2:
-        navigate('/supervisor/karyawan/presensi');
-        break;
-      case 3:
-        navigate('/manager/dashboard');
-        break;
-      case 4:
-        navigate('/customer/dashboard');
-        break;
-      default:
-        navigate('/login');
-    }
-  };
-
-  const handleRedirectClick = () => {
-    navigate('/manager/dataKaryawan/tambahKaryawan')
   };
 
   return (
@@ -83,35 +76,44 @@ function LoginPage() {
         <Typography component="h1" variant="h4">Login</Typography>
         <Box sx={{display: 'flex'}}>
           <Typography>Don't have an account?</Typography>&nbsp;&nbsp;&nbsp;
-          <Typography sx={{ color: '#FE8A01' }}>Sign up here</Typography>
+          <Typography sx={{ color: '#FE8A01' }}>
+            <a href="/register" style={{ color: '#FE8A01', textDecoration: 'none' }}>
+              Sign up here
+            </a>
+          </Typography>
         </Box>
-        <Grid container marginTop={5}>
-          <TextField
-            sx={textfieldStyle}
-            className='input'
-            placeholder="Username"
-            value={username}
-            margin="normal"
-            required
-            autoComplete='off'
-            fullWidth
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <TextField
-            sx={textfieldStyle}
-            placeholder="Password"
-            variant="outlined"
-            type="password"
-            value={password}
-            margin="normal"
-            required
-            fullWidth
-            onChange={(e) => setPassword(e.target.value)}
-          />
+        <Grid container spacing={3} marginTop={1}>
+          <Grid item xs={12}>
+            <TextField
+              sx={textfieldStyle}
+              className='input'
+              placeholder="Username"
+              value={username}
+              autoComplete='off'
+              fullWidth
+              helperText={errors.username}
+              FormHelperTextProps={{ sx: { color: 'red' } }}
+              onChange={(e) => setUsername(e.target.value)}
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              sx={textfieldStyle}
+              placeholder="Password"
+              type="password"
+              value={password}
+              fullWidth
+              helperText={errors.password}
+              FormHelperTextProps={{ sx: { color: 'red' } }}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Grid>
           {error && <Typography color="error">{error}</Typography>}
-          <Button style={btnLogin} fullWidth onClick={handleSubmit}>Login</Button>
-          <Typography sx={{ color: '#FE8A01', marginTop: 3, textAlign: 'center' }}>Forgot Password ?</Typography>
+          <Grid item xs={12}>
+            <Button style={btnLogin} fullWidth onClick={handleSubmit}>Login</Button>
+          </Grid>
         </Grid>
+        <Typography sx={{ color: '#FE8A01', marginTop: 3, textAlign: 'center' }}>Forgot Password ?</Typography>
       </Box>
   </Container>
   );

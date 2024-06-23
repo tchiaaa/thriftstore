@@ -9,10 +9,10 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class MidTransConfig {
-    @Value("$SB-Mid-server-UDIvroNFCwv9xlkRqhXyBgFm")
+    @Value("${midtrans.server-key}")
     private String serverKey;
 
-    @Value("$SB-Mid-client-6dZa-wyCmYNFN3ve")
+    @Value("${midtrans.client-key}")
     private String clientKey;
 
     @Bean

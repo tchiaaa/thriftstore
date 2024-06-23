@@ -1,9 +1,9 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, Backdrop, Box, Button, Container, CssBaseline, Drawer, Fade, Modal, Toolbar, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import SupervisorSidebar from './sidebar';
 import { AccountCircle } from '@mui/icons-material';
-import { EmployeeContext } from '../employeeContext';
+import { useAuth } from '../authContext';
 
 const styleModal = {
   position: 'absolute',
@@ -31,7 +31,7 @@ const formatDate = (date) => {
   return `${day} ${month} ${year}`;
 };
 
-const DashboardSupervisor = () => {
+const PresensiManager = () => {
   const navigate = useNavigate();
   const [showSuccess, setShowSuccess] = useState(false);
   const [time, setTime] = useState(new Date());
@@ -41,8 +41,8 @@ const DashboardSupervisor = () => {
   const [openLogout, setOpenLogout] = useState(false);
   const handleOpenLogout = () => setOpenLogout(true);
   const handleCloseLogout = () => setOpenLogout(false);
-  const { employeeData } = useContext(EmployeeContext);
-  const { clearEmployeeData } = useContext(EmployeeContext);
+  const { auth, logout } = useAuth();
+  const getFullname = auth.user ? auth.user.fullname : '';
 
   useEffect(() => {
     const timerID = setInterval(() => tick(), 1000);
@@ -65,15 +65,17 @@ const DashboardSupervisor = () => {
   const hours = time.getHours().toString().padStart(2, '0');
   const minutes = time.getMinutes().toString().padStart(2, '0');
 
-  const handleClick = () => {
-    // Pindah ke halaman yang diinginkan
-    navigate('/supervisor/karyawan/presensi/passcode');
+  const handleClockIn = () => {
+    navigate('/supervisor/karyawan/presensi/clockin');
+  };
+
+  const handleClockOut = () => {
+    navigate('/supervisor/karyawan/presensi/clockout');
   };
   
   const handleLogout = () => {
-    clearEmployeeData();
     setOpenLogout(false);
-    navigate('/login');
+    logout();
   };
   const drawerWidth = 300;
 
@@ -101,11 +103,7 @@ const DashboardSupervisor = () => {
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle />}>
-          {employeeData ? (
-              <pre>{employeeData.fullname}</pre>
-          ) : (
-            <p>No employee data found</p>
-          )}
+          {getFullname}
         </Button>
         <Modal
           aria-labelledby="spring-modal-title"
@@ -147,8 +145,8 @@ const DashboardSupervisor = () => {
           <Typography fontSize={30} paddingTop={20}>{formattedDate}</Typography>
           <Typography fontSize={100}>{`${hours}:${minutes}`}</Typography>
           <form sx={{ width: '100%' }}>
-              <Button type="submit" color="inherit" style={{ backgroundColor: 'black', color: 'white', margin: '3vw', width: '10vw' }}onClick={handleClick}>Clock In</Button>
-              <Button type="submit" color="inherit" style={{ backgroundColor: 'black', color: 'white', margin: '3vw', width: '10vw' }}onClick={handleClick}>Clock Out</Button>
+              <Button type="submit" color="inherit" style={{ backgroundColor: 'black', color: 'white', margin: '3vw', width: '10vw' }}onClick={handleClockIn}>Clock In</Button>
+              <Button type="submit" color="inherit" style={{ backgroundColor: 'black', color: 'white', margin: '3vw', width: '10vw' }}onClick={handleClockOut}>Clock Out</Button>
           </form>
         </Container></center>
       </Box>
@@ -156,4 +154,4 @@ const DashboardSupervisor = () => {
   );
 };
 
-export default DashboardSupervisor;
+export default PresensiManager;

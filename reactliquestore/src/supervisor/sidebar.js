@@ -1,15 +1,17 @@
-import * as React from 'react';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { Collapse, ListSubheader } from '@mui/material';
 import { ExpandLess, ExpandMore, LocalShippingOutlined, PersonOutlined, ShoppingBagOutlined } from '@mui/icons-material';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 
 function Sidebar() {
-  const [openKaryawan, setOpenKaryawan] = React.useState(false);
-  const [openStok, setOpenStok] = React.useState(false);
+  const location = useLocation();
+  const [openKaryawan, setOpenKaryawan] = useState(false);
+  const [openStok, setOpenStok] = useState(false);
+  const [openOrderDelivery, setopenOrderDelivery] = useState(false);
 
   const handleKaryawanClick = () => {
     setOpenKaryawan(!openKaryawan);
@@ -17,6 +19,21 @@ function Sidebar() {
   const handleStokClick = () => {
     setOpenStok(!openStok);
   };
+  const handleOrderDeliveryClick = () => {
+    setopenOrderDelivery(!openOrderDelivery);
+  };
+
+  useEffect(() => {
+    if (location.pathname.startsWith('/manager/karyawan')) {
+      setOpenStok(true);
+    }
+    if (location.pathname.startsWith('/manager/stok')) {
+      setOpenStok(true);
+    }
+    if (location.pathname.startsWith('/manager/orderDelivery')) {
+      setopenOrderDelivery(true);
+    }
+  }, [location.pathname]);
 
   return (
     <div>
@@ -25,7 +42,7 @@ function Sidebar() {
         aria-labelledby="nested-list-subheader"
         subheader={
           <ListSubheader component="div" id="nested-list-subheader" style={{ color: 'white', backgroundColor: 'black' }}>
-            <Typography fontSize={50} color={'#FFA500'}>Supervisor</Typography>
+            <Typography fontSize={50} color={'#FE8A01'}>Supervisor</Typography>
           </ListSubheader>
         }
       >
@@ -51,15 +68,29 @@ function Sidebar() {
             <ListItem button component={Link} to="/supervisor/stok/reviewStok">
               <ListItemText primary="Review Stok" />
             </ListItem>
-            <ListItem button component={Link} to="/supervisor/stok/tipeStok">
-              <ListItemText primary="Tipe Stok" />
+            <ListItem button component={Link} to="/supervisor/stok/tipeBarang">
+              <ListItemText primary="Tipe Barang" />
             </ListItem>
           </List>
         </Collapse>
-        <ListItem button component={Link} to="/supervisor/pemesanan">
+        <ListItem button onClick={handleOrderDeliveryClick}>
           <LocalShippingOutlined />&nbsp;&nbsp;&nbsp;
-          <ListItemText primary="pemesanan dan pengiriman" />
+          <ListItemText primary="Pemesanan dan Pengiriman" />
+          {openOrderDelivery ? <ExpandLess /> : <ExpandMore />}
         </ListItem>
+        <Collapse in={openOrderDelivery} timeout="auto" unmountOnExit>
+          <List component="div" disablePadding style={{ paddingLeft: 20 }}>
+            <ListItem button component={Link} to="/supervisor/orderDelivery/pemesanan">
+              <ListItemText primary="Input Pemesanan" />
+            </ListItem>
+            <ListItem button component={Link} to="/supervisor/orderDelivery/pengiriman">
+              <ListItemText primary="Input Pengiriman" />
+            </ListItem>
+            <ListItem button component={Link} to="/supervisor/orderDelivery/review">
+              <ListItemText primary="Review Pengiriman dan Pengiriman" />
+            </ListItem>
+          </List>
+        </Collapse>
       </List>
     </div>
   );

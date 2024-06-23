@@ -15,7 +15,7 @@ import { visuallyHidden } from '@mui/utils';
 import axios from 'axios';
 import styled from 'styled-components';
 import { Alert, Autocomplete, Backdrop, Button, CssBaseline, Drawer, Grid, Modal, TextField, Typography } from '@mui/material';
-import SupervisorSidebar from './sidebar';
+import AdminSidebar from './sidebar';
 import { useSpring, animated } from '@react-spring/web';
 import { useDropzone } from 'react-dropzone';
 import { AccountCircle } from '@mui/icons-material';
@@ -306,7 +306,7 @@ export default function ReviewStok() {
 
   const fetchDataInventori = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/supervisor/dataInventori');
+      const response = await axios.get('http://localhost:8080/admin/dataInventori');
       console.log(response.data);
       setRows(response.data);
     } catch (error) {
@@ -315,7 +315,7 @@ export default function ReviewStok() {
   };
   const fetchDataTipeBarang = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/supervisor/daftarTipe');
+      const response = await axios.get('http://localhost:8080/admin/daftarTipe');
       console.log(response.data);
       setTypeData(response.data);
     } catch (error) {
@@ -420,7 +420,7 @@ export default function ReviewStok() {
       console.log([...formData]);
 
       try {
-        const response = await axios.post('http://localhost:8080/supervisor/tambahInventori', formData, {
+        const response = await axios.post('http://localhost:8080/admin/tambahInventori', formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -478,7 +478,7 @@ export default function ReviewStok() {
           }}
           open
         >
-          <SupervisorSidebar />
+          <AdminSidebar />
         </Drawer>
       </Box>
       <Box

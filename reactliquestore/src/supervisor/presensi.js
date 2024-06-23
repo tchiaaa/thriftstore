@@ -1,81 +1,9 @@
-import { useContext, useState } from 'react';
-import { styled } from 'styled-components';
-import { Alert, Backdrop, Box, Button, CssBaseline, Drawer, Fade, Grid, Modal, Toolbar, Typography } from '@mui/material';
-import axios from 'axios';
+import React, { useEffect, useState } from 'react';
+import { Alert, Backdrop, Box, Button, Container, CssBaseline, Drawer, Fade, Modal, Toolbar, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import SupervisorSidebar from './sidebar';
-import { EmployeeContext } from '../employeeContext';
 import { AccountCircle } from '@mui/icons-material';
-
-const RootContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-`;
-
-const Title = styled.h1`
-  font-size: 24px;
-  font-weight: 600;
-  margin-bottom: 20px;
-`;
-
-const InputContainer = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-`;
-
-const buttonStyle = {
-  marginTop: '10px',
-  width: '70px',
-  height: '70px',
-  color: 'black',
-  border: '1px solid black',
-  borderRadius: "50%",
-  fontSize: "20px"
-};
-
-const buttonStyleEmpty = {
-  marginTop: '10px',
-  width: '70px',
-  height: '70px',
-  color: 'black',
-  border: '1px solid black',
-  borderRadius: "50%",
-  fontSize: "20px",
-  display: 'none'
-};
-
-const buttonStyleBackspace = {
-  marginTop: '10px',
-  width: '70px',
-  height: '70px',
-  color: 'black',
-  borderRadius: "50%",
-  fontSize: "20px"
-};
-
-const CircleContainer = styled.div`
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 20px;
-`;
-
-const Circle = styled.div`
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background-color: ${props => (props.filled ? 'black' : 'white')};
-  border: 1px solid black;
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  font-size: 20px;
-  margin: 5px;
-`;
+import { useAuth } from '../authContext';
 
 const styleModal = {
   position: 'absolute',
@@ -90,65 +18,65 @@ const styleModal = {
   textAlign: 'center'
 };
 
-const Presensi = () => {
+const formatDate = (date) => {
+  const months = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ];
+
+  const day = date.getDate();
+  const month = months[date.getMonth()];
+  const year = date.getFullYear();
+
+  return `${day} ${month} ${year}`;
+};
+
+const PresensiSupervisor = () => {
   const navigate = useNavigate();
-  const [passcode, setPasscode] = useState('');
-  const [digitCount, setDigitCount] = useState(0);
-  const [showCircles, setShowCircles] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [showError, setShowError] = useState(false);
-  const [msgSuccess, setMsgSuccess] = useState();
-  const [msgError, setMsgError] = useState();
+  const [time, setTime] = useState(new Date());
+  const [message, setMessage] = useState('');
+  const now = new Date();
+  const formattedDate = formatDate(now);
   const [openLogout, setOpenLogout] = useState(false);
   const handleOpenLogout = () => setOpenLogout(true);
   const handleCloseLogout = () => setOpenLogout(false);
-  const { employeeData } = useContext(EmployeeContext);
-  const { clearEmployeeData } = useContext(EmployeeContext);
+  const { auth, logout } = useAuth();
+  const getFullname = auth.user ? auth.user.fullname : '';
+
+  useEffect(() => {
+    const timerID = setInterval(() => tick(), 1000);
+    const storedMessage = localStorage.getItem('berhasilClockIn');
+    if (storedMessage) {
+      setShowSuccess(true);
+      setMessage(storedMessage);
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 5000);
+      localStorage.removeItem('berhasilClockIn')
+    }
+    return () => {
+      clearInterval(timerID);
+    };
+  }, []);
+  const tick = () => {
+    setTime(new Date());
+  };
+  const hours = time.getHours().toString().padStart(2, '0');
+  const minutes = time.getMinutes().toString().padStart(2, '0');
+
+  const handleClockIn = () => {
+    navigate('/supervisor/karyawan/presensi/clockin');
+  };
+
+  const handleClockOut = () => {
+    navigate('/supervisor/karyawan/presensi/clockout');
+  };
   
-  const handleNumberClick = async (number) => {
-    if (!showCircles) setShowCircles(true);
-    console.log(digitCount);
-    if (digitCount < 4) {
-      setPasscode(passcode + number);
-      setDigitCount(prevCount => prevCount + 1);
-    }
-    else {
-      try {
-        const response = await axios.post('http://localhost:8080/passcode', { passcode });
-        console.log(response.data);
-        setMsgSuccess(response.data.message);
-        setShowSuccess(true);
-        localStorage.setItem('berhasilClockIn', response.data.message);
-        redirectBack();
-      } catch (error) {
-        setMsgError(error.response.data.message);
-        setShowError(true);
-        setTimeout(() => {
-          setShowError(false);
-        }, 5000);
-      }
-      setDigitCount(0);
-      setPasscode('');
-    }
-  };
-
-  const handleBackspaceClick = () => {
-    if (passcode.length > 0) {
-      setPasscode(passcode.slice(0, -1));
-      setDigitCount(prevCount => prevCount - 1);
-    }
-  };
-
-  const redirectBack = () => {
-    navigate('/supervisor/karyawan/presensi');
-  };
-
   const handleLogout = () => {
-    clearEmployeeData();
     setOpenLogout(false);
-    navigate('/login');
+    logout();
   };
-
   const drawerWidth = 300;
 
   return (
@@ -175,11 +103,7 @@ const Presensi = () => {
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle />}>
-          {employeeData ? (
-              <pre>{employeeData.fullname}</pre>
-          ) : (
-            <p>No employee data found</p>
-          )}
+          {getFullname}
         </Button>
         <Modal
           aria-labelledby="spring-modal-title"
@@ -211,52 +135,23 @@ const Presensi = () => {
             </Box>
           </Fade>
         </Modal>
-        <br></br>
         <Toolbar />
-        <center><RootContainer>
+        <center><Container>
           {showSuccess && (
             <Alert variant="filled" severity="success" style={{ marginTop: 20 }}>
-              { msgSuccess }
+              { message }
             </Alert>
           )}
-          {showError && (
-            <Alert variant="filled" severity="error" style={{ marginTop: 20 }}>
-              { msgError }
-            </Alert>
-          )}
-          {!showCircles && <Title>Enter passcode</Title>}
-          {showCircles && (
-            <CircleContainer>
-              {[...Array(4)].map((_, index) => (
-                <Circle key={index} filled={index < digitCount}>
-                  {/* {index < digitCount ? passcode[index] : ''} */}
-                </Circle>
-              ))}
-            </CircleContainer>
-          )}
-          <InputContainer>
-            <Grid container>
-              {[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0].map((number) => (
-                number !== '' ? (
-                  <Grid item xs={4} key={number}>
-                    <Button style={buttonStyle} onClick={() => handleNumberClick(number)}>
-                      {number}
-                    </Button>
-                  </Grid>
-                ) : <Grid item xs={4} key={number}>
-                <Button style={buttonStyleEmpty}>
-                </Button>
-              </Grid>
-              ))}
-              <Grid item xs={4}>
-                <Button style={buttonStyleBackspace} onClick={handleBackspaceClick}>←</Button>
-              </Grid>
-            </Grid>
-          </InputContainer>
-        </RootContainer></center>
+          <Typography fontSize={30} paddingTop={20}>{formattedDate}</Typography>
+          <Typography fontSize={100}>{`${hours}:${minutes}`}</Typography>
+          <form sx={{ width: '100%' }}>
+              <Button type="submit" color="inherit" style={{ backgroundColor: 'black', color: 'white', margin: '3vw', width: '10vw' }}onClick={handleClockIn}>Clock In</Button>
+              <Button type="submit" color="inherit" style={{ backgroundColor: 'black', color: 'white', margin: '3vw', width: '10vw' }}onClick={handleClockOut}>Clock Out</Button>
+          </form>
+        </Container></center>
       </Box>
     </Box>
   );
 };
 
-export default Presensi;
+export default PresensiSupervisor;

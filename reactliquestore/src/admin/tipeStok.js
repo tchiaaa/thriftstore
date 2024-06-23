@@ -17,7 +17,7 @@ import { visuallyHidden } from '@mui/utils';
 import axios from 'axios';
 import styled from 'styled-components';
 import { Alert, Backdrop, Button, CssBaseline, Drawer, Grid, IconButton, Modal, TextField, Tooltip, Typography } from '@mui/material';
-import SupervisorSidebar from './sidebar';
+import AdminSidebar from './sidebar';
 import { useSpring, animated } from '@react-spring/web';
 import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../authContext';
@@ -467,7 +467,7 @@ export default function ReviewStok() {
           }}
           open
         >
-          <SupervisorSidebar />
+          <AdminSidebar />
         </Drawer>
       </Box>
       <Box

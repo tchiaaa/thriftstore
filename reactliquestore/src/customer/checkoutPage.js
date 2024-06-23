@@ -116,7 +116,7 @@ const styleModalAddLocation = {
   position: 'absolute',
   top: '50%',
   left: '50%',
-  transform: 'translate(-50%, -50%)',
+  transform: 'translate(-50%, -50%) scale(0.8)',
   width: 700,
   bgcolor: 'background.paper',
   border: '2px solid #000',
@@ -145,6 +145,19 @@ export default function CheckoutPage() {
   const handleCloseAddLocation = () => setopenAddLocation(false);
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+
+  useEffect(() => {
+    // Load Snap.js script
+    const script = document.createElement('script');
+    script.src = 'https://app.sandbox.midtrans.com/snap/snap.js';
+    script.setAttribute('data-client-key', 'YOUR_CLIENT_KEY'); // Replace with your client key
+    script.async = true;
+    document.body.appendChild(script);
+
+    return () => {
+      document.body.removeChild(script);
+    };
+  }, []);
 
   const handleProfileMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -182,32 +195,51 @@ export default function CheckoutPage() {
   };
 
   const handlePayment = async () => {
-    let orderid = 'U502202305495';
+    let orderid = 'Ea498134315';
     let totalprice = 10000;
     const formData = new FormData();
     formData.append('orderid', orderid);
     formData.append('totalprice', totalprice);
     try {
-      const response = await axios.post('http://localhost:8080/api/payment', formData);
+      const response = await axios.post('http://localhost:8080/customer/api/payment', formData);
       const token = response.data.token;
+      console.log(token);
 
-      window.snap.pay(token, {
-        onSuccess: function(result) {
-          alert("Payment success!");
-          console.log(result);
-        },
-        onPending: function(result) {
-          alert("Waiting for payment!");
-          console.log(result);
-        },
-        onError: function(result) {
-          alert("Payment failed!");
-          console.log(result);
-        },
-        onClose: function() {
-          alert("You closed the popup without finishing the payment");
-        }
-      });
+      if (window.snap && window.snap.pay) {
+        window.snap.pay(token, {
+          onSuccess: function(result) {
+            console.log("Payment success!", result);
+            const paymentType = result.payment_type;
+      
+            axios.post('http://localhost:8080/customer/addPayment', null, {
+              params: {
+                payment_type: paymentType
+              }
+            })
+            .then(response => {
+                console.log("Payment data saved:", response.data);
+                // Lakukan tindakan tambahan setelah berhasil menyimpan data pembayaran
+            })
+            .catch(error => {
+                console.error("Failed to save payment data:", error);
+                // Handle error saat gagal menyimpan data pembayaran
+            });
+          },
+          onPending: function(result) {
+            console.log("Waiting for payment!", result);
+          },
+          onError: function(result) {
+            console.log("Payment failed!", result);
+          },
+          onClose: function() {
+            console.log("You closed the popup without finishing the payment");
+            // Additional precaution to prevent any navigation:
+            window.history.pushState(null, '', window.location.href);
+          },
+        });
+      } else {
+        console.error('Snap.js failed to load or is not properly initialized');
+      }
     } catch (error) {
       console.error('Payment error: ', error);
     }

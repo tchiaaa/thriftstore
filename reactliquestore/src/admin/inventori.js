@@ -1,11 +1,10 @@
-import React, { useCallback, useContext, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { TextField, Button, Grid, Typography, Box, Drawer, CssBaseline, Autocomplete, Fade, Modal, Backdrop } from '@mui/material';
 import axios from 'axios';
 import { useDropzone } from 'react-dropzone';
 import AdminSidebar from './sidebar';
-import { EmployeeContext } from '../employeeContext';
 import { AccountCircle } from '@mui/icons-material';
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../authContext';
 
 const styleModal = {
   position: 'absolute',
@@ -30,10 +29,10 @@ const Inventori = () => {
   const [customDefaultPrice, setcustomDefaultPrice] = useState('');
   const [size, setSize] = useState('');
   const [files, setFiles] = useState([]);
-  const navigate = useNavigate('');
+  const { auth, logout } = useAuth();
+  const getFullname = auth.user ? auth.user.fullname : '';
+  const getId = auth.user ? auth.user.id : '';
   const [errors, setErrors] = useState({});
-  const { employeeData } = useContext(EmployeeContext);
-  const { clearEmployeeData } = useContext(EmployeeContext);
   const [openLogout, setOpenLogout] = useState(false);
   const handleOpenLogout = () => setOpenLogout(true);
   const handleCloseLogout = () => setOpenLogout(false);
@@ -81,23 +80,20 @@ const Inventori = () => {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({ accept: 'image/*', onDrop  });
 
   useEffect(() => {
-    if (employeeData) {
-      console.log(employeeData);
-      setemployeeId(employeeData.id);
-      // Fetch data from the backend
+    // Fetch data from the backend
+      setemployeeId(getId);
       const fetchData = async () => {
-        try {
-          const response = await axios.get('http://localhost:8080/daftarTipe');
-          console.log(response.data);
-          setTypeData(response.data);
-        } catch (error) {
-          console.error('Error fetching data:', error);
-        }
-      };
+      try {
+        const response = await axios.get('http://localhost:8080/admin/daftarTipe');
+        console.log(response.data);
+        setTypeData(response.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
 
-      fetchData();
-    }
-  }, [employeeData]);
+    fetchData();
+  }, [getId]);
 
   const optionsTipe = typeData.map(item => ({
     label: item.nama,
@@ -149,7 +145,7 @@ const Inventori = () => {
         console.log([...formData]);
 
         try {
-          const response = await axios.post('http://localhost:8080/tambahInventori', formData, {
+          const response = await axios.post('http://localhost:8080/admin/tambahInventori', formData, {
             headers: {
               'Content-Type': 'multipart/form-data'
             }
@@ -163,9 +159,8 @@ const Inventori = () => {
     }
   };
   const handleLogout = () => {
-    clearEmployeeData();
     setOpenLogout(false);
-    navigate('/login');
+    logout();
   };
 
   const drawerWidth = 300;
@@ -194,11 +189,7 @@ const Inventori = () => {
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle />}>
-            {employeeData ? (
-                <pre>{employeeData.fullname}</pre>
-            ) : (
-              <p>No employee data found</p>
-            )}
+          {getFullname}
         </Button>
         <Modal
           aria-labelledby="spring-modal-title"
@@ -255,7 +246,7 @@ const Inventori = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <Typography>Berat Barang *</Typography>
+              <Typography>Berat Barang (g) *</Typography>
               <TextField
                 fullWidth
                 type='number'
@@ -265,7 +256,7 @@ const Inventori = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <Typography>Harga Modal Barang *</Typography>
+              <Typography>Harga Modal Barang (Rp.) *</Typography>
               <TextField
                 fullWidth
                 type='number'
@@ -275,7 +266,7 @@ const Inventori = () => {
               />
             </Grid>
             <Grid item xs={12}>
-              <Typography>Harga Jual Barang *</Typography>
+              <Typography>Harga Jual Barang (Rp.) *</Typography>
               <TextField
                 fullWidth
                 type='number'

@@ -15,17 +15,16 @@ import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Switch from '@mui/material/Switch';
 import DeleteIcon from '@mui/icons-material/Delete';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import { visuallyHidden } from '@mui/utils';
 import axios from 'axios';
 import styled from 'styled-components';
-import { CssBaseline, Drawer, FormControl, Grid, InputLabel, MenuItem, Select } from '@mui/material';
+import { Autocomplete, Backdrop, Button, CssBaseline, Drawer, Fade, FormControl, Grid, InputLabel, MenuItem, Modal, Select, TextField } from '@mui/material';
 import SupervisorSidebar from './sidebar';
-import { ChevronLeft, ChevronRight } from '@mui/icons-material';
+import { AccountCircle, ChevronLeft, ChevronRight } from '@mui/icons-material';
 import { addMonths, eachDayOfInterval, endOfMonth, format, startOfMonth, subMonths } from 'date-fns';
+import { useAuth } from '../authContext';
 
 const RootContainer = styled.div`
   display: flex;
@@ -33,6 +32,19 @@ const RootContainer = styled.div`
   align-items: center;
   justify-content: center;
 `;
+
+const styleModal = {
+  position: 'absolute',
+  top: '50%',
+  left: '50%',
+  transform: 'translate(-50%, -50%)',
+  width: 400,
+  bgcolor: 'background.paper',
+  border: '2px solid #000',
+  boxShadow: 24,
+  p: 4,
+  textAlign: 'center'
+};
 
 const headCells = [
   { id: 'tanggal', numeric: false, disablePadding: false, label: 'Tanggal' },
@@ -44,8 +56,7 @@ const headCells = [
   { id: 'uangLembur', numeric: false, disablePadding: false, label: 'Uang Lembur' },
   { id: 'gajiLibur', numeric: false, disablePadding: false, label: 'Gaji Libur' },
   { id: 'terlambat', numeric: false, disablePadding: false, label: 'Terlambat' },
-  { id: 'keteranganTelat', numeric: false, disablePadding: false, label: 'Keterangan Telat' },
-  { id: 'keteranganLibur', numeric: false, disablePadding: false, label: 'Keterangan Libur' },
+  { id: 'keterangan', numeric: false, disablePadding: false, label: 'Keterangan' },
   { id: 'totalGaji', numeric: false, disablePadding: false, label: 'Total Gaji' },
 ];
 
@@ -164,20 +175,23 @@ const timeToSeconds = (time) => {
 };
 
 export default function GajiKaryawan() {
-  let idAbsensi = '';
+  const { auth, logout } = useAuth();
+  const getFullname = auth.user ? auth.user.fullname : '';
   const totalMonthlySalary = useRef(0);
   const daysWithoutLateness = useRef(0);
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('calories');
   const [page, setPage] = useState(0);
-  const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [rows, setRows] = useState([]);
   const [choosenEmployee, setChoosenEmployee] = useState([]);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [jamMasuk, setJamMasuk] = useState('');
   const [jadwalLibur, setJadwalLibur] = useState('');
-
+  const [selectedEmployee, getSelectedEmployee] = useState('');
+  const [openLogout, setOpenLogout] = useState(false);
+  const handleOpenLogout = () => setOpenLogout(true);
+  const handleCloseLogout = () => setOpenLogout(false);
   const months = [
     'Januari', 'Februari', 'Maret', 'April',
     'Mei', 'Juni', 'Juli', 'Agustus',
@@ -185,10 +199,14 @@ export default function GajiKaryawan() {
   ];
 
   const handlePreviousMonth = () => {
+    totalMonthlySalary.current = 0;
+    daysWithoutLateness.current = 0;
     setCurrentDate(subMonths(currentDate, 1));
   };
 
   const handleNextMonth = () => {
+    totalMonthlySalary.current = 0;
+    daysWithoutLateness.current = 0;
     setCurrentDate(addMonths(currentDate, 1));
   };
 
@@ -198,11 +216,49 @@ export default function GajiKaryawan() {
   const currentMonthName = months[currentDate.getMonth()];
   const currentYear = currentDate.getFullYear();
 
+  const Holiday = (date) => {
+    const dayOfWeek = date.getDay(); // 0 for Sunday, 1 for Monday, ..., 6 for Saturday
+    const days = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
+  
+    // Check if the dayOfWeek matches any day in jadwalLibur
+    return days[dayOfWeek];
+  };
+
+  const getNamaHari = (tanggal) => {
+    if (!tanggal) return '';
+    const namaHari = format(tanggal, 'EEEE', { locale: 'id-ID' });
+    switch (namaHari) {
+      case 'Sunday':
+        return 'minggu';
+      case 'Monday':
+        return 'senin';
+      case 'Tuesday':
+        return 'selasa';
+      case 'Wednesday':
+        return 'rabu';
+      case 'Thursday':
+        return 'kamis';
+      case 'Friday':
+        return 'jumat';
+      case 'Saturday':
+        return 'sabtu';
+      default:
+        return '';
+    }
+  };
+
+  const formatNumberWithSeparator = (number) => {
+    return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
+
+  const formatCurrency = (number) => {
+    return `Rp. ${number.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ".")},00`;
+  };
+
   useEffect(() => {
-    // Fetch data from the backend
     const fetchData = async () => {
       try {
-        const response = await axios.get(`http://localhost:8080/daftarSelectKaryawan`);
+        const response = await axios.get(`http://localhost:8080/manager/daftarSelectKaryawan`);
         setRows(response.data);
         // console.log(response.data);
       } catch (error) {
@@ -212,6 +268,11 @@ export default function GajiKaryawan() {
 
     fetchData();
   }, []);
+  
+  const optKaryawan = rows.map(item => ({
+    label: item.username,
+    value: item.id,
+  }));
 
   const handleRequestSort = (event, property) => {
     const isAsc = orderBy === property && order === 'asc';
@@ -228,78 +289,76 @@ export default function GajiKaryawan() {
     setPage(0);
   };
 
-  const handleChangeDense = (event) => {
-    setDense(event.target.checked);
-  };
-
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - choosenEmployee.length) : 0;
 
   const drawerWidth = 300;
-  const handleChange = async (event) => {
-    idAbsensi = event.target.value;
+  const handlePilihKaryawanChange = async (event, newValue) => {
+    getSelectedEmployee(newValue.value);
+    totalMonthlySalary.current = 0;
+    daysWithoutLateness.current = 0;
     try {
-      const response = await axios.get(`http://localhost:8080/pilihKaryawan?idAbsensi=${idAbsensi}`);
+      const response = await axios.get(`http://localhost:8080/manager/pilihKaryawan?idAbsensi=${newValue.value}`);
       console.log(response.data);
       setChoosenEmployee(response.data);
       setJamMasuk(response.data[0].jam_masuk);
+      console.log("ini jam masuk: ", response.data[0].jam_masuk)
       setJadwalLibur(response.data[0].jadwal_libur);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
   };
-
-  const Holiday = (date, jadwalLibur) => {
-    const dayOfWeek = date.getDay(); // 0 for Sunday, 1 for Monday, ..., 6 for Saturday
-    const days = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
-  
-    // Check if the dayOfWeek matches any day in jadwalLibur
-    return jadwalLibur.includes(days[dayOfWeek]);
-  };
   
   const calculateSalarySlip = (employee) => {
     if (!employee) {
       return {
-        total_jam_kerja: '-',
-        gaji_pokok: '-',
-        uang_makan: '-',
-        uang_lembur: '-',
-        gaji_libur: '-',
-        keterlambatan: '-',
-        keterangan_telat: '-',
-        keterangan_libur: '-',
-        total_gaji: '-',
+        total_jam_kerja: 0,
+        gaji_pokok: 0,
+        uang_makan: 0,
+        uang_lembur: 0,
+        gaji_libur: 0,
+        keterlambatan: 0,
+        keterangan: 'ABSEN',
+        total_gaji: 0,
       };
     }
 
+    console.log("ini employee clock in: ", employee.clockIn);
+
     const clockInTime = timeToSeconds(employee.clockIn);
     const clockOutTime = timeToSeconds(employee.clockOut);
+    console.log(clockInTime);
+    console.log(clockOutTime);
+    console.log(timeToSeconds(jamMasuk));
     const totalWorkSeconds = clockOutTime - clockInTime;
     const totalWorkHours = totalWorkSeconds / 3600;
 
-    const basicSalary = totalWorkHours > 8 ? 64000 : totalWorkHours * 8000;
+    const basicSalary = Math.floor(totalWorkHours > 8 ? 64000 : totalWorkHours * 8000);
     const mealAllowance = totalWorkHours > 8 ? 10000 : 0;
     const overtimePay = totalWorkHours > 8 ? Math.floor((totalWorkHours - 8) * 10000) : 0;
-    const isHolidayDays = Holiday(new Date(employee.tanggal), employee.jadwal_libur);
-    const isHoliday = isHolidayDays ? 'Libur' : '-';
-    
-    const holidayPay = isHolidayDays ? 64000 : 0;
 
     let latenessPenalty = 0;
-    if (clockInTime > timeToSeconds('10:00:00')) {
-      const lateMinutes = (clockInTime - timeToSeconds('10:00:00')) / 60;
+    if (clockInTime > timeToSeconds(jamMasuk)) {
+      const lateMinutes = (clockInTime - timeToSeconds(jamMasuk)) / 60;
+      console.log(lateMinutes);
       if (lateMinutes >= 1 && lateMinutes <= 5) latenessPenalty = -10000;
       else if (lateMinutes > 5 && lateMinutes <= 15) latenessPenalty = -15000;
       else if (lateMinutes > 15 && lateMinutes <= 30) latenessPenalty = -20000;
       else if (lateMinutes > 30 && lateMinutes <= 60) latenessPenalty = -30000;
     }
-
-    const isLate = clockInTime > timeToSeconds('10:00:00') ? 'telat' : 'tidak telat';
-    const totalSalary = holidayPay + basicSalary + mealAllowance + overtimePay + latenessPenalty;
-    if (totalSalary !== '-') {
+    const isLate = clockInTime > timeToSeconds(jamMasuk) ? 'TERLAMBAT' : 'TIDAK TELAT';
+    let totalSalary = 0;
+    let holidayPay = 64000;
+    if (employee.keterangan === 'LIBUR') {
+      totalSalary = holidayPay + basicSalary + mealAllowance + overtimePay + latenessPenalty;
+    }
+    else{
+      totalSalary = basicSalary + mealAllowance + overtimePay + latenessPenalty;
+    }
+    if (totalSalary !== 0) {
       totalMonthlySalary.current += totalSalary;
-      if (isLate === 'tidak telat') {
+      if (isLate === 'TIDAK TELAT') {
         daysWithoutLateness.current++;
       }
     }
@@ -309,16 +368,21 @@ export default function GajiKaryawan() {
       gaji_pokok: basicSalary,
       uang_makan: mealAllowance,
       uang_lembur: overtimePay,
-      gaji_libur: holidayPay,
+      gaji_libur: employee.keterangan === 'LIBUR' ? 64000 : 0,
       keterlambatan: latenessPenalty,
-      keterangan_telat: isLate,
-      keterangan_libur: isHoliday,
+      keterangan: isLate,
       total_gaji: totalSalary,
     };
   };
 
   const bonusTidakTelat = (daysWithoutLateness === dates.length) ? 100000 : 0;
   const totalMonthlySalaryWithBonus = totalMonthlySalary.current + bonusTidakTelat;
+  
+  const handleLogout = () => {
+    setOpenLogout(false);
+    logout();
+  };
+
   return (
     <Box sx={{ display: 'flex' }}>
       <CssBaseline />
@@ -342,22 +406,54 @@ export default function GajiKaryawan() {
         component="main"
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
+        <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle />}>
+          {getFullname}
+        </Button>
+        <Modal
+          aria-labelledby="spring-modal-title"
+          aria-describedby="spring-modal-description"
+          open={openLogout}
+          onClose={handleCloseLogout}
+          closeAfterTransition
+          slots={{ backdrop: Backdrop }}
+          slotProps={{
+            backdrop: {
+              TransitionComponent: Fade,
+            },
+          }}
+          >
+          <Fade in={openLogout}>
+            <Box sx={styleModal}>
+              <AccountCircle style={{ fontSize: 100 }} />
+              <Typography id="spring-modal-title" variant="h6" component="h2">
+                Apakah anda yakin ingin keluar?
+              </Typography>
+              <Box sx={{ mt: 2 }}>
+                <Button variant="outlined" onClick={handleLogout}>
+                  Ya
+                </Button>
+                <Button variant="outlined" onClick={handleCloseLogout} sx={{ ml: 2, backgroundColor: '#FE8A01', color: 'white' }}>
+                  Tidak
+                </Button>
+              </Box>
+            </Box>
+          </Fade>
+        </Modal>
+        <br></br>
         <Toolbar />
         <RootContainer>
           <Box sx={{ minWidth: 300 }}>
             <FormControl fullWidth>
-              <InputLabel id="demo-simple-select-label">Pilih Karyawan</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                label="Pilih Karyawan"
-                value={idAbsensi}
-                onChange={handleChange}
-              >
-                {rows.map(item => (
-                  <MenuItem key={item.id} value={item.id}>{item.username}</MenuItem>
-                ))}
-              </Select>
+              <Typography>Pilih Karyawan *</Typography>
+              <Autocomplete
+                fullWidth
+                options={optKaryawan}
+                getOptionLabel={(option) => option.label}
+                getOptionSelected={(option, value) => option.id === value}
+                renderInput={(params) => <TextField {...params} />}
+                value={optKaryawan.find((option) => option.id === selectedEmployee)}
+                onChange={handlePilihKaryawanChange}
+              />
             </FormControl>
           </Box>
           <Grid container alignItems="center" justifyContent="center">
@@ -384,7 +480,6 @@ export default function GajiKaryawan() {
                   <Table
                   sx={{ minWidth: 750 }}
                   aria-labelledby="tableTitle"
-                  size={dense ? 'small' : 'medium'}
                   stickyHeader
                   >
                   <EnhancedTableHead
@@ -401,27 +496,22 @@ export default function GajiKaryawan() {
                       return (
                         <TableRow hover tabIndex={-1} key={date} sx={{ cursor: 'pointer' }}>
                           <TableCell align="center">{formattedDate}</TableCell>
-                          <TableCell align="center">{employee?.clockIn || '-'}</TableCell>
-                          <TableCell align="center">{employee?.clockOut || '-'}</TableCell>
+                          <TableCell align="center">{employee?.clockIn || 0}</TableCell>
+                          <TableCell align="center">{employee?.clockOut || 0}</TableCell>
                           <TableCell align="center">{salarySlip.total_jam_kerja}</TableCell>
-                          <TableCell align="center">{salarySlip.gaji_pokok}</TableCell>
-                          <TableCell align="center">{salarySlip.uang_makan}</TableCell>
-                          <TableCell align="center">{salarySlip.uang_lembur}</TableCell>
-                          <TableCell align="center">{salarySlip.gaji_libur}</TableCell>
-                          <TableCell align="center">{salarySlip.keterlambatan}</TableCell>
-                          <TableCell align="center">{salarySlip.keterangan_telat}</TableCell>
-                          <TableCell align="center">{salarySlip.keterangan_libur}</TableCell>
-                          <TableCell align="center">{salarySlip.total_gaji}</TableCell>
+                          <TableCell align="center">{formatNumberWithSeparator(salarySlip.gaji_pokok)}</TableCell>
+                          <TableCell align="center">{formatNumberWithSeparator(salarySlip.uang_makan)}</TableCell>
+                          <TableCell align="center">{formatNumberWithSeparator(salarySlip.uang_lembur)}</TableCell>
+                          <TableCell align="center">{formatNumberWithSeparator(salarySlip.gaji_libur)}</TableCell>
+                          <TableCell align="center">{formatNumberWithSeparator(salarySlip.keterlambatan)}</TableCell>
+                          <TableCell align="center">{salarySlip.keterangan}</TableCell>
+                          <TableCell align="center">{formatNumberWithSeparator(salarySlip.total_gaji)}</TableCell>
                         </TableRow>
                       );
-                    })} 
+                    })}
                     {emptyRows > 0 && (
-                    <TableRow
-                        style={{
-                        height: (dense ? 33 : 53) * emptyRows,
-                        }}
-                    >
-                        <TableCell colSpan={10} />
+                    <TableRow>
+                      <TableCell colSpan={10} />
                     </TableRow>
                     )}
                   </TableBody>
@@ -439,7 +529,7 @@ export default function GajiKaryawan() {
               <Table>
                 <TableRow>
                   <TableCell colSpan={10} align="right">Total Gaji Bulanan</TableCell>
-                  <TableCell align="center">{totalMonthlySalary.current}</TableCell>
+                  <TableCell align="center">{formatCurrency(totalMonthlySalary.current)}</TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell colSpan={10} align="right">Bonus Tidak Telat</TableCell>
@@ -447,7 +537,7 @@ export default function GajiKaryawan() {
                 </TableRow>
                 <TableRow>
                   <TableCell colSpan={10} align="right">Total Gaji + Bonus</TableCell>
-                  <TableCell align="center">{totalMonthlySalaryWithBonus}</TableCell>
+                  <TableCell align="center">{formatCurrency(totalMonthlySalaryWithBonus)}</TableCell>
                 </TableRow>
               </Table>
             </Paper>

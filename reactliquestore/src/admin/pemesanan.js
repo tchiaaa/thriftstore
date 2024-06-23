@@ -3,10 +3,10 @@ import { TextField, Button, Grid, Typography, Autocomplete, Toolbar, Box, Drawer
 import AdminSidebar from './sidebar';
 import { AccountCircle } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
-import { EmployeeContext } from '../employeeContext';
 import { visuallyHidden } from '@mui/utils';
 import PropTypes from 'prop-types';
 import axios from 'axios';
+import { useAuth } from '../authContext';
 
 const styleModal = {
   position: 'absolute',
@@ -129,7 +129,7 @@ const Pemesanan = () => {
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('calories');
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [errors, setErrors] = useState({});
   const navigate = useNavigate('');
   const [colourData, setColourData] = useState([]);
@@ -140,7 +140,8 @@ const Pemesanan = () => {
   const [showError, setShowError] = useState(false);
   const [msgError, setMsgError] = useState();
   const [tempPrice, settempPrice] = useState('');
-
+  const { auth, logout } = useAuth();
+  const fullname = auth.user ? auth.user.fullname : '';
   // bagian add colour
   const [openTambah, setOpenTambah] = useState(false);
   const handleOpenTambah = () => setOpenTambah(true);
@@ -150,8 +151,6 @@ const Pemesanan = () => {
   const [messageInsertColour, setMessageInsertColour] = useState('');
   const [colourOrder, setColourOrder] = useState('');
   
-  const { employeeData } = useContext(EmployeeContext);
-  const { clearEmployeeData } = useContext(EmployeeContext);
   // const [rows, setRows] = useState([
   //   { id: 1, username: '', phonenumber: '', itemcode: [], totalprice: 0, totalweight: 0, waitinglist: '' },
   // ]);
@@ -222,7 +221,7 @@ const Pemesanan = () => {
 
   const fetchDataColour = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/getColour');
+      const response = await axios.get('http://localhost:8080/admin/getColour');
       console.log(response.data);
       setColourData(response.data);
     } catch (error) {
@@ -232,7 +231,7 @@ const Pemesanan = () => {
 
   const fetchDataItem = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/getItem');
+      const response = await axios.get('http://localhost:8080/admin/getItem');
       console.log(response.data);
       setItemData(response.data);
     } catch (error) {
@@ -241,12 +240,9 @@ const Pemesanan = () => {
   };
 
   useEffect(() => {
-    if (employeeData) {
-      console.log(employeeData);
-      fetchDataColour();
-      fetchDataItem();
-    }
-  }, [employeeData]);
+    fetchDataColour();
+    fetchDataItem();
+  }, []);
 
   const optColour = colourData.map(item => ({
     name: item.name,
@@ -261,7 +257,7 @@ const Pemesanan = () => {
 
   // const handleChangeColour = async (id) => {
   //   try {
-  //     const response = await axios.get(`http://localhost:8080/pilihWarna/${id}`);
+  //     const response = await axios.get(`http://localhost:8080/admin/pilihWarna/${id}`);
   //     console.log(response.data);
   //     // setChoosenEmployee(response.data);
   //     // setJamMasuk(response.data[0].jam_masuk);
@@ -339,48 +335,48 @@ const Pemesanan = () => {
     console.log([...formData]);
     let dataOrderId = '';
     try {
-      const response = await axios.post('http://localhost:8080/inputTemporaryOrder', formData);
+      const response = await axios.post('http://localhost:8080/admin/inputTemporaryOrder', formData);
       console.log(response.data);
       dataOrderId = response.data.orderid;
     } catch (error) {
       setErrors(error.response);
     }
     
-    if (row.phonenumber !== '') {
-      const formattedPhoneNumber = `+${row.phoneNumber}`; // Format to international format
+    // if (row.phonenumber !== '') {
+    //   const formattedPhoneNumber = `+${row.phoneNumber}`; // Format to international format
 
-      // Replace YOUR_ACCESS_TOKEN with your actual WhatsApp Business API access token
-      const accessToken = 'EAAMhTEZCSFbQBOwoCo6N6dEIZA5EZCiPNndO6kiGbVS2ko5kCDzkDm978ZABG2WimDoGGmMDVlwlHPZAwe6EsKGnuyqHZAieGCQ31eUJSjkZANXx10fn8KEKasfZBETogWsRH0FkIPBgrIwZAjJtKW8ey4eZCt1UrJaBUtb6UcJrsfyrwqOwxDFDv0mIc3t33oPcfE';
+    //   // Replace YOUR_ACCESS_TOKEN with your actual WhatsApp Business API access token
+    //   const accessToken = 'EAAMhTEZCSFbQBOwoCo6N6dEIZA5EZCiPNndO6kiGbVS2ko5kCDzkDm978ZABG2WimDoGGmMDVlwlHPZAwe6EsKGnuyqHZAieGCQ31eUJSjkZANXx10fn8KEKasfZBETogWsRH0FkIPBgrIwZAjJtKW8ey4eZCt1UrJaBUtb6UcJrsfyrwqOwxDFDv0mIc3t33oPcfE';
 
-      // Construct the WhatsApp API request URL
-      const apiUrl = `https://graph.facebook.com/v13.0/messages?access_token=${accessToken}`;
-      const checkoutPageURL = encodeURIComponent(`http://localhost:3000/customer/checkoutPage/${dataOrderId}`); // URL-encode the checkout page URL
-      // Construct the WhatsApp message
-      const whatsappMessage = `Hi there,\n\nYou can continue your checkout process here:\n ${checkoutPageURL}`;
-      // Prepare the request body
-      const requestBody = {
-        messaging_product: 'whatsapp',
-        to: formattedPhoneNumber,
-        text: {
-          body: `${whatsappMessage}`,
-        },
-      };
+    //   // Construct the WhatsApp API request URL
+    //   const apiUrl = `https://graph.facebook.com/v13.0/messages?access_token=${accessToken}`;
+    //   const checkoutPageURL = encodeURIComponent(`http://localhost:3000/customer/checkoutPage/${dataOrderId}`); // URL-encode the checkout page URL
+    //   // Construct the WhatsApp message
+    //   const whatsappMessage = `Hi there,\n\nYou can continue your checkout process here:\n ${checkoutPageURL}`;
+    //   // Prepare the request body
+    //   const requestBody = {
+    //     messaging_product: 'whatsapp',
+    //     to: formattedPhoneNumber,
+    //     text: {
+    //       body: `${whatsappMessage}`,
+    //     },
+    //   };
       
 
-      try {
-        const response = await axios.post(apiUrl, requestBody);
-        console.log(response.data); // Display the response
-      } catch (error) {
-        console.error('Error sending message:', error.message);
-      }
-    }
+    //   try {
+    //     const response = await axios.post(apiUrl, requestBody);
+    //     console.log(response.data); // Display the response
+    //   } catch (error) {
+    //     console.error('Error sending message:', error.message);
+    //   }
+    // }
   };
 
   const handleAddColour = async (e) => {
     e.preventDefault();
     try {
       const name = namaColour;
-      const response = await axios.post('http://localhost:8080/tambahWarna', { name });
+      const response = await axios.post('http://localhost:8080/admin/tambahWarna', { name });
       console.log(response.data);
       setOpenTambah(false);
       setShowSuccessInsertColour(true);
@@ -396,9 +392,8 @@ const Pemesanan = () => {
   };
 
   const handleLogout = () => {
-    clearEmployeeData();
     setOpenLogout(false);
-    navigate('/login');
+    logout();
   };
 
   return (
@@ -425,11 +420,7 @@ const Pemesanan = () => {
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle />}>
-            {employeeData ? (
-                <pre>{employeeData.fullname}</pre>
-            ) : (
-              <p>No employee data found</p>
-            )}
+          {fullname}
         </Button>
         <Modal
           aria-labelledby="spring-modal-title"
@@ -462,7 +453,14 @@ const Pemesanan = () => {
           </Fade>
         </Modal>
         <Toolbar />
-        <Container>
+        <Container
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
           {showSuccessInsertColour && (
             <Alert variant="filled" severity="success" style={{ marginTop: 20 }}>
               { messageInsertColour }
@@ -475,24 +473,12 @@ const Pemesanan = () => {
           )}
           <Box sx={{ minWidth: 300 }}>
             <FormControl fullWidth>
-              {/* <InputLabel id="demo-simple-select-label">Pilih Warna</InputLabel>
-              <Select
-                labelId="demo-simple-select-label"
-                id="demo-simple-select"
-                label="Pilih Karyawan"
-                // value={idAbsensi}
-                onChange={handleChangeColour}
-              >
-                {rows.map(item => (
-                  <MenuItem key={item.id} value={item.id}>{item.username}</MenuItem>
-                ))}
-              </Select> */}
               <Typography>Pilih Warna *</Typography>
               <Autocomplete
                 fullWidth
                 options={optColour}
                 getOptionLabel={(option) => option.name}
-                getOptionSelected={(option, value) => option.id === value} 
+                getOptionSelected={(option, value) => option.id === value}
                 renderInput={(params) => <TextField {...params} />}
                 value={optColour.find((option) => option.id === colourOrder)}
                 error={!!errors.colourOrder}
@@ -501,25 +487,14 @@ const Pemesanan = () => {
             </FormControl>
           </Box>
           <Box sx={{ width: '100%', marginTop: 5 }}>
-            <TableContainer component={Paper}>
-              <Table style={{width: '150%'}}>
+            <TableContainer component={Paper} sx={{maxHeight: 370}}>
+              <Table stickyHeader style={{width: '150%'}}>
                 <EnhancedTableHead
                     order={order}
                     orderBy={orderBy}
                     onRequestSort={handleRequestSort}
                     rowCount={rows.length}
                 />
-                {/* <TableHead>
-                  <TableRow>
-                  <TableCell style={{ width: '1%' }}>Nomor</TableCell>
-                <TableCell style={{ width: '10%' }}>Username Pembeli</TableCell>
-                <TableCell style={{ width: '10%' }}>Nomor WA</TableCell>
-                <TableCell style={{ width: '25%' }}>Kode Barang</TableCell>
-                <TableCell style={{ width: '10%' }}>Harga</TableCell>
-                <TableCell style={{ width: '9%' }}>Berat</TableCell>
-                <TableCell style={{ width: '25%' }}>Username Waiting List</TableCell>
-                  </TableRow>
-                </TableHead> */}
                 <TableBody>
                   {visibleRows.map((row) => (
                     <TableRow key={row.id}>
@@ -581,7 +556,7 @@ const Pemesanan = () => {
                       </TableCell>
                       <TableCell>
                         <Button onClick={() => handleSubmit(row.id)} variant="contained">
-                          Submit
+                          Save
                         </Button>
                       </TableCell>
                     </TableRow>

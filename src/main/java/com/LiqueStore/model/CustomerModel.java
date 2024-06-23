@@ -18,6 +18,10 @@ public class CustomerModel {
     private String usernameig;
     private String phonenumber;
     private Date birthdate;
+    private String status;
+    @ManyToOne
+    @JoinColumn(name = "accessrightid", referencedColumnName = "id")
+    private AccessRightModel accessRight;
 
     public int getId() {
         return id;
@@ -30,8 +34,8 @@ public class CustomerModel {
     public String getName() {
         return name;
     }
-
     public void setName(String name) {
+
         this.name = name;
     }
 
@@ -81,5 +85,21 @@ public class CustomerModel {
 
     public void setBirthdate(Date birthdate) {
         this.birthdate = birthdate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public AccessRightModel getAccessRight() {
+        return accessRight;
+    }
+
+    public void setAccessRight(AccessRightModel accessRight) {
+        this.accessRight = accessRight;
     }
 }
