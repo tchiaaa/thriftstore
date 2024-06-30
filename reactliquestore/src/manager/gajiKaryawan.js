@@ -217,17 +217,10 @@ export default function GajiKaryawan() {
   const currentYear = currentDate.getFullYear();
 
   const Holiday = (date) => {
-    const dayOfWeek = date.getDay(); // 0 for Sunday, 1 for Monday, ..., 6 for Saturday
-    const days = ['minggu', 'senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu'];
-  
-    // Check if the dayOfWeek matches any day in jadwalLibur
-    return days[dayOfWeek];
-  };
-
-  const getNamaHari = (tanggal) => {
-    if (!tanggal) return '';
-    const namaHari = format(tanggal, 'EEEE', { locale: 'id-ID' });
-    switch (namaHari) {
+    console.log(date);
+    const dates = new Date(date);
+    const dayOfWeek = format(dates, 'EEEE');
+    switch (dayOfWeek) {
       case 'Sunday':
         return 'minggu';
       case 'Monday':
@@ -245,6 +238,13 @@ export default function GajiKaryawan() {
       default:
         return '';
     }
+  };
+
+  const getNamaHari = (tanggal) => {
+    console.log(tanggal);
+    // if (!tanggal) return '';
+    // const namaHari = format(tanggal, 'EEEE', { locale: 'id-ID' });
+  
   };
 
   const formatNumberWithSeparator = (number) => {
@@ -491,7 +491,10 @@ export default function GajiKaryawan() {
                   <TableBody>
                     {dates.map((date, idx) => {
                       const formattedDate = format(date, 'dd-MM-yyyy');
+                      const formatDate = format(date, 'yyyy-MM-dd');
                       const employee = choosenEmployee.find((emp) => emp.tanggal === formattedDate);
+                      const holiday = Holiday(formatDate);
+                      console.log(holiday);
                       const salarySlip = calculateSalarySlip(employee);
                       return (
                         <TableRow hover tabIndex={-1} key={date} sx={{ cursor: 'pointer' }}>

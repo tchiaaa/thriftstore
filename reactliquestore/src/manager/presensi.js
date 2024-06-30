@@ -66,11 +66,11 @@ const PresensiManager = () => {
   const minutes = time.getMinutes().toString().padStart(2, '0');
 
   const handleClockIn = () => {
-    navigate('/supervisor/karyawan/presensi/clockin');
+    navigate('/manager/karyawan/presensi/clockin');
   };
 
   const handleClockOut = () => {
-    navigate('/supervisor/karyawan/presensi/clockout');
+    navigate('/manager/karyawan/presensi/clockout');
   };
   
   const handleLogout = () => {

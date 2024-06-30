@@ -187,13 +187,15 @@ const styleModalBesar = {
   position: 'absolute',
   top: '50%',
   left: '50%',
-  transform: 'translate(-50%, -50%) scale(0.7)',
+  transform: 'translate(-50%, -50%)',
   width: 700,
+  maxHeight: '80vh',
   bgcolor: 'background.paper',
   border: '2px solid #000',
   boxShadow: 24,
   borderRadius: 5,
   p: 4,
+  overflowY: 'auto'
 };
 
 export default function DataKaryawan() {
@@ -759,7 +761,7 @@ export default function DataKaryawan() {
                             <Fade in={openDelete}>
                               <Box sx={styleModal}>
                                 <Typography id="spring-modal-title" variant="h6" component="h2">
-                                  Apakah kamu yakin ingin membuang data ini?
+                                  Apakah anda yakin ingin membuang data ini?
                                 </Typography>
                                 <Box sx={{ mt: 2 }}>
                                   <Button variant="outlined" onClick={() => handleConfirmDelete(row.id)} sx={{ mr: 2, backgroundColor: '#FE8A01', color: 'white' }}>

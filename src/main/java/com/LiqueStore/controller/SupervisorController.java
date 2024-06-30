@@ -264,8 +264,6 @@ public class SupervisorController {
             empData.put("nama", item.getNama());
             empData.put("varian", item.getVarian());
             empData.put("weight", item.getWeight());
-            empData.put("capitalPrice", item.getCapitalprice());
-            empData.put("defaultPrice", item.getDefaultprice());
             Timestamp lastUpdateDate = item.getLastupdate();
             if (lastUpdateDate != null) {
                 LocalDateTime lastUpdateDateTime = LocalDateTime.ofInstant(lastUpdateDate.toInstant(), ZoneId.systemDefault());
@@ -291,8 +289,6 @@ public class SupervisorController {
         addType.setNama(typeModel.getNama());
         addType.setWeight(typeModel.getWeight());
         addType.setVarian(typeModel.getVarian());
-        addType.setCapitalprice(typeModel.getCapitalprice());
-        addType.setDefaultprice(typeModel.getDefaultprice());
         addType.setTypecode(tipeKode);
         typeRepository.save(addType);
         logger.info(String.valueOf(addType));
@@ -307,8 +303,6 @@ public class SupervisorController {
             changeType.setNama(typeModel.getNama());
             changeType.setVarian(typeModel.getVarian());
             changeType.setWeight(typeModel.getWeight());
-            changeType.setCapitalprice(typeModel.getCapitalprice());
-            changeType.setDefaultprice(typeModel.getDefaultprice());
             changeType.setLastupdate(Timestamp.valueOf(LocalDateTime.now()));
             char firstNameLetter = typeModel.getNama().toUpperCase().charAt(0);
             char firstVariantLetter = typeModel.getVarian().toUpperCase().charAt(0);

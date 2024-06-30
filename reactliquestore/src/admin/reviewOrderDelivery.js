@@ -65,7 +65,7 @@ const headCells = [
   { id: 'packingDate', numeric: false, disablePadding: false, label: 'Packing Date' },
   { id: 'deliveryPickupDate', numeric: false, disablePadding: false, label: 'Delivery Pick-up Date' },
   { id: 'deliveryDoneDate', numeric: false, disablePadding: false, label: 'Delivery Done Date' },
-  { id: 'status', numeric: false, disablePadding: false, label: 'status' },
+  { id: 'status', numeric: false, disablePadding: false, label: 'Status' },
 ];
 
 function EnhancedTableHead(props) {
@@ -310,11 +310,11 @@ export default function ReviewOrderDelivery() {
                           <TableCell align="center">{row.namabarang}</TableCell>
                           <TableCell align="center">{row.namapembeli}</TableCell>
                           <TableCell align="center">{row.jenisbarang}</TableCell>
-                          <TableCell align="center">{row.checkoutdate}</TableCell>
-                          <TableCell align="center">{row.paymentdate}</TableCell>
-                          <TableCell align="center">{row.packingdate}</TableCell>
-                          <TableCell align="center">{row.deliverypickupdate}</TableCell>
-                          <TableCell align="center">{row.deliverydonedate}</TableCell>
+                          <TableCell align="center">{row.checkoutdate || '-'}</TableCell>
+                          <TableCell align="center">{row.paymentdate || '-'}</TableCell>
+                          <TableCell align="center">{row.packingdate || '-'}</TableCell>
+                          <TableCell align="center">{row.deliverypickupdate || '-'}</TableCell>
+                          <TableCell align="center">{row.deliverydonedate || '-'}</TableCell>
                           <TableCell>
                           {row.status === "Payment Not Done" && (
                             <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: 'red', textTransform: 'capitalize'}}>
@@ -323,22 +323,22 @@ export default function ReviewOrderDelivery() {
                           )}
                           {row.status === "On Packing" && (
                             <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: 'orange', textTransform: 'capitalize'}}>
-                              Cuti
+                              On Packing
                             </Button>
                           )}
                           {row.status === "On Pick Up" && (
                             <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: 'brown', textTransform: 'capitalize'}}>
-                              Berhenti
+                              On Pick Up
                             </Button>
                           )}
                           {row.status === "On Delivery" && (
                             <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: 'yellow', textTransform: 'capitalize'}}>
-                              Berhenti
+                              On Delivery
                             </Button>
                           )}
                           {row.status === "Done" && (
                             <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: 'green', textTransform: 'capitalize'}}>
-                              Berhenti
+                              Done
                             </Button>
                           )}
                           </TableCell>

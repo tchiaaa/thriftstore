@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 import axios from 'axios';
 import { Box, Grid } from '@mui/material';
 import { useAuth } from './authContext';
-import { Link } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 
 const containerStyle = {
   backgroundColor: 'black',
@@ -36,11 +36,25 @@ const btnLogin = {
 };
 
 function LoginPage() {
+  const [param, setParam] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState();
   const [errors, setErrors] = useState({});
   const { login } = useAuth();
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const orderidFromQuery = params.get('orderid');
+
+  useEffect(() => {
+    if (orderidFromQuery != null){
+      setParam(orderidFromQuery);
+    }
+    else{
+      setParam('');
+    }
+  }, [orderidFromQuery]);
+
 
   const validate = () => {
     let tempErrors = {};
@@ -63,6 +77,7 @@ function LoginPage() {
       try {
         const response = await axios.post('http://localhost:8080/login', formData);
         console.log(response.data[0]);
+        localStorage.setItem('orderid', orderidFromQuery);
         login(response.data[0]);
       } catch (error) {
         setError("invalid username or password");
@@ -77,9 +92,15 @@ function LoginPage() {
         <Box sx={{display: 'flex'}}>
           <Typography>Don't have an account?</Typography>&nbsp;&nbsp;&nbsp;
           <Typography sx={{ color: '#FE8A01' }}>
-            <a href="/register" style={{ color: '#FE8A01', textDecoration: 'none' }}>
-              Sign up here
-            </a>
+            {param ? (
+              <a href={`/register?orderid=${orderidFromQuery}`} style={{ color: '#FE8A01', textDecoration: 'none' }}>
+                Sign up here
+              </a>
+            ) : (
+              <a href="/register" style={{ color: '#FE8A01', textDecoration: 'none' }}>
+                Sign up here
+              </a>
+            )}
           </Typography>
         </Box>
         <Grid container spacing={3} marginTop={1}>

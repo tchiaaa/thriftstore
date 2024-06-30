@@ -1,7 +1,11 @@
 package com.LiqueStore;
 
 import com.midtrans.Config;
+import com.midtrans.service.MidtransCoreApi;
+import com.midtrans.service.MidtransIrisApi;
 import com.midtrans.service.MidtransSnapApi;
+import com.midtrans.service.impl.MidtransCoreApiImpl;
+import com.midtrans.service.impl.MidtransIrisApiImpl;
 import com.midtrans.service.impl.MidtransSnapApiImpl;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -23,5 +27,25 @@ public class MidTransConfig {
                 .setIsProduction(false)
                 .build();
         return new MidtransSnapApiImpl(config);
+    }
+
+    @Bean
+    public MidtransCoreApi midtransCoreApi(){
+        Config config = Config.builder()
+                .setServerKey(serverKey)
+                .setClientKey(clientKey)
+                .setIsProduction(false)
+                .build();
+        return new MidtransCoreApiImpl(config);
+    }
+
+    @Bean
+    public MidtransIrisApi midtransIrisApi(){
+        Config config = Config.builder()
+                .setServerKey(serverKey)
+                .setClientKey(clientKey)
+                .setIsProduction(false)
+                .build();
+        return new MidtransIrisApiImpl(config);
     }
 }

@@ -9,7 +9,9 @@ public class OrderColourModel {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String name;
+    @Column(name = "colourcode", unique = true)
     private String colourcode;
+    private String colourhex;
 
     public OrderColourModel() {
     }
@@ -40,5 +42,13 @@ public class OrderColourModel {
 
     public void setColourcode(String colourcode) {
         this.colourcode = colourcode;
+    }
+
+    public String getColourhex() {
+        return colourhex;
+    }
+
+    public void setColourhex(String colourhex) {
+        this.colourhex = colourhex;
     }
 }

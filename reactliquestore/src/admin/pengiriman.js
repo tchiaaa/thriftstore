@@ -19,6 +19,8 @@ import AdminSidebar from './sidebar';
 import { useSpring, animated } from '@react-spring/web';
 import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../authContext';
+import dayjs from 'dayjs';
+import { DataGrid } from '@mui/x-data-grid';
 
 const RootContainer = styled.div`
   display: flex;
@@ -194,19 +196,19 @@ export default function Pengiriman() {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (searchTerm === '') {
-      setFilteredRows(rows);
-    } else {
-      const filtered = rows.filter(row =>
-        row.orderid.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        row.namabarang.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        row.namacust.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        row.checkoutdate.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      setFilteredRows(filtered);
-    }
-  }, [searchTerm, rows]);
+  // useEffect(() => {
+  //   if (searchTerm === '') {
+  //     setFilteredRows(rows);
+  //   } else {
+  //     const filtered = rows.filter(row =>
+  //       row.orderid.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //       row.namabarang.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //       row.namacust.toLowerCase().includes(searchTerm.toLowerCase()) ||
+  //       row.checkoutdate.toLowerCase().includes(searchTerm.toLowerCase())
+  //     );
+  //     setFilteredRows(filtered);
+  //   }
+  // }, [searchTerm, rows]);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
@@ -238,7 +240,9 @@ export default function Pengiriman() {
         page * rowsPerPage + rowsPerPage,
       ),
     [order, orderBy, page, rowsPerPage, filteredRows],
-  );
+  )
+  console.log(filteredRows);
+  ;
 
   const handleLogout = () => {
     setOpenLogout(false);
@@ -265,6 +269,17 @@ export default function Pengiriman() {
   };
 
   const handleDeliverydateChange = async (rowId) => {
+    // Fetch the row data to check packingdate
+    const row = visibleRows.find(row => row.orderid === rowId);
+    if (!row || row.packingdate === null) {
+      // Show error message because packingdate is null
+      setShowError(true);
+      setMsgError("Packing harus diisi terlebih dahulu sebelum dapat mengatur delivery");
+      setTimeout(() => {
+        setShowError(false);
+      }, 5000);
+      return;
+    }
     try {
       const response = await axios.post(`http://localhost:8080/admin/updateDeliverydate?rowId=${rowId}`);
       console.log(response.data);
@@ -282,6 +297,64 @@ export default function Pengiriman() {
       }, 5000);
     }
   };
+
+  const columns = [
+    {
+      field: 'id',
+      headerName: 'Kode Pemesanan',
+      flex: 1,
+      editable: true,
+    },
+    {
+      field: 'namabarang',
+      headerName: 'Nama Barang',
+      flex: 1,
+      editable: true,
+    },
+    {
+      field: 'namacust',
+      headerName: 'Nama Customer',
+      flex: 1,
+      editable: true,
+    },
+    {
+      field: 'checkoutdate',
+      headerName: 'Tanggal Checkout',
+      type: 'date',
+      flex: 1,
+      editable: true,
+      valueGetter: (checkoutdate) => {
+        return checkoutdate;
+      },
+      valueFormatter: (checkoutdate) => {
+        return dayjs(checkoutdate).format('DD/MM/YYYY');
+      }
+    },
+    {
+      field: 'packingdate',
+      headerName: 'Packing',
+      flex: 1,
+      renderCell: (params) => (
+        <Checkbox
+          checked={params.row.packingdate !== null}
+          onChange={() => handlePackingdateChange(params.row.id)}
+          disabled={params.row.packingdate !== null}
+        />
+      ),
+    },
+    {
+      field: 'deliverydate',
+      headerName: 'Delivery',
+      flex: 1,
+      renderCell: (params) => (
+        <Checkbox
+          checked={params.row.deliverypickupdate !== null}
+          onChange={() => handleDeliverydateChange(params.row.id)}
+          disabled={params.row.deliverypickupdate !== null}
+        />
+      ),
+    },
+  ];
 
   const drawerWidth = 300;
 
@@ -345,74 +418,35 @@ export default function Pengiriman() {
         <Toolbar />
         <RootContainer>
           {showSuccess && (
-            <Alert variant="filled" severity="success" style={{ marginTop: 20 }}>
+            <Alert variant="filled" severity="success" sx={{marginBottom: 3}}>
               { msgSuccess }
             </Alert>
           )}
           {showError && (
-            <Alert variant="filled" severity="danger" style={{ marginTop: 20 }}>
+            <Alert variant="filled" severity="error" sx={{marginBottom: 3}}>
               { msgError }
             </Alert>
           )}
           <Box sx={{ width: '100%' }}>
-            <TextField
+            {/* <TextField
               label="Search"
               value={searchTerm}
               onChange={handleSearch}
               margin="normal"
+            /> */}
+            <DataGrid
+              rows={rows}
+              columns={columns}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 5,
+                  },
+                },
+              }}
+              pageSizeOptions={[5]}
+              disableRowSelectionOnClick
             />
-            <Paper sx={{ width: '100%', mb: 2 }}>
-              <TableContainer>
-                  <Table
-                  sx={{ minWidth: 750 }}
-                  aria-labelledby="tableTitle"
-                  >
-                  <EnhancedTableHead
-                      order={order}
-                      orderBy={orderBy}
-                      onRequestSort={handleRequestSort}
-                      rowCount={rows.length}
-                  />
-                  <TableBody>
-                      {visibleRows.map((row) => {
-                      return (
-                        <TableRow
-                        hover
-                        tabIndex={-1}
-                        key={row.id}
-                        sx={{ cursor: 'pointer' }}
-                        >
-                          <TableCell align="center">{row.orderid}</TableCell>
-                          <TableCell align="center">{row.namabarang}</TableCell>
-                          <TableCell align="center">{row.namacust}</TableCell>
-                          <TableCell align="center">{row.checkoutdate}</TableCell>
-                          <TableCell align="center">
-                            <Checkbox checked={row.packingdate !== null} onChange={() => handlePackingdateChange(row.id)} />
-                          </TableCell>
-                          <TableCell align="center">
-                            <Checkbox checked={row.deliverypickupdate !== null} onChange={() => handleDeliverydateChange(row.id)} />
-                          </TableCell>
-                        </TableRow>
-                      );
-                      })}
-                      {emptyRows > 0 && (
-                      <TableRow>
-                        <TableCell colSpan={10} />
-                      </TableRow>
-                      )}
-                  </TableBody>
-                  </Table>
-              </TableContainer>
-              <TablePagination
-                  rowsPerPageOptions={[5, 10, 25]}
-                  component="div"
-                  count={rows.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-              />
-              </Paper>
           </Box>
         </RootContainer>
       </Box>

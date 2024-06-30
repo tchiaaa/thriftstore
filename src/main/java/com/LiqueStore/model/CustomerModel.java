@@ -23,6 +23,13 @@ public class CustomerModel {
     @JoinColumn(name = "accessrightid", referencedColumnName = "id")
     private AccessRightModel accessRight;
 
+    public CustomerModel() {
+    }
+
+    public CustomerModel(int id) {
+        this.id = id;
+    }
+
     public int getId() {
         return id;
     }

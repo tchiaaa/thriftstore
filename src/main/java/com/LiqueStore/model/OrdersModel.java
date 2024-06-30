@@ -20,12 +20,6 @@ public class OrdersModel {
     private Timestamp deliverypickupdate;
     private Timestamp deliverydonedate;
     private String status;
-    @ManyToOne
-    @JoinColumn(name = "customerid", referencedColumnName = "id")
-    private CustomerModel customerId;
-    @ManyToOne
-    @JoinColumn(name = "paymentid", referencedColumnName = "id")
-    private PaymentModel paymentId;
 
     public OrdersModel() {
     }
@@ -116,21 +110,5 @@ public class OrdersModel {
 
     public void setStatus(String status) {
         this.status = status;
-    }
-
-    public CustomerModel getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(CustomerModel customerId) {
-        this.customerId = customerId;
-    }
-
-    public PaymentModel getPaymentId() {
-        return paymentId;
-    }
-
-    public void setPaymentId(PaymentModel paymentId) {
-        this.paymentId = paymentId;
     }
 }

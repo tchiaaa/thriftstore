@@ -16,9 +16,9 @@ const PrivateRoute = ({ roles }) => {
             case 2:
                 return <Navigate to="/supervisor/karyawan/presensi" />;
             case 3:
-                return <Navigate to="/manager/dashboard" />;
+                return <Navigate to="/manager/karyawan/presensi" />;
             case 4:
-                return <Navigate to="/customer/dashboard" />;
+                return <Navigate to="/customer/checkout" />;
             default:
                 return <Navigate to="/login" />;
         }

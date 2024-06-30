@@ -13,13 +13,15 @@ import Toolbar from '@mui/material/Toolbar';
 import Paper from '@mui/material/Paper';
 import { visuallyHidden } from '@mui/utils';
 import axios from 'axios';
-import styled from 'styled-components';
+import styled, { ThemeProvider } from 'styled-components';
 import { Alert, Autocomplete, Backdrop, Button, CssBaseline, Drawer, Grid, Modal, TextField, Typography } from '@mui/material';
 import AdminSidebar from './sidebar';
 import { useSpring, animated } from '@react-spring/web';
 import { useDropzone } from 'react-dropzone';
 import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../authContext';
+import { DataGrid, GridHeader } from '@mui/x-data-grid';
+import dayjs from 'dayjs';
 
 const RootContainer = styled.div`
   display: flex;
@@ -189,6 +191,11 @@ const styleModalTambah = {
   overflowY: 'auto',
 };
 
+const StyledHeader = styled(GridHeader)`
+  background-color: #f0f0f0;
+  color: blue;
+`;
+
 export default function ReviewStok() {
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('calories');
@@ -234,7 +241,7 @@ export default function ReviewStok() {
     if (!name) {
       tempErrors.name = 'Nama barang harus diisi';
     }
-    else if (name.length >= 255) {
+    else if (name.length > 255) {
       tempErrors.name = 'Nama barang maksimal 25 karakter';
     }
     if (!tipeBarang) {
@@ -243,25 +250,25 @@ export default function ReviewStok() {
     if (!customWeight) {
       tempErrors.customWeight = 'Berat barang harus diisi';
     }
-    else if (customWeight.length >= 5) {
+    else if (customWeight.length > 5) {
       tempErrors.customWeight = 'Jenis barang maksimal 25 karakter';
     }
     if (!customCapitalPrice) {
       tempErrors.customCapitalPrice = 'Harga modal barang harus diisi';
     }
-    else if (customCapitalPrice.length >= 15) {
+    else if (customCapitalPrice.length > 15) {
       tempErrors.customCapitalPrice = 'Jenis barang maksimal 25 karakter';
     }
     if (!customDefaultPrice) {
       tempErrors.customDefaultPrice = 'Harga jual barang harus diisi';
     }
-    else if (customDefaultPrice.length >= 15) {
+    else if (customDefaultPrice.length > 15) {
       tempErrors.customDefaultPrice = 'Jenis barang maksimal 25 karakter';
     }
     if (!size) {
       tempErrors.size = 'Ukuran barang harus diisi';
     }
-    else if (size.length >= 5) {
+    else if (size.length > 5) {
       tempErrors.size = 'Jenis barang maksimal 25 karakter';
     }
 
@@ -332,8 +339,6 @@ export default function ReviewStok() {
   const optionsTipe = typeData.map(item => ({
     label: item.nama,
     value: item.id,
-    capital_price: item.capitalprice,
-    default_price: item.defaultprice,
     berat: item.weight,
   }));
 
@@ -343,50 +348,17 @@ export default function ReviewStok() {
     if (newValue) {
       // Mengatur nilai TextField berdasarkan item yang dipilih
       setcustomWeight(newValue.berat.toString());
-      setcustomCapitalPrice(newValue.capital_price.toString());
-      setcustomDefaultPrice(newValue.default_price.toString());
     } else {
       // Reset nilai TextField jika tidak ada yang dipilih
       setcustomWeight('');
-      setcustomCapitalPrice('');
-      setcustomDefaultPrice('');
     }
   };
-
-  const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  // Avoid a layout jump when reaching the last page with empty rows.
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
-
-  const visibleRows = useMemo(
-    () =>
-      stableSort(rows, getComparator(order, orderBy)).slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage,
-      ),
-    [order, orderBy, page, rowsPerPage, rows],
-  );
 
   const handleClose = () => {
     setOpen(false);
     setErrors({});
     setname('');
     settipeBarang('');
-    setemployeeId('');
     setcustomWeight('');
     setcustomCapitalPrice('');
     setcustomDefaultPrice('');
@@ -436,7 +408,6 @@ export default function ReviewStok() {
         setErrors({});
         setname('');
         settipeBarang('');
-        setemployeeId('');
         setcustomWeight('');
         setcustomCapitalPrice('');
         setcustomDefaultPrice('');
@@ -454,6 +425,64 @@ export default function ReviewStok() {
       console.log("Validation failed");
     }
   };
+
+  const columns = [
+    {
+      field: 'itemcode',
+      headerName: 'Kode Barang',
+      flex: 1,
+      editable: true,
+    },
+    {
+      field: 'nama',
+      headerName: 'Nama Barang',
+      flex: 1,
+      editable: true,
+    },
+    {
+      field: 'jenisBarang',
+      headerName: 'Jenis Barang',
+      flex: 1,
+      editable: true,
+    },
+    {
+      field: 'customWeight',
+      headerName: 'Berat (g)',
+      type: 'number',
+      flex: 1,
+      editable: true,
+      valueFormatter: (weight) => `${weight} g`,
+    },
+    {
+      field: 'customCapitalPrice',
+      headerName: 'Harga Modal',
+      type: 'number',
+      flex: 1,
+      editable: true,
+      valueFormatter: (customCapitalPrice) => formatCurrency(customCapitalPrice),
+    },
+    {
+      field: 'customDefaultPrice',
+      headerName: 'Harga Jual',
+      type: 'number',
+      flex: 1,
+      editable: true,
+      valueFormatter: (customDefaultPrice) => formatCurrency(customDefaultPrice),
+    },
+    {
+      field: 'lastupdate',
+      headerName: 'Last Update',
+      type: 'date',
+      flex: 1,
+      editable: true,
+      valueGetter: (lastupdate) => {
+        return lastupdate;
+      },
+      valueFormatter: (lastupdate) => {
+        return dayjs(lastupdate).format('DD/MM/YYYY');
+      }
+    },
+  ];
 
   const handleLogout = () => {
     setOpenLogout(false);
@@ -532,78 +561,20 @@ export default function ReviewStok() {
             </Alert>
           )}
           <Box sx={{ width: '100%' }}>
-              <Paper sx={{ width: '100%', mb: 2 }}>
-              <TableContainer>
-                  <Table
-                  sx={{ minWidth: 750 }}
-                  aria-labelledby="tableTitle"
-                  >
-                  <EnhancedTableHead
-                      order={order}
-                      orderBy={orderBy}
-                      onRequestSort={handleRequestSort}
-                      rowCount={rows.length}
-                  />
-                  <TableBody>
-                      {visibleRows.map((row) => {
-                      return (
-                        <TableRow
-                        hover
-                        tabIndex={-1}
-                        key={row.id}
-                        sx={{ cursor: 'pointer' }}
-                        >
-                          <TableCell align="center">{row.id}</TableCell>
-                          <TableCell align="center">{row.nama}</TableCell>
-                          <TableCell align="center">{row.jenisBarang}</TableCell>
-                          <TableCell align="right">{row.customWeight} g</TableCell>
-                          <TableCell align="right">{formatCurrency(row.customCapitalPrice)}</TableCell>
-                          <TableCell align="right">{formatCurrency(row.customDefaultPrice)}</TableCell>
-                          <TableCell align="right">{row.size} m<sup>3</sup></TableCell>
-                          <TableCell align="center">{row.lastupdate}</TableCell>
-                          <TableCell align="center">
-                          {row.status === "available" && (
-                            <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: '#4caf50'}}>
-                              Available
-                            </Button>
-                          )}
-                          {row.status === "checkout" && (
-                            <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: '#757575' }}>
-                              Checkout
-                            </Button>
-                          )}
-                          {row.status === "payment" && (
-                            <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: '#d32f2f' }}>
-                              Payment
-                            </Button>
-                          )}
-                          {row.status === "sold" && (
-                            <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: 'darkgreen' }}>
-                              Sold
-                            </Button>
-                          )}
-                          </TableCell>
-                        </TableRow>
-                      );
-                      })}
-                      {emptyRows > 0 && (
-                      <TableRow>
-                        <TableCell colSpan={9} />
-                      </TableRow>
-                      )}
-                  </TableBody>
-                  </Table>
-              </TableContainer>
-              <TablePagination
-                  rowsPerPageOptions={[5, 10, 25]}
-                  component="div"
-                  count={rows.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-              />
-              </Paper>
+            <DataGrid
+              rows={rows}
+              columns={columns}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 5,
+                  },
+                },
+              }}
+              pageSizeOptions={[5]}
+              disableRowSelectionOnClick
+              components={{ Header: StyledHeader }}
+            />
           </Box>
           <Button style={btnTambahKaryawan} onClick={handleOpen}>+ Tambah Katalog</Button>
           <Modal

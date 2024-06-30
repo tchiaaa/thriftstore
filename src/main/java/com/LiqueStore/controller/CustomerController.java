@@ -1,51 +1,82 @@
 package com.LiqueStore.controller;
 
-import com.LiqueStore.model.PaymentModel;
-import com.LiqueStore.repository.PaymentRepository;
+import com.LiqueStore.model.*;
+import com.LiqueStore.repository.*;
+import com.LiqueStore.service.RajaOngkirService;
 import com.midtrans.httpclient.error.MidtransError;
 import com.midtrans.service.MidtransSnapApi;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/customer")
 @CrossOrigin
 public class CustomerController {
     private static final Logger logger = Logger.getLogger(ManagerController.class.getName());
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(CustomerController.class);
     private final MidtransSnapApi snapApi;
     @Autowired
     public CustomerController(MidtransSnapApi snapApi) {
         this.snapApi = snapApi;
     }
     @Autowired
-    private PaymentRepository paymentRepository;
+    private CustomerRepository customerRepository;
+    @Autowired
+    private TemporaryOrderRepository temporaryOrderRepository;
+    @Autowired
+    private AddressRepository addressRepository;
+    @Autowired
+    private RajaOngkirService rajaOngkirService;
 
     @PostMapping("/api/payment")
-    public ResponseEntity<?> paymentGetaway(@RequestParam("orderid") String orderid,
+    public ResponseEntity<?> paymentGetaway(@RequestParam("masterorderid") String masterorderid,
+                                            @RequestParam("customerid") int customerid,
+                                            @RequestParam("address") String address,
+                                            @RequestParam("city") String city,
+                                            @RequestParam("zipcode") String zipcode,
                                             @RequestParam("totalprice") int totalprice) throws MidtransError {
         Map<String, Object> transactionDetails = new HashMap<>();
-        transactionDetails.put("order_id", orderid);
+        transactionDetails.put("order_id", masterorderid);
         transactionDetails.put("gross_amount", totalprice);
 
         Map<String, Object> params = new HashMap<>();
         params.put("transaction_details", transactionDetails);
-
-        // Konfigurasi pembayaran yang diizinkan
         params.put("enabled_payments", new String[]{"bca_va", "shopeepay", "qris", "ovo"});
 
-        // Customer details
-//        Map<String, Object> customerDetails = new HashMap<>();
-//        customerDetails.put("first_name", "John");
-//        customerDetails.put("last_name", "Doe");
-//        customerDetails.put("email", "john.doe@example.com");
-//        customerDetails.put("phone", "081234567890");
-//        params.put("customer_details", customerDetails);
+        Optional<CustomerModel> optionalCustomerModel = customerRepository.findById(customerid);
+        if (optionalCustomerModel.isPresent()){
+            CustomerModel customerModel = optionalCustomerModel.get();
+//        Customer details
+            Map<String, Object> customerDetails = new HashMap<>();
+            customerDetails.put("first_name", customerModel.getName());
+            customerDetails.put("email", customerModel.getEmail());
+            customerDetails.put("phone", customerModel.getPhonenumber());
+            params.put("customer_details", customerDetails);
 
+//        Shipping Address
+            Map<String, Object> shippingAddress = new HashMap<>();
+            shippingAddress.put("first_name", customerModel.getUsername());
+            shippingAddress.put("phone", customerModel.getPhonenumber());
+            shippingAddress.put("address", address);
+            shippingAddress.put("city", city);
+            shippingAddress.put("postal_code", zipcode);
+            shippingAddress.put("country_code", "IDN");
+            customerDetails.put("shipping_address", shippingAddress);
+
+
+        }
+
+        String token = snapApi.createTransactionToken(params);
+        Map<String, String> response = new HashMap<>();
+        response.put("token", token);
+        logger.info(String.valueOf(response));
+        return ResponseEntity.ok(response);
         // Item details
 //        List<Map<String, Object>> itemDetails = new ArrayList<>();
 //        Map<String, Object> item1 = new HashMap<>();
@@ -63,16 +94,7 @@ public class CustomerController {
 //        itemDetails.add(item2);
 //        params.put("item_details", itemDetails);
 
-//        Shipping Address
-//        Map<String, Object> shippingAddress = new HashMap<>();
-//        shippingAddress.put("first_name", "John");
-//        shippingAddress.put("last_name", "Doe");
-//        shippingAddress.put("phone", "081234567890");
-//        shippingAddress.put("address", "Jl. Kebon Jeruk");
-//        shippingAddress.put("city", "Jakarta");
-//        shippingAddress.put("postal_code", "12345");
-//        shippingAddress.put("country_code", "IDN");
-//        customerDetails.put("shipping_address", shippingAddress);
+//
 
 //        Billing Address
 //        Map<String, Object> billingAddress = new HashMap<>();
@@ -91,20 +113,125 @@ public class CustomerController {
 //        expiry.put("unit", "hour");
 //        expiry.put("duration", 24);
 //        params.put("expiry", expiry);
-
-        String token = snapApi.createTransactionToken(params);
-
-        Map<String, String> response = new HashMap<>();
-        response.put("token", token);
-        logger.info(String.valueOf(response));
-        return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/addPayment")
-    ResponseEntity<?> addPayment(@RequestParam("payment_type") String paymentType){
-        PaymentModel paymentModel = new PaymentModel();
-        paymentModel.setNama(paymentType);
-        paymentRepository.save(paymentModel);
-        return ResponseEntity.ok(paymentModel);
+    @GetMapping("/getCustData")
+    public ResponseEntity<?> getCustData(@RequestParam(name = "id") int id){
+        boolean cekId = false;
+        List<CustomerModel> getAllCust = customerRepository.findAll();
+        for (int i = 0; i < getAllCust.size(); i++) {
+            if (getAllCust.get(i).getId() == id){
+                cekId = true;
+                break;
+            }
+        }
+        if (cekId){
+            logger.info(String.valueOf(getAllCust));
+            return ResponseEntity.ok(getAllCust);
+        }
+        else{
+            return ResponseEntity.badRequest().body("Employee not found with ID: " + id);
+        }
+    }
+
+    @GetMapping("/getOrderData")
+    public ResponseEntity<?> getOrderData(@RequestParam(name = "id") int customerid){
+        Optional<CustomerModel> listCust = customerRepository.findById(customerid);
+        List<TemporaryOrderModel> listTemporaryOrder = temporaryOrderRepository.findAll();
+        if (listCust.isPresent()){
+            CustomerModel customerModel = listCust.get();
+            List<TemporaryOrderModel> listTempOrder = listTemporaryOrder.stream()
+                    .filter(order -> customerModel.getPhonenumber().contains(order.getPhonenumber()))
+                    .toList();
+            Map<String, Object> listDataOrder = new HashMap<>();
+            listDataOrder.put("orders", listTempOrder); // Store number of orders
+            listDataOrder.put("totalPrice", listTempOrder.stream().mapToInt(TemporaryOrderModel::getTotalprice).sum());
+            listDataOrder.put("totalWeight", listTempOrder.stream().mapToInt(TemporaryOrderModel::getTotalweight).sum());
+            return ResponseEntity.ok(listDataOrder);
+        }
+        else{
+            return ResponseEntity.badRequest().body("customer id tidak ditemukan");
+        }
+    }
+
+    @GetMapping("/getAddressData")
+    public ResponseEntity<?> getAddressData(@RequestParam(name = "id") int id){
+        List<AddressModel> getAddress = addressRepository.findAll();
+        if (getAddress.isEmpty()) {
+            return ResponseEntity.badRequest().body("tidak ada data");
+        }
+
+        // Memfilter alamat berdasarkan id pelanggan
+        List<AddressModel> filteredAddress = getAddress.stream()
+                .filter(address -> address.getCustomer().getId() == id)
+                .collect(Collectors.toList());
+
+        if (!filteredAddress.isEmpty()) {
+            logger.info("address ditemukan");
+            logger.info(String.valueOf(filteredAddress));
+            return ResponseEntity.ok(filteredAddress);
+        } else {
+            return ResponseEntity.badRequest().body("address tidak ditemukan");
+        }
+    }
+
+    @PostMapping("/tambahAddress")
+    public ResponseEntity<?> tambahAddress(@RequestParam(value = "id", required = false) Integer id,
+                                           @RequestParam("addressname") String addressname,
+                                           @RequestParam("addressdetail") String addressdetail,
+                                           @RequestParam("city") String city,
+                                           @RequestParam("state") String state,
+                                           @RequestParam("country") String country,
+                                           @RequestParam("zipcode") int zipcode,
+                                           @RequestParam("note") String note,
+                                           @RequestParam("customerid") int customerid,
+                                           @RequestParam("cityId") int cityid
+                                           ){
+        if (id == null){
+            AddressModel addressModel = new AddressModel();
+            addressModel.setAddressname(addressname);
+            addressModel.setAddressdetail(addressdetail);
+            addressModel.setCity(city);
+            addressModel.setState(state);
+            addressModel.setZipcode(zipcode);
+            addressModel.setNote(note);
+            addressModel.setCustomer(new CustomerModel(customerid));
+            addressModel.setCityid(cityid);
+            addressRepository.save(addressModel);
+            return ResponseEntity.ok("Berhasil Menambah Address");
+        }
+        else{
+            Optional<AddressModel> optionalAddressModel = addressRepository.findById(id);
+            if (optionalAddressModel.isPresent()){
+                AddressModel getAddress = optionalAddressModel.get();
+                getAddress.setAddressname(addressname);
+                getAddress.setAddressdetail(addressdetail);
+                getAddress.setCity(city);
+                getAddress.setState(state);
+                getAddress.setZipcode(zipcode);
+                getAddress.setNote(note);
+                getAddress.setCityid(cityid);
+                addressRepository.save(getAddress);
+                return ResponseEntity.ok("Berhasil Mengubah Address");
+            } else{
+                return ResponseEntity.badRequest().body("address not found");
+            }
+        }
+    }
+
+    @GetMapping("/api/rajaongkir/provinces")
+    public String getProvinces() {
+        return rajaOngkirService.getProvinces();
+    }
+
+    @GetMapping("/api/rajaongkir/cities/{provinceId}")
+    public String getCities(@PathVariable int provinceId) {
+        log.info("masuk pilih kota");
+        return rajaOngkirService.getCities(provinceId);
+    }
+
+    @GetMapping("/api/rajaongkir/cost")
+    public String getShippingCost(@RequestParam int origin, @RequestParam int destination, @RequestParam int weight) {
+        return rajaOngkirService.getShippingCost(origin, destination, weight);
     }
 }

@@ -12,10 +12,9 @@ public class TypeModel {
     private int id;
     private String nama;
     private int weight;
-    private int capitalprice;
-    private int defaultprice;
     private Timestamp lastupdate;
     private String varian;
+    @Column(name = "typecode", unique = true)
     private String typecode;
 
     public TypeModel() {
@@ -47,22 +46,6 @@ public class TypeModel {
 
     public void setWeight(int weight) {
         this.weight = weight;
-    }
-
-    public int getCapitalprice() {
-        return capitalprice;
-    }
-
-    public void setCapitalprice(int capitalprice) {
-        this.capitalprice = capitalprice;
-    }
-
-    public int getDefaultprice() {
-        return defaultprice;
-    }
-
-    public void setDefaultprice(int defaultprice) {
-        this.defaultprice = defaultprice;
     }
 
     public Timestamp getLastupdate() {

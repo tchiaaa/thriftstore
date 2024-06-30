@@ -28,6 +28,7 @@ import ReviewOrderDeliverySupervisor from './supervisor/reviewOrderDelivery';
 import ReviewOrderDeliveryManager from './manager/reviewOrderDelivery';
 import PresensiManager from './manager/presensi';
 import PresensiSupervisor from './supervisor/presensi';
+import Live from './admin/live';
 
 function AppWrapper() {
   const navigate = useNavigate();
@@ -42,9 +43,10 @@ function AppWrapper() {
         <Route element={<PrivateRoute roles={[1]} />}>
           <Route path="/admin/stok/reviewStok" element={<ReviewStokAdmin />} />
           <Route path="/admin/stok/tipeBarang" element={<TipeStokAdmin />} />
+          <Route path="/admin/orderDelivery/live" element={<Live />} />
           <Route path="/admin/orderDelivery/pemesanan" element={<Pemesanan />} />
           <Route path="/admin/orderDelivery/pengiriman" element={<PengirimanAdmin />} />
-          <Route path="/manager/orderDelivery/reviewOrderDelivery" element={<ReviewOrderDeliveryAdmin />} />
+          <Route path="/admin/orderDelivery/reviewOrderDelivery" element={<ReviewOrderDeliveryAdmin />} />
         </Route>
 
         {/* SUPERVISOR */}
@@ -78,6 +80,7 @@ function AppWrapper() {
           <Route path="/customer/checkoutPage" element={<CheckoutPage />} />
           <Route path="/customer/paymentPage" element={<PaymentPage />} />
         </Route>
+        <Route path="/checkout/:orderid" element={<CheckoutPage />} />
         {/* <Route path="/customer/dashboard" element={<DashboardCustomer />} />
         <Route path="/customer/checkoutPage" element={<CheckoutPage />} />
         <Route path="/customer/paymentPage" element={<PaymentPage />} /> */}

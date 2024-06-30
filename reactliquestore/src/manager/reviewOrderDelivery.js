@@ -15,7 +15,7 @@ import { visuallyHidden } from '@mui/utils';
 import axios from 'axios';
 import styled from 'styled-components';
 import { Backdrop, Button, CssBaseline, Drawer, Modal, Typography } from '@mui/material';
-import SupervisorSidebar from './sidebar';
+import ManagerSidebar from './sidebar';
 import { useSpring, animated } from '@react-spring/web';
 import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../authContext';
@@ -241,7 +241,7 @@ export default function ReviewOrderDelivery() {
           }}
           open
         >
-          <SupervisorSidebar />
+          <ManagerSidebar />
         </Drawer>
       </Box>
       <Box

@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Container from '@mui/material/Container';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import axios from 'axios';
 import { Alert, Box, Grid } from '@mui/material';
+import { useLocation } from 'react-router-dom';
 
 const containerStyle = {
   backgroundColor: 'black',
@@ -34,6 +35,8 @@ const btnRegister = {
 };
 
 function RegisterPage() {
+  const [param, setParam] = useState('');
+  const [NomorWa, setNomorWa] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -46,6 +49,33 @@ function RegisterPage() {
   const [message, setMessage] = useState('');
   const [showError, setShowError] = useState(false);
   const [errors, setErrors] = useState({});
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const orderidFromQuery = params.get('orderid');
+  console.log(orderidFromQuery);
+
+  useEffect(() => {
+    if (orderidFromQuery != null){
+      setParam(orderidFromQuery);
+    }
+    else{
+      setParam('');
+    }
+  }, [orderidFromQuery]);
+
+  const fetchDataOrder = async () => {
+    try {
+      const response = await axios.get(`http://localhost:8080/getNomorWa?orderid=${orderidFromQuery}`);
+      console.log(response.data);
+      setNomorWa(response.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchDataOrder()
+  });
 
   const validate = () => {
     let tempErrors = {};
@@ -160,9 +190,15 @@ function RegisterPage() {
         <Box sx={{display: 'flex'}}>
           <Typography>Already have an account?</Typography>&nbsp;&nbsp;&nbsp;
           <Typography sx={{ color: '#FE8A01' }}>
-            <a href="/login" style={{ color: '#FE8A01', textDecoration: 'none' }}>
-              Sign in here
-            </a>
+            {param ? (
+              <a href={`/login?orderid=${orderidFromQuery}`} style={{ color: '#FE8A01', textDecoration: 'none' }}>
+                Sign up here
+              </a>
+            ) : (
+              <a href="/login" style={{ color: '#FE8A01', textDecoration: 'none' }}>
+                Sign up here
+              </a>
+            )}
           </Typography>
         </Box>
         <Grid container spacing={3} marginTop={1}>

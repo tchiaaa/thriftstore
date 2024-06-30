@@ -6,6 +6,7 @@ import com.LiqueStore.model.CustomerModel;
 import com.LiqueStore.model.EmployeeModel;
 import com.LiqueStore.model.TemporaryOrderModel;
 import com.LiqueStore.repository.CustomerRepository;
+import com.LiqueStore.repository.TemporaryOrderRepository;
 import com.LiqueStore.service.LoginService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -32,6 +33,8 @@ public class LoginController {
     private LoginService loginService;
     @Autowired
     private CustomerRepository customerRepository;
+    @Autowired
+    private TemporaryOrderRepository temporaryOrderRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
     @PostMapping("/login")
@@ -87,7 +90,16 @@ public class LoginController {
         addCustomer.setAccessRight(accessRightModel);
         addCustomer.setStatus("active");
         customerRepository.save(addCustomer);
+        TemporaryOrderModel temporaryOrderModel = new TemporaryOrderModel();
+        temporaryOrderModel.setUsername(username);
         logger.info(String.valueOf(addCustomer));
         return ResponseEntity.ok(new Response("berhasil register"));
+    }
+
+    @GetMapping("/getNomorWa")
+    public ResponseEntity<?> getNomorWa(@RequestParam(name = "orderid") String orderid){
+        TemporaryOrderModel temporaryOrderModel = temporaryOrderRepository.findByOrderid(orderid);
+        logger.info(orderid);
+        return ResponseEntity.ok(temporaryOrderModel);
     }
 }

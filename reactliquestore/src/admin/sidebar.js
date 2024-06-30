@@ -62,14 +62,17 @@ const AdminSidebar = () => {
       </ListItem>
       <Collapse in={openOrderDelivery} timeout="auto" unmountOnExit>
         <List component="div" disablePadding style={{ paddingLeft: 20 }}>
+          <ListItem button component={Link} to="/admin/orderDelivery/live">
+            <ListItemText primary="Input Pemesanan Live" />
+          </ListItem>
           <ListItem button component={Link} to="/admin/orderDelivery/pemesanan">
             <ListItemText primary="Input Pemesanan" />
           </ListItem>
           <ListItem button component={Link} to="/admin/orderDelivery/pengiriman">
             <ListItemText primary="Input Pengiriman" />
           </ListItem>
-          <ListItem button component={Link} to="/admin/orderDelivery/review">
-            <ListItemText primary="Review Pengiriman dan Pengiriman" />
+          <ListItem button component={Link} to="/admin/orderDelivery/reviewOrderDelivery">
+            <ListItemText primary="Review Pemesanan dan Pengiriman" />
           </ListItem>
         </List>
       </Collapse>

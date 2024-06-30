@@ -60,7 +60,7 @@ export const AuthProvider = ({ children, navigate }) => {
                 navigate('/manager/karyawan/presensi');
                 break;
             case 4:
-                navigate('/customer/checkoutPage');
+                navigate('/checkout/:orderid');
                 break;
             default:
                 navigate('/login');

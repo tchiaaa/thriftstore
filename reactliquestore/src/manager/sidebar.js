@@ -26,7 +26,7 @@ function Sidebar() {
 
   useEffect(() => {
     if (location.pathname.startsWith('/manager/karyawan')) {
-      setOpenStok(true);
+      setOpenKaryawan(true);
     }
     if (location.pathname.startsWith('/manager/stok')) {
       setOpenStok(true);

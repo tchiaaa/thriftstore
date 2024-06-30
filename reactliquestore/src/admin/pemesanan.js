@@ -1,5 +1,5 @@
-import React, { useContext, useEffect, useMemo, useState } from 'react';
-import { TextField, Button, Grid, Typography, Autocomplete, Toolbar, Box, Drawer, CssBaseline, Modal, Backdrop, Fade, Select, InputLabel, MenuItem, FormControl, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Container, Alert, TableSortLabel, TablePagination } from '@mui/material';
+import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { TextField, Button, Grid, Typography, Autocomplete, Toolbar, Box, Drawer, CssBaseline, Modal, Backdrop, Fade, Select, InputLabel, MenuItem, FormControl, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Container, Alert, TableSortLabel, TablePagination, Chip } from '@mui/material';
 import AdminSidebar from './sidebar';
 import { AccountCircle } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -71,13 +71,16 @@ function stableSort(array, comparator) {
 }
 
 const headCells = [
+  { id: 'id', numeric: false, disablePadding: false, label: 'No' },
   { id: 'pembeli', numeric: false, disablePadding: false, label: 'Username Pembeli' },
   { id: 'phonenumber', numeric: true, disablePadding: false, label: 'Nomor WA' },
   { id: 'kodebarang', numeric: false, disablePadding: false, label: 'Kode Barang' },
   { id: 'harga', numeric: true, disablePadding: false, label: 'Harga' },
   { id: 'berat', numeric: true, disablePadding: false, label: 'Berat' },
   { id: 'waitinglist', numeric: false, disablePadding: false, label: 'Username Waiting List' },
-  { id: 'aksi', numeric: false, disablePadding: false, }
+  { id: 'link', numeric: false, disablePadding: false, label: 'Checkout Link' },
+  { id: 'status', numeric: false, disablePadding: false, label: 'Status' },
+  { id: 'aksi', numeric: false, disablePadding: false, label: 'Aksi' },
 ];
 
 function EnhancedTableHead(props) {
@@ -97,6 +100,7 @@ function EnhancedTableHead(props) {
             // align={headCell.numeric ? 'right' : 'left'}
             padding={headCell.disablePadding ? 'none' : 'normal'}
             sortDirection={orderBy === headCell.id ? order : false}
+            sx={{ backgroundColor: props.tableColour, color: props.tableColour === '#000000' ? '#FFFFFF' : 'inherit' }}
           >
             <TableSortLabel
               active={orderBy === headCell.id}
@@ -131,15 +135,21 @@ const Pemesanan = () => {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [errors, setErrors] = useState({});
-  const navigate = useNavigate('');
   const [colourData, setColourData] = useState([]);
   const [itemData, setItemData] = useState([]);
   const [openLogout, setOpenLogout] = useState(false);
   const handleOpenLogout = () => setOpenLogout(true);
   const handleCloseLogout = () => setOpenLogout(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [msgSuccess, setMsgSuccess] = useState('');
   const [showError, setShowError] = useState(false);
   const [msgError, setMsgError] = useState();
-  const [tempPrice, settempPrice] = useState('');
+  const [openClearAll, setOpenClearAll] = useState(false);
+  const handleOpenClearAll = () => setOpenClearAll(true);
+  const handleCloseClearAll = () => setOpenClearAll(false);
+  const [openSubmitAll, setOpenSubmitAll] = useState(false);
+  const handleOpenSubmitAll = () => setOpenSubmitAll(true);
+  const handleCloseSubmitAll = () => setOpenSubmitAll(false);
   const { auth, logout } = useAuth();
   const fullname = auth.user ? auth.user.fullname : '';
   // bagian add colour
@@ -147,15 +157,15 @@ const Pemesanan = () => {
   const handleOpenTambah = () => setOpenTambah(true);
   const handleCloseTambah = () => setOpenTambah(false);
   const [namaColour, setNamaColour] = useState('');
-  const [showSuccessInsertColour, setShowSuccessInsertColour] = useState(false);
-  const [messageInsertColour, setMessageInsertColour] = useState('');
+  const [hexColour, setHexColour] = useState('#FFFFFF');
   const [colourOrder, setColourOrder] = useState('');
-  
+  const [tableColour, setTableColour] = useState('#FFFFFF');
+  const [orderData, setOrderData] = useState([]);
   // const [rows, setRows] = useState([
   //   { id: 1, username: '', phonenumber: '', itemcode: [], totalprice: 0, totalweight: 0, waitinglist: '' },
   // ]);
   const [rows, setRows] = useState(
-    Array.from({ length: 10 }, (_, index) => ({
+    Array.from({ length: 100 }, (_, index) => ({
       id: index,
       username: '',
       phonenumber: '',
@@ -176,10 +186,49 @@ const Pemesanan = () => {
     setPage(newPage);
   };
 
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+  const updateRows = (data) => {
+    // Fungsi untuk membuat baris kosong
+    const createEmptyRow = (index) => ({
+      id: index,
+      kodepemesanan: '',
+      username: '',
+      phonenumber: '',
+      itemcode: [],
+      totalprice: 0,
+      totalweight: 0,
+      waitinglist: '',
+    });
+
+    // Inisialisasi array untuk menampung baris yang akan diperbarui
+    let updatedRows = Array.from({ length: 100 }, (_, index) => {
+      if (data && index < data.length && data[index]) {
+        // Jika ada data dan indeks masih dalam rentang data yang ada
+        const rowData = data[index];
+        return {
+          id: rowData.id,
+          kodepemesanan: rowData.kodepemesanan || '',
+          username: rowData.username || '',
+          phonenumber: rowData.phonenumber || '',
+          itemcode: rowData.itemidall || [],
+          totalprice: rowData.totalprice || 0,
+          totalweight: rowData.totalweight || 0,
+          waitinglist: rowData.waitinglist || '',
+          link: rowData.link || '',
+          status: rowData.status || '',
+        };
+      } else {
+        // Jika tidak ada data atau indeks di luar rentang data yang ada, buat baris kosong
+        return createEmptyRow(index);
+      }
+    });
+    setRows(updatedRows);
   };
+  
+  // useEffect untuk memantau perubahan orderData
+  useEffect(() => {
+    console.log(orderData);
+    updateRows(orderData);
+  }, [orderData]);
 
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
@@ -248,32 +297,48 @@ const Pemesanan = () => {
     name: item.name,
     id: item.id,
     colourcode: item.colourcode,
+    colourhex: item.colourhex,
   }));
 
   const handleAutocompleteColourChange = async (event, newValue) => {
-    console.log(newValue.id);
-    setColourOrder(newValue.id);
+    console.log(newValue);
+    if (newValue == null){
+      setColourOrder('');
+      setTableColour('#FFFFFF');
+    }
+    else {
+      setColourOrder(newValue.id);
+      setTableColour(newValue.colourhex);
+      setOrderData([]);
+      try {
+        const response = await axios.get(`http://localhost:8080/admin/getSelectedColour/${newValue.id}`);
+        console.log(response.data);
+        getStatus(response.data);
+        setOrderData(response.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        setOrderData([]);
+      }
+    }
   };
 
-  // const handleChangeColour = async (id) => {
-  //   try {
-  //     const response = await axios.get(`http://localhost:8080/admin/pilihWarna/${id}`);
-  //     console.log(response.data);
-  //     // setChoosenEmployee(response.data);
-  //     // setJamMasuk(response.data[0].jam_masuk);
-  //     // setJadwalLibur(response.data[0].jadwal_libur);
-  //   } catch (error) {
-  //     console.error('Error fetching data:', error);
-  //   }
-  // };
+  const getStatus = async (data) => {
+    try {
+        console.log(data);
+        const response = await axios.post('http://localhost:8080/admin/checkUpdateTransaction', data);
+        console.log(response.data);
+    } catch (error) {
+        console.error("Error fetching transaction status", error);
+    }
+  };
 
-  const handleInputChange = (id, field, value) => {
+  const handleInputChange = useCallback((id, field, value) => {
     setRows((prevRows) =>
       prevRows.map((row) =>
         row.id === id ? { ...row, [field]: value } : row
       )
     );
-  };
+  }, []);
 
   const optionsItem = itemData.map(item => ({
     label: item.name,
@@ -319,7 +384,7 @@ const Pemesanan = () => {
     console.log(id);
     const row = rows.find(row => row.id === id);
     const formData = new FormData();
-    formData.append(`id`, row.id+1);
+    formData.append(`id`, row.id);
     formData.append(`username`, row.username);
     formData.append(`phonenumber`, row.phonenumber);
     formData.append(`itemidall`, row.itemcode);
@@ -338,56 +403,92 @@ const Pemesanan = () => {
       const response = await axios.post('http://localhost:8080/admin/inputTemporaryOrder', formData);
       console.log(response.data);
       dataOrderId = response.data.orderid;
+      setShowSuccess(true);
+      setMsgSuccess("Berhasil Menyimpan Order Sementara");
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 5000);
     } catch (error) {
-      setErrors(error.response);
+      setShowError(false);
+      setMsgError("Gagal Menyimpan Order Sementara");
+      setTimeout(() => {
+        setShowError(false);
+      }, 5000);
     }
-    
-    // if (row.phonenumber !== '') {
-    //   const formattedPhoneNumber = `+${row.phoneNumber}`; // Format to international format
+  };
 
-    //   // Replace YOUR_ACCESS_TOKEN with your actual WhatsApp Business API access token
-    //   const accessToken = 'EAAMhTEZCSFbQBOwoCo6N6dEIZA5EZCiPNndO6kiGbVS2ko5kCDzkDm978ZABG2WimDoGGmMDVlwlHPZAwe6EsKGnuyqHZAieGCQ31eUJSjkZANXx10fn8KEKasfZBETogWsRH0FkIPBgrIwZAjJtKW8ey4eZCt1UrJaBUtb6UcJrsfyrwqOwxDFDv0mIc3t33oPcfE';
+  const handleConfirmClearAll = async (e) => {
+    e.preventDefault();
+    console.log(orderData);
+    try {
+      const response = await axios.post('http://localhost:8080/admin/deleteTemporaryOrder', orderData);
+      console.log(response.data);
+      setOpenClearAll(false);
+      setOrderData([]);
+      setShowSuccess(true);
+      setMsgSuccess("Berhasil Membersihkan Semua Data Temporary Order");
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 5000);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setOpenClearAll(false);
+      setShowError(true);
+      setMsgError("Gagal Membersihkan Semua Data Temporary Order");
+      setTimeout(() => {
+        setShowError(false);
+      }, 5000);
+    }
+  };
 
-    //   // Construct the WhatsApp API request URL
-    //   const apiUrl = `https://graph.facebook.com/v13.0/messages?access_token=${accessToken}`;
-    //   const checkoutPageURL = encodeURIComponent(`http://localhost:3000/customer/checkoutPage/${dataOrderId}`); // URL-encode the checkout page URL
-    //   // Construct the WhatsApp message
-    //   const whatsappMessage = `Hi there,\n\nYou can continue your checkout process here:\n ${checkoutPageURL}`;
-    //   // Prepare the request body
-    //   const requestBody = {
-    //     messaging_product: 'whatsapp',
-    //     to: formattedPhoneNumber,
-    //     text: {
-    //       body: `${whatsappMessage}`,
-    //     },
-    //   };
-      
-
-    //   try {
-    //     const response = await axios.post(apiUrl, requestBody);
-    //     console.log(response.data); // Display the response
-    //   } catch (error) {
-    //     console.error('Error sending message:', error.message);
-    //   }
-    // }
+  const handleConfirmSubmitAll = async (e) => {
+    e.preventDefault();
+    console.log(orderData);
+    try {
+      const response = await axios.post('http://localhost:8080/admin/inputOrder', orderData);
+      console.log(response.data);
+      setOpenSubmitAll(false);
+      setOrderData([]);
+      setShowSuccess(true);
+      setMsgSuccess("Berhasil Menambah Order");
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 5000);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setOpenSubmitAll(false);
+      setShowError(true);
+      setMsgError("Gagal Menambah Order");
+      setTimeout(() => {
+        setShowError(false);
+      }, 5000);
+    }
   };
 
   const handleAddColour = async (e) => {
     e.preventDefault();
     try {
       const name = namaColour;
-      const response = await axios.post('http://localhost:8080/admin/tambahWarna', { name });
+      const colourhex = hexColour;
+      const response = await axios.post('http://localhost:8080/admin/tambahWarna', { name, colourhex });
       console.log(response.data);
       setOpenTambah(false);
-      setShowSuccessInsertColour(true);
-      setMessageInsertColour("Berhasil Menambah Warna");
+      setShowSuccess(true);
+      setMsgSuccess("Berhasil Menambah Warna");
       setTimeout(() => {
-        setShowSuccessInsertColour(false);
+        setShowSuccess(false);
       }, 5000);
       fetchDataColour();
       setNamaColour('');
+      setHexColour('');
     } catch (error) {
-      setErrors(error.response);
+      setOpenTambah(false);
+      setShowError(false);
+      setMsgError("Gagal Menambah Order");
+      setTimeout(() => {
+        setShowError(false);
+      }, 5000);
+      setNamaColour('');
     }
   };
 
@@ -461,13 +562,13 @@ const Pemesanan = () => {
             alignItems: 'center',
           }}
         >
-          {showSuccessInsertColour && (
-            <Alert variant="filled" severity="success" style={{ marginTop: 20 }}>
-              { messageInsertColour }
+          {showSuccess && (
+            <Alert variant="filled" severity="success" sx={{marginBottom: 3}}>
+              { msgSuccess }
             </Alert>
           )}
           {showError && (
-            <Alert variant="filled" severity="danger" style={{ marginTop: 20 }}>
+            <Alert variant="filled" severity="error" sx={{marginBottom: 3}}>
               { msgError }
             </Alert>
           )}
@@ -488,24 +589,26 @@ const Pemesanan = () => {
           </Box>
           <Box sx={{ width: '100%', marginTop: 5 }}>
             <TableContainer component={Paper} sx={{maxHeight: 370}}>
-              <Table stickyHeader style={{width: '150%'}}>
+              <Table stickyHeader>
                 <EnhancedTableHead
                     order={order}
                     orderBy={orderBy}
                     onRequestSort={handleRequestSort}
                     rowCount={rows.length}
+                    tableColour={tableColour}
                 />
+                {colourOrder ? (
                 <TableBody>
                   {visibleRows.map((row) => (
                     <TableRow key={row.id}>
-                      {/* <TableCell>
+                      <TableCell width={'5%'}>
                         <TextField
+                          disabled
                           fullWidth
-                          value={row.id}
-                          onChange={(e) => handleInputChange(row.id, 'id', e.target.value)}
+                          value={row.kodepemesanan}
                         />
-                      </TableCell> */}
-                      <TableCell>
+                      </TableCell>
+                      <TableCell width={'15%'}>
                         <TextField
                           fullWidth
                           value={row.username}
@@ -527,11 +630,12 @@ const Pemesanan = () => {
                           options={optionsItem}
                           getOptionLabel={(option) => option.itemcode}
                           renderInput={(params) => <TextField {...params} />}
-                          filterSelectedOptions
+                          value={row.itemidall}
+                          // value={optionsItem.find((option) => option.itemcode === row.itemidall)}
                           onChange={(event, newValue) => handleAutocompleteItemChange(event, newValue, row.id)}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell width={'12%'}>
                         <TextField
                           fullWidth
                           type="number"
@@ -539,7 +643,7 @@ const Pemesanan = () => {
                           onChange={(e) => handleInputChange(row.id, 'totalprice', e.target.value)}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell width={'10%'}>
                         <TextField
                           fullWidth
                           type="number"
@@ -555,26 +659,154 @@ const Pemesanan = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        <Button onClick={() => handleSubmit(row.id)} variant="contained">
+                        <TextField
+                          InputProps={{
+                            readOnly: true,
+                          }}
+                          fullWidth
+                          value={row.link}
+                        />
+                      </TableCell>
+                      <TableCell width={'20%'}>
+                        {row.status === "Payment Not Done" && (
+                          <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: 'red', textTransform: 'capitalize', maxHeight: 50}}>
+                            Payment Not Done
+                          </Button>
+                        )}
+                        {row.status === "On Packing" && (
+                          <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: 'orange', textTransform: 'capitalize', maxHeight: 50}}>
+                            On Packing
+                          </Button>
+                        )}
+                        {row.status === "On Pick Up" && (
+                          <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: 'brown', textTransform: 'capitalize', maxHeight: 50}}>
+                            On Pick Up
+                          </Button>
+                        )}
+                        {row.status === "On Delivery" && (
+                          <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: 'yellow', textTransform: 'capitalize', maxHeight: 50}}>
+                            On Delivery
+                          </Button>
+                        )}
+                        {row.status === "Done" && (
+                          <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: 'green', textTransform: 'capitalize', maxHeight: 50}}>
+                            Done
+                          </Button>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="contained" onClick={() => handleSubmit(row.id)} >
                           Save
                         </Button>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
+                ) : (
+                  <TableBody>
+                    <TableRow>
+                      <TableCell rowSpan={10}>Pilih warna terlebih dahulu untuk menampilkan isi tabel</TableCell>
+                    </TableRow>
+                  </TableBody>
+                )}
               </Table>
             </TableContainer>
-            <TablePagination
-                rowsPerPageOptions={[5, 10, 25]}
+            {colourOrder ? (
+              <Box display="flex" justifyContent="space-between" alignItems="center">
+                <Box>
+                  <Button onClick={handleOpenClearAll} variant="contained" color="warning">
+                    Clear All
+                  </Button>
+                  &nbsp;&nbsp;&nbsp;
+                  <Button onClick={handleOpenSubmitAll} variant="contained" color="success">
+                    Submit All
+                  </Button>
+                </Box>
+                {/* ini modal konfirmasi clear all */}
+                <Modal
+                  aria-labelledby="spring-modal-title"
+                  aria-describedby="spring-modal-description"
+                  open={openClearAll}
+                  onClose={handleCloseClearAll}
+                  closeAfterTransition
+                  slots={{ backdrop: Backdrop }}
+                  slotProps={{
+                    backdrop: {
+                      TransitionComponent: Fade,
+                    },
+                  }}
+                >
+                  <Fade in={openClearAll}>
+                    <Box sx={styleModal}>
+                      <Typography id="spring-modal-title" variant="h6" component="h2">
+                        Apakah anda yakin ingin menghapus semua data di tabel?
+                      </Typography>
+                      <Box sx={{ mt: 2 }}>
+                        <Button variant="outlined" onClick={handleConfirmClearAll} sx={{ mr: 2, backgroundColor: '#FE8A01', color: 'white' }}>
+                          Ya
+                        </Button>
+                        <Button variant="outlined" onClick={handleCloseClearAll}>
+                          Tidak
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Fade>
+                </Modal>
+
+                {/* ini modal konfirmasi submit all */}
+                <Modal
+                  aria-labelledby="spring-modal-title"
+                  aria-describedby="spring-modal-description"
+                  open={openSubmitAll}
+                  onClose={handleCloseSubmitAll}
+                  closeAfterTransition
+                  slots={{ backdrop: Backdrop }}
+                  slotProps={{
+                    backdrop: {
+                      TransitionComponent: Fade,
+                    },
+                  }}
+                >
+                  <Fade in={openSubmitAll}>
+                    <Box sx={styleModal}>
+                      <Typography id="spring-modal-title" variant="h6" component="h2">
+                      Apakah anda yakin ingin menambahkan semua data di tabel?
+                      </Typography>
+                      <Box sx={{ mt: 2 }}>
+                        <Button variant="outlined" onClick={handleConfirmSubmitAll} sx={{ mr: 2, backgroundColor: '#FE8A01', color: 'white' }}>
+                          Ya
+                        </Button>
+                        <Button variant="outlined" onClick={handleCloseSubmitAll}>
+                          Tidak
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Fade>
+                </Modal>
+                <TablePagination
+                  rowsPerPageOptions={[]}
+                  component="div"
+                  count={rows.length}
+                  rowsPerPage={rowsPerPage}
+                  page={page}
+                  onPageChange={handleChangePage}
+                  labelRowsPerPage=""
+                />
+              </Box>
+            ) : (
+              <TablePagination
+                rowsPerPageOptions={[]}
                 component="div"
                 count={rows.length}
                 rowsPerPage={rowsPerPage}
                 page={page}
                 onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-            />
+                labelRowsPerPage=""
+              />
+            )}
+            
           </Box>
-          
+          <br></br>
           <Button style={btnTambahColour} onClick={handleOpenTambah}>+ Tambah Warna</Button>
             
             {/* ini modal tambah warna */}
@@ -595,13 +827,33 @@ const Pemesanan = () => {
                 <Box sx={styleModalTambah}>
                   <form>
                     <Grid container spacing={3}>
-                      <Grid item xs={12}>
+                      <Grid item xs={10}>
                         <Typography>Nama Warna *</Typography>
                         <TextField
                           fullWidth
                           value={namaColour}
                           error={!!errors.namaColour}
                           onChange={(e) => setNamaColour(e.target.value)}
+                        />
+                      </Grid>
+                      <Grid item xs={2}>
+                        <Typography>&nbsp;</Typography>
+                        <TextField
+                          type='color'
+                          value={hexColour}
+                          onChange={(e) => setHexColour(e.target.value)}
+                          fullWidth
+                          InputProps={{
+                            sx: {
+                              padding: 0,
+                              '& input[type="color"]': {
+                                height: 60,
+                                padding: 0,
+                                border: 'none',
+                                cursor: 'pointer',
+                              },
+                            },
+                          }}
                         />
                       </Grid>
                       <Grid item xs={12}>

@@ -38,9 +38,12 @@ public class FileStorageService {
         for (MultipartFile file : files) {
 //            String fileName = UUID.randomUUID().toString() + "-" + file.getOriginalFilename();
             String fileName = file.getOriginalFilename();
+            if (fileName == null) {
+                throw new RuntimeException("File name is null. Please provide a valid file name.");
+            }
             try {
                 Path targetLocation = this.fileStorageLocation.resolve(fileName);
-                Files.copy(file.getInputStream(), targetLocation);
+                Files.copy(file.getInputStream(), targetLocation, StandardCopyOption.REPLACE_EXISTING);
                 fileNames.add(fileName);
             } catch (IOException ex) {
                 throw new RuntimeException("Could not store file " + fileName + ". Please try again!", ex);

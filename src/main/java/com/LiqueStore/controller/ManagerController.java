@@ -3,15 +3,18 @@ package com.LiqueStore.controller;
 import com.LiqueStore.Response;
 import com.LiqueStore.model.*;
 import com.LiqueStore.repository.*;
+import com.LiqueStore.service.FileStorageService;
 import com.LiqueStore.service.LoginService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.sql.Date;
 import java.sql.Time;
@@ -50,6 +53,8 @@ public class ManagerController {
     private TypeRepository typeRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
+    @Autowired
+    private FileStorageService fileStorageService;
 
     @PostMapping("/clockin")
     public ResponseEntity<?> clockin(@RequestBody String passcode) throws JsonProcessingException {
@@ -359,6 +364,85 @@ public class ManagerController {
             logger.info(String.valueOf(employeeData));
             return ResponseEntity.ok(employeeData);
         }
+    }
+
+    @GetMapping("/dataInventori")
+    public ResponseEntity<?> dataInventori() {
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy");
+        List<ItemModel> getAllItem = itemRepository.findAll();
+        logger.info(String.valueOf(getAllItem));
+        List<Map<String, Object>> itemData = getAllItem.stream().map(item -> {
+            Map<String, Object> empData = new HashMap<>();
+            empData.put("id", item.getId());
+            empData.put("nama", item.getName());
+            empData.put("jenisBarang", item.getTypeId().getNama());
+            empData.put("customWeight", item.getCustomweight());
+            empData.put("customCapitalPrice", item.getCustomcapitalprice());
+            empData.put("customDefaultPrice", item.getCustomdefaultprice());
+            empData.put("size", item.getSize());
+            Timestamp lastUpdateDate = item.getLastupdate();
+            if (lastUpdateDate != null) {
+                LocalDateTime lastUpdateDateTime = LocalDateTime.ofInstant(lastUpdateDate.toInstant(), ZoneId.systemDefault());
+                empData.put("lastupdate", lastUpdateDateTime.format(dateFormatter));
+            } else {
+                empData.put("lastupdate", null);
+            }
+            empData.put("status", item.getStatus());
+            return empData;
+        }).collect(Collectors.toList());
+        logger.info(String.valueOf(itemData));
+        return ResponseEntity.ok(itemData);
+    }
+
+    @GetMapping("/daftarTipe")
+    public ResponseEntity<?> daftarTipe(){
+        List<TypeModel> getAllType = typeRepository.findAll();
+        logger.info(String.valueOf(getAllType));
+        return ResponseEntity.ok(getAllType);
+    }
+
+    @PostMapping(value = "/tambahInventori", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> tambahInventori(@RequestParam("name") String name,
+                                             @RequestParam("typeId") int typeId,
+                                             @RequestParam("employeeId") int employeeId,
+                                             @RequestParam("customWeight") int customWeight,
+                                             @RequestParam("customCapitalPrice") int customCapitalPrice,
+                                             @RequestParam("customDefaultPrice") int customDefaultPrice,
+                                             @RequestParam("size") int size,
+                                             @RequestParam("files") List<MultipartFile> files) {
+        Optional<TypeModel> optionalTypeModel = typeRepository.findById(typeId);
+        String itemCode;
+        if (optionalTypeModel.isPresent()) {
+            TypeModel getTypeData = optionalTypeModel.get();
+            LocalDate currentDate = LocalDate.now();
+            // Dapatkan dua digit terakhir dari tahun dan bulan saat ini
+            int year = currentDate.getYear();
+            String yearString = String.valueOf(year).substring(2); // Mendapatkan dua digit terakhir dari tahun
+            String monthString = String.format("%02d", currentDate.getMonthValue()); // Mendapatkan bulan dengan dua digit
+            String prefix = getTypeData.getTypecode() + yearString + monthString;
+            List<ItemModel> existingTypeCode = itemRepository.findByItemcodeStartingWith(prefix);
+            String sequenceString = String.format("%05d", existingTypeCode.size() + 1);
+            logger.info(sequenceString);
+            itemCode = prefix + sequenceString;
+            logger.info(itemCode);
+        } else {
+            return ResponseEntity.badRequest().body("Employee not found with ID: " + typeId);
+        }
+        List<String> fileNames = fileStorageService.storeFiles(files);
+        ItemModel itemModel = new ItemModel();
+        itemModel.setName(name);
+        itemModel.setTypeId(new TypeModel(typeId));
+        itemModel.setEmployeeId(new EmployeeModel(employeeId));
+        itemModel.setItemcode(itemCode);
+        itemModel.setCustomweight(customWeight);
+        itemModel.setCustomcapitalprice(customCapitalPrice);
+        itemModel.setCustomdefaultprice(customDefaultPrice);
+        itemModel.setSize(size);
+        itemModel.setFiles(fileNames);
+        itemModel.setStatus("available");
+        ItemModel savedItem = itemRepository.save(itemModel);
+        logger.info(String.valueOf(savedItem));
+        return ResponseEntity.ok(savedItem);
     }
 
     @GetMapping("/dataOrder")

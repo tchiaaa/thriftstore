@@ -2,6 +2,7 @@ package com.LiqueStore.model;
 
 import jakarta.persistence.*;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 @Entity
@@ -10,6 +11,7 @@ public class TemporaryOrderModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
+    @Column(name = "orderid", unique = true)
     private String orderid;
     private String username;
     private String phonenumber;
@@ -17,6 +19,11 @@ public class TemporaryOrderModel {
     private int totalweight;
     private List<String> waitinglist;
     private List<String> itemidall;
+    private String link;
+    private Timestamp paymentdate;
+    private Timestamp checkoutdate;
+    private String status;
+    private String masterorderid;
     @ManyToOne
     @JoinColumn(name = "colourid", referencedColumnName = "id")
     private OrderColourModel colourid;
@@ -91,5 +98,45 @@ public class TemporaryOrderModel {
 
     public void setItemidall(List<String> itemidall) {
         this.itemidall = itemidall;
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public void setLink(String link) {
+        this.link = link;
+    }
+
+    public Timestamp getPaymentdate() {
+        return paymentdate;
+    }
+
+    public void setPaymentdate(Timestamp paymentdate) {
+        this.paymentdate = paymentdate;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Timestamp getCheckoutdate() {
+        return checkoutdate;
+    }
+
+    public void setCheckoutdate(Timestamp checkoutdate) {
+        this.checkoutdate = checkoutdate;
+    }
+
+    public String getMasterorderid() {
+        return masterorderid;
+    }
+
+    public void setMasterorderid(String masterorderid) {
+        this.masterorderid = masterorderid;
     }
 }
