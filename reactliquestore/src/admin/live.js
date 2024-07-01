@@ -4,11 +4,12 @@ import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
 import axios from 'axios';
 import styled from 'styled-components';
-import { Alert, Autocomplete, Backdrop, Button, CssBaseline, Drawer, FormControl, Grid, Modal, TextField, Typography } from '@mui/material';
+import { Alert, Autocomplete, Backdrop, Button, CssBaseline, Drawer, FormControl, FormHelperText, Grid, InputAdornment, Modal, TextField, Typography } from '@mui/material';
 import AdminSidebar from './sidebar';
 import { useSpring, animated } from '@react-spring/web';
 import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../authContext';
+import { NumericFormat } from 'react-number-format';
 
 const RootContainer = styled.div`
   display: flex;
@@ -93,7 +94,7 @@ export default function Live() {
   const handleOpenLogout = () => setOpenLogout(true);
   const handleCloseLogout = () => setOpenLogout(false);
   const { auth, logout } = useAuth();
-  const getFullname = auth.user ? auth.user.fullname : '';
+  const getusername = auth.user ? auth.user.username : '';
 
   const validate = () => {
     let tempErrors = {};
@@ -225,7 +226,7 @@ export default function Live() {
         const whatsappUrl = `whatsapp://send?phone=${internationalPhoneNumber}&text=${encodedMessage}`;
 
         // Open WhatsApp Web in new tab
-        window.location.href = whatsappUrl;
+        // window.location.href = whatsappUrl;
         const response2 = await axios.post(`http://localhost:8080/admin/simpanCheckoutLink/${response.data.orderid}`);
         console.log(response2.data);
         setShowSuccess(true);
@@ -288,7 +289,7 @@ export default function Live() {
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle />}>
-          {getFullname}
+          {getusername}
         </Button>
         <Modal
           aria-labelledby="spring-modal-title"
@@ -376,17 +377,26 @@ export default function Live() {
                 />
               </Grid>
               <Grid item xs={12}>
-                <Typography>Harga (Rp.) *</Typography>
-                <TextField
+                <Typography>Harga *</Typography>
+                <NumericFormat
                   fullWidth
-                  type='number'
                   autoComplete='off'
                   value={TotalPrice}
+                  onValueChange={(values) => setTotalPrice(values.floatValue)}
+                  thousandSeparator='.'
+                  decimalSeparator=','
+                  customInput={TextField}
                   error={!!errors.TotalPrice}
-                  helperText={errors.TotalPrice}
-                  FormHelperTextProps={{ sx: { color: 'red' } }}
-                  onChange={(e) => setTotalPrice(e.target.value)}
+                  InputProps={{
+                    startAdornment: <InputAdornment position="start">Rp</InputAdornment>,
+                  }}
+                  variant="outlined"
                 />
+                {!!errors.TotalPrice && (
+                  <FormHelperText error sx={{ color: 'red' }}>
+                    {errors.TotalPrice}
+                  </FormHelperText>
+                )}
               </Grid>
               <Grid item xs={12}>
                 <Typography>Nomor WA *</Typography>

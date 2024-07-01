@@ -10,6 +10,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -32,6 +34,8 @@ public class CustomerController {
     @Autowired
     private AddressRepository addressRepository;
     @Autowired
+    private DetailOrdersRepository detailOrdersRepository;
+    @Autowired
     private RajaOngkirService rajaOngkirService;
 
     @PostMapping("/api/payment")
@@ -40,6 +44,8 @@ public class CustomerController {
                                             @RequestParam("address") String address,
                                             @RequestParam("city") String city,
                                             @RequestParam("zipcode") String zipcode,
+                                            @RequestParam("weight") int weight,
+                                            @RequestParam("deliveryprice") int deliveryprice,
                                             @RequestParam("totalprice") int totalprice) throws MidtransError {
         Map<String, Object> transactionDetails = new HashMap<>();
         transactionDetails.put("order_id", masterorderid);
@@ -54,7 +60,7 @@ public class CustomerController {
             CustomerModel customerModel = optionalCustomerModel.get();
 //        Customer details
             Map<String, Object> customerDetails = new HashMap<>();
-            customerDetails.put("first_name", customerModel.getName());
+            customerDetails.put("first_name", customerModel.getUsername());
             customerDetails.put("email", customerModel.getEmail());
             customerDetails.put("phone", customerModel.getPhonenumber());
             params.put("customer_details", customerDetails);
@@ -68,9 +74,16 @@ public class CustomerController {
             shippingAddress.put("postal_code", zipcode);
             shippingAddress.put("country_code", "IDN");
             customerDetails.put("shipping_address", shippingAddress);
-
-
         }
+
+        DetailOrdersModel addDetailOrders = new DetailOrdersModel();
+        addDetailOrders.setOrderid(masterorderid);
+        addDetailOrders.setTotalweight(weight);
+        addDetailOrders.setDeliveryprice(deliveryprice);
+        addDetailOrders.setTotalprice(totalprice);
+        addDetailOrders.setPaymentdate(Timestamp.valueOf(LocalDateTime.now()));
+        log.info("ini data detail order {}", addDetailOrders);
+        detailOrdersRepository.save(addDetailOrders);
 
         String token = snapApi.createTransactionToken(params);
         Map<String, String> response = new HashMap<>();
@@ -135,23 +148,20 @@ public class CustomerController {
     }
 
     @GetMapping("/getOrderData")
-    public ResponseEntity<?> getOrderData(@RequestParam(name = "id") int customerid){
-        Optional<CustomerModel> listCust = customerRepository.findById(customerid);
-        List<TemporaryOrderModel> listTemporaryOrder = temporaryOrderRepository.findAll();
-        if (listCust.isPresent()){
-            CustomerModel customerModel = listCust.get();
-            List<TemporaryOrderModel> listTempOrder = listTemporaryOrder.stream()
-                    .filter(order -> customerModel.getPhonenumber().contains(order.getPhonenumber()))
-                    .toList();
-            Map<String, Object> listDataOrder = new HashMap<>();
-            listDataOrder.put("orders", listTempOrder); // Store number of orders
-            listDataOrder.put("totalPrice", listTempOrder.stream().mapToInt(TemporaryOrderModel::getTotalprice).sum());
-            listDataOrder.put("totalWeight", listTempOrder.stream().mapToInt(TemporaryOrderModel::getTotalweight).sum());
-            return ResponseEntity.ok(listDataOrder);
-        }
-        else{
-            return ResponseEntity.badRequest().body("customer id tidak ditemukan");
-        }
+    public ResponseEntity<?> getOrderData(@RequestParam(name = "id") String orderid){
+        TemporaryOrderModel temporaryOrderModel = temporaryOrderRepository.findByOrderid(orderid);
+        String masterOrderId = temporaryOrderModel.getMasterorderid();
+        List<TemporaryOrderModel> listTemporaryOrder = temporaryOrderRepository.findAllByMasterorderid(masterOrderId);
+        // Hitung total harga dan total berat
+        int totalPrice = listTemporaryOrder.stream().mapToInt(TemporaryOrderModel::getTotalprice).sum();
+        int totalWeight = listTemporaryOrder.stream().mapToInt(TemporaryOrderModel::getTotalweight).sum();
+
+        // Buat map untuk mengembalikan data
+        Map<String, Object> result = new HashMap<>();
+        result.put("listTempOrder", listTemporaryOrder);
+        result.put("totalPrice", totalPrice);
+        result.put("totalWeight", totalWeight);
+        return ResponseEntity.ok(result);
     }
 
     @GetMapping("/getAddressData")

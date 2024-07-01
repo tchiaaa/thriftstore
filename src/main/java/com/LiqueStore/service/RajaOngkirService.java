@@ -23,6 +23,7 @@ public class RajaOngkirService {
     }
 
     public String getProvinces() {
+//        String url = "https://pro.rajaongkir.com/api/province";
         String url = "https://api.rajaongkir.com/starter/province";
         HttpHeaders headers = new HttpHeaders();
         headers.set("key", apiKey);
@@ -33,6 +34,7 @@ public class RajaOngkirService {
     }
 
     public String getCities(int provinceId) {
+//        String url = "https://pro.rajaongkir.com/api/city?province=" + provinceId;
         String url = "https://api.rajaongkir.com/starter/city?province=" + provinceId;
         org.springframework.http.HttpHeaders headers = new HttpHeaders();
         headers.set("key", apiKey);
@@ -43,6 +45,7 @@ public class RajaOngkirService {
     }
 
     public String getShippingCost(int origin, int destination, int weight) {
+//        String url = "https://pro.rajaongkir.com/api/cost";
         String url = "https://api.rajaongkir.com/starter/cost";
         HttpHeaders headers = new HttpHeaders();
         headers.set("key", apiKey);

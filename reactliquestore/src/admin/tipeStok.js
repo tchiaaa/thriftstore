@@ -109,8 +109,6 @@ export default function ReviewStok() {
   const [nama, setnama] = useState('');
   const [varian, setvarian] = useState('');
   const [weight, setweight] = useState('');
-  const [capitalprice, setcapitalprice] = useState('');
-  const [defaultprice, setdefaultprice] = useState('');
   const [errors, setErrors] = useState({});
   const [openTambah, setOpenTambah] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
@@ -122,7 +120,7 @@ export default function ReviewStok() {
   const handleOpenLogout = () => setOpenLogout(true);
   const handleCloseLogout = () => setOpenLogout(false);
   const { auth, logout } = useAuth();
-  const getFullname = auth.user ? auth.user.fullname : '';
+  const getusername = auth.user ? auth.user.username : '';
 
   const validate = () => {
     let tempErrors = {};
@@ -146,20 +144,6 @@ export default function ReviewStok() {
     tempErrors.weight = 'Berat barang harus diisi';
   } else if (weight.length > 10) { // contoh panjang maksimal 10 karakter
     tempErrors.weight = 'Berat barang maksimal 10 karakter';
-  }
-
-  // Validasi Capital Price
-  if (!capitalprice) {
-    tempErrors.capitalprice = 'Harga modal barang harus diisi';
-  } else if (capitalprice.length > 15) { // contoh panjang maksimal 15 karakter
-    tempErrors.capitalprice = 'Harga modal barang maksimal 15 karakter';
-  }
-
-  // Validasi Default Price
-  if (!defaultprice) {
-    tempErrors.defaultprice = 'Harga jual barang harus diisi';
-  } else if (defaultprice.length > 15) { // contoh panjang maksimal 15 karakter
-    tempErrors.defaultprice = 'Harga jual barang maksimal 15 karakter';
   }
 
     setErrors(tempErrors);
@@ -186,15 +170,13 @@ export default function ReviewStok() {
     setnama('');
     setvarian('');
     setweight('');
-    setcapitalprice('');
-    setdefaultprice('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
       try {
-        const response = await axios.post('http://localhost:8080/admin/tambahTipe', { nama, varian, weight, capitalprice, defaultprice });
+        const response = await axios.post('http://localhost:8080/admin/tambahTipe', { nama, varian, weight });
         console.log(response.data);
         setOpenTambah(false);
         setShowSuccess(true);
@@ -206,8 +188,6 @@ export default function ReviewStok() {
         setnama('');
         setvarian('');
         setweight('');
-        setcapitalprice('');
-        setdefaultprice('');
       } catch (error) {
         setErrors(error.response);
         setShowError(true);
@@ -226,8 +206,6 @@ export default function ReviewStok() {
     setnama(row.nama);
     setvarian(row.varian);
     setweight(row.weight);
-    setcapitalprice(row.capitalPrice);
-    setdefaultprice(row.defaultPrice);
     setOpenEdit(true);
   };
 
@@ -237,20 +215,14 @@ export default function ReviewStok() {
     setnama('');
     setvarian('');
     setweight('');
-    setcapitalprice('');
-    setdefaultprice('');
   };
 
   const handleConfirmEdit = async (e) => {
     e.preventDefault();
     if (validate()) {
-      console.log(varian);
-      console.log(weight);
-      console.log(capitalprice);
-      console.log(defaultprice);
       const id = updatedId;
       try {
-        const response = await axios.post('http://localhost:8080/admin/editTipe', { id, nama, varian, weight, capitalprice, defaultprice });
+        const response = await axios.post('http://localhost:8080/admin/editTipe', { id, nama, varian, weight });
         console.log(response.data);
         setOpenEdit(false);
         setShowSuccess(true);
@@ -262,8 +234,6 @@ export default function ReviewStok() {
         setnama('');
         setvarian('');
         setweight('');
-        setcapitalprice('');
-        setdefaultprice('');
       } catch (error) {
         setShowError(true);
         setMsgError("Gagal Mengubah Tipe Barang");
@@ -398,7 +368,7 @@ export default function ReviewStok() {
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle />}>
-          {getFullname}
+          {getusername}
         </Button>
         <Modal
           aria-labelledby="spring-modal-title"
@@ -610,32 +580,6 @@ export default function ReviewStok() {
                       helperText={errors.weight}
                       FormHelperTextProps={{ sx: { color: 'red' } }}
                       onChange={(e) => setweight(e.target.value)}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Typography>Harga Modal Barang (Rp.) *</Typography>
-                    <TextField
-                      fullWidth
-                      type='number'
-                      autoComplete='off'
-                      value={capitalprice}
-                      error={!!errors.capitalprice}
-                      helperText={errors.capitalprice}
-                      FormHelperTextProps={{ sx: { color: 'red' } }}
-                      onChange={(e) => setcapitalprice(e.target.value)}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Typography>Harga Jual Barang (Rp.) *</Typography>
-                    <TextField
-                      fullWidth
-                      type='number'
-                      autoComplete='off'
-                      value={defaultprice}
-                      error={!!errors.defaultprice}
-                      helperText={errors.defaultprice}
-                      FormHelperTextProps={{ sx: { color: 'red' } }}
-                      onChange={(e) => setdefaultprice(e.target.value)}
                     />
                   </Grid>
                   <Grid item xs={12}>

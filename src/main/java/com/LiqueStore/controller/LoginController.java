@@ -6,6 +6,7 @@ import com.LiqueStore.model.CustomerModel;
 import com.LiqueStore.model.EmployeeModel;
 import com.LiqueStore.model.TemporaryOrderModel;
 import com.LiqueStore.repository.CustomerRepository;
+import com.LiqueStore.repository.EmployeeRepository;
 import com.LiqueStore.repository.TemporaryOrderRepository;
 import com.LiqueStore.service.LoginService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,11 +19,8 @@ import org.springframework.web.bind.annotation.*;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Optional;
+import java.util.*;
 import java.util.logging.Logger;
-import java.util.List;
 
 @RestController
 @RequestMapping
@@ -36,23 +34,37 @@ public class LoginController {
     @Autowired
     private TemporaryOrderRepository temporaryOrderRepository;
     @Autowired
+    private EmployeeRepository employeeRepository;
+    @Autowired
     private PasswordEncoder passwordEncoder;
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestParam String username, @RequestParam String password) {
+    public ResponseEntity<?> login(@RequestParam String username,
+                                   @RequestParam String password,
+                                   @RequestParam String orderid) {
         CustomerModel getCustData = customerRepository.findByUsername(username);
+        TemporaryOrderModel temporaryOrderModel = temporaryOrderRepository.findByOrderid(orderid);
         if (getCustData != null && getCustData.getAccessRight().getId() == 4) {
             logger.info("data customer ada");
-            List<CustomerModel> getCustomer = loginService.getCustByUsername(username);
+            CustomerModel getCustomer = customerRepository.findByUsername(username);
+            boolean cekPhoneOrder = false;
+            if (temporaryOrderModel != null){
+                if (getCustomer.getPhonenumber().equals(temporaryOrderModel.getPhonenumber())){
+                    cekPhoneOrder = true;
+                }
+            }
             boolean isAuthenticated = loginService.authenticateCustomer(username, password);
             if (isAuthenticated) {
                 logger.info("username ada");
-                return ResponseEntity.ok(getCustomer);
+                Map<String, Object> response = new HashMap<>();
+                response.put("customer", getCustomer);
+                response.put("cekPhoneOrder", cekPhoneOrder);
+                return ResponseEntity.ok(response);
             } else {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("invalid username or password");
             }
         }
         else {
-            List<EmployeeModel> getEmployee = loginService.getUsersByUsername(username);
+            EmployeeModel getEmployee = employeeRepository.findByUsername(username);
             boolean isAuthenticated = loginService.authenticateEmployee(username, password);
             if (isAuthenticated) {
                 return ResponseEntity.ok(getEmployee);

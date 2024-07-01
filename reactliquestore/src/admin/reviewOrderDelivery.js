@@ -176,7 +176,7 @@ export default function ReviewOrderDelivery() {
   const handleOpenLogout = () => setOpenLogout(true);
   const handleCloseLogout = () => setOpenLogout(false);
   const { auth, logout } = useAuth();
-  const getFullname = auth.user ? auth.user.fullname : '';
+  const getusername = auth.user ? auth.user.username : '';
 
   useEffect(() => {
       const fetchData = async () => {
@@ -249,7 +249,7 @@ export default function ReviewOrderDelivery() {
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle />}>
-          {getFullname}
+          {getusername}
         </Button>
         <Modal
           aria-labelledby="spring-modal-title"

@@ -13,7 +13,6 @@ public class OrdersModel {
     private List<String> itemidall;
     private String username;
     private String phonenumber;
-    private int totalprice;
     private Timestamp checkoutdate;
     private Timestamp paymentdate;
     private Timestamp packingdate;
@@ -54,14 +53,6 @@ public class OrdersModel {
 
     public void setPhonenumber(String phonenumber) {
         this.phonenumber = phonenumber;
-    }
-
-    public int getTotalprice() {
-        return totalprice;
-    }
-
-    public void setTotalprice(int totalprice) {
-        this.totalprice = totalprice;
     }
 
     public Timestamp getCheckoutdate() {

@@ -24,6 +24,7 @@ public class TemporaryOrderModel {
     private Timestamp checkoutdate;
     private String status;
     private String masterorderid;
+    private boolean isactive;
     @ManyToOne
     @JoinColumn(name = "colourid", referencedColumnName = "id")
     private OrderColourModel colourid;
@@ -138,5 +139,13 @@ public class TemporaryOrderModel {
 
     public void setMasterorderid(String masterorderid) {
         this.masterorderid = masterorderid;
+    }
+
+    public boolean isIsactive() {
+        return isactive;
+    }
+
+    public void setIsactive(boolean isactive) {
+        this.isactive = isactive;
     }
 }

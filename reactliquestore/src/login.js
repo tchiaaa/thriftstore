@@ -55,7 +55,6 @@ function LoginPage() {
     }
   }, [orderidFromQuery]);
 
-
   const validate = () => {
     let tempErrors = {};
     if (!username){
@@ -74,11 +73,14 @@ function LoginPage() {
       const formData = new FormData();
       formData.append("username", username);
       formData.append("password", password);
+      formData.append("orderid", orderidFromQuery);
       try {
         const response = await axios.post('http://localhost:8080/login', formData);
-        console.log(response.data[0]);
-        localStorage.setItem('orderid', orderidFromQuery);
-        login(response.data[0]);
+        console.log(response.data);
+        if (orderidFromQuery != null && response.data.cekPhoneOrder) {
+          localStorage.setItem('orderid', orderidFromQuery);
+        }
+        login(response.data);
       } catch (error) {
         setError("invalid username or password");
       }

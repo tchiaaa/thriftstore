@@ -176,7 +176,7 @@ const timeToSeconds = (time) => {
 
 export default function GajiKaryawan() {
   const { auth, logout } = useAuth();
-  const getFullname = auth.user ? auth.user.fullname : '';
+  const getUsername = auth.user ? auth.user.username : '';
   const totalMonthlySalary = useRef(0);
   const daysWithoutLateness = useRef(0);
   const [order, setOrder] = useState('asc');
@@ -407,7 +407,7 @@ export default function GajiKaryawan() {
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle />}>
-          {getFullname}
+          {getUsername}
         </Button>
         <Modal
           aria-labelledby="spring-modal-title"

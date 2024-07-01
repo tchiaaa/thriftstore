@@ -21,7 +21,7 @@ import axios from 'axios';
 import { useAuth } from '../authContext';
 import { CreateOutlined } from '@mui/icons-material';
 import Edit from '@mui/icons-material/Edit';
-import logoToko from '../assets/logo.png';
+import logoToko from '../assets/logo_copy.png';
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -195,6 +195,7 @@ export default function CheckoutPage() {
   const handleCloseAddLocation = () => setopenAddLocation(false);
   const [selectedShippingCost, setSelectedShippingCost] = useState(null);
   const [selectedShippingIndex, setSelectedShippingIndex] = useState(-1);
+  const [selectedShippingCostValue, setSelectedShippingCostValue] = useState(0);
   const [productDeliveryPrice, setProductDeliveryPrice] = useState(0);
   const [ShowSuccess, setShowSuccess] = useState(false);
   const [MsgSuccess, setMsgSuccess] = useState('');
@@ -204,7 +205,7 @@ export default function CheckoutPage() {
   const handleOpenLogout = () => setOpenLogout(true);
   const handleCloseLogout = () => setOpenLogout(false);
   const { auth, logout } = useAuth();
-  const getFullname = auth.user ? auth.user.name : '';
+  const getUsername = auth.user ? auth.user.username : '';
   const getId = auth.user ? auth.user.id : '';
   const isMenuOpen = Boolean(anchorEl);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
@@ -317,7 +318,7 @@ export default function CheckoutPage() {
   const fetchDataOrder = async () => {
     if (getId !== '') {
       try {
-        const response = await axios.get(`http://localhost:8080/customer/getOrderData?id=${getId}`);
+        const response = await axios.get(`http://localhost:8080/customer/getOrderData?id=${storedOrderId}`);
         console.log(response.data);
         setDataOrder(response.data);
         setWeight(response.data.totalWeight);
@@ -458,12 +459,14 @@ export default function CheckoutPage() {
     setSelectedShippingIndex(index);
   };
 
+
   useEffect(() => {
     // Contoh: menghitung total price berdasarkan DataOrder dan selectedShippingCost
     const calculateTotalPrice = () => {
       let totalPrice = parseInt(DataOrder.totalPrice) + 2000;
       if (selectedShippingCost) {
         totalPrice += parseInt(selectedShippingCost.cost[0].value);
+        setSelectedShippingCostValue(selectedShippingCost.cost[0].value);
       }
   
       setProductDeliveryPrice(totalPrice);
@@ -490,12 +493,16 @@ export default function CheckoutPage() {
     }
     else{
       const formData = new FormData();
-      formData.append('masterorderid', DataOrder.orders[0].masterorderid);
+      formData.append('masterorderid', DataOrder.listTempOrder[0].masterorderid);
       formData.append('totalprice', productDeliveryPrice);
       formData.append('customerid', getId);
       formData.append('address', selectedData.addressdetail);
       formData.append('city', selectedData.city);
       formData.append('zipcode', selectedData.zipcode);
+      formData.append('weight', weight);
+      formData.append('deliveryprice', selectedShippingCostValue);
+
+      console.log([...formData])
       try {
         const response = await axios.post('http://localhost:8080/customer/api/payment', formData);
         const token = response.data.token;
@@ -629,13 +636,13 @@ export default function CheckoutPage() {
             </Search>
           </Grid>
           <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'center' }}>
-            <img src={logoToko} alt="Lique Store Logo" style={{ width: 150 }} />
+            <img src={logoToko} alt="Lique Store Logo" style={{ width: 200 }} />
           </Grid>
           <Grid item xs={12} md={3} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
               <Typography sx={{ color: 'black', paddingRight: 2 }}>Your Cart</Typography>
               <Button style={{ color: 'black' }} onClick={handleOpenLogout} startIcon={<AccountCircle />}>
-                {getFullname}
+                {getUsername}
               </Button>
               <Modal
                 aria-labelledby="spring-modal-title"
@@ -705,7 +712,7 @@ export default function CheckoutPage() {
                 Checkout
               </Typography>
             </Box>
-            <img src={logoToko} alt="Lique Store" style={{ width: 500, position: 'absolute', top: -60, zIndex: 1 }} />
+            <img src={logoToko} alt="Lique Store" style={{ width: 500, position: 'absolute', top: 60, zIndex: 1 }} />
           </Grid>
           <Grid item xs={12} marginTop={10}>
             <Box sx={{padding: 2}}>

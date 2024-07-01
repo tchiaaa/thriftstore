@@ -30,7 +30,7 @@ const Inventori = () => {
   const [size, setSize] = useState('');
   const [files, setFiles] = useState([]);
   const { auth, logout } = useAuth();
-  const getFullname = auth.user ? auth.user.fullname : '';
+  const getusername = auth.user ? auth.user.username : '';
   const getId = auth.user ? auth.user.id : '';
   const [errors, setErrors] = useState({});
   const [openLogout, setOpenLogout] = useState(false);
@@ -189,7 +189,7 @@ const Inventori = () => {
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle />}>
-          {getFullname}
+          {getusername}
         </Button>
         <Modal
           aria-labelledby="spring-modal-title"

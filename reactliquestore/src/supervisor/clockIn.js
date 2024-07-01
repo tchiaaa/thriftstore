@@ -100,7 +100,7 @@ const ClockInSupervisor = () => {
   const [msgSuccess, setMsgSuccess] = useState();
   const [msgError, setMsgError] = useState();
   const { auth, logout } = useAuth();
-  const getFullname = auth.user ? auth.user.fullname : '';
+  const getUsername = auth.user ? auth.user.username : '';
   const [openLogout, setOpenLogout] = useState(false);
   const handleOpenLogout = () => setOpenLogout(true);
   const handleCloseLogout = () => setOpenLogout(false);
@@ -178,7 +178,7 @@ const ClockInSupervisor = () => {
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle />}>
-          {getFullname}
+          {getUsername}
         </Button>
         <Modal
           aria-labelledby="spring-modal-title"

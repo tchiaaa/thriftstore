@@ -224,7 +224,7 @@ export default function ReviewStok() {
   const [files, setFiles] = useState([]);
   const [errors, setErrors] = useState({});
   const { auth, logout } = useAuth();
-  const getFullname = auth.user ? auth.user.fullname : '';
+  const getusername = auth.user ? auth.user.username : '';
   const getId = auth.user ? auth.user.id : '';
 
   const formatCurrency = (amount) => {
@@ -515,7 +515,7 @@ export default function ReviewStok() {
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle />}>
-          {getFullname}
+          {getusername}
         </Button>
         <Modal
           aria-labelledby="spring-modal-title"

@@ -427,10 +427,13 @@ public class AdminController {
             boolean allPaid = userOrders.stream().allMatch(order -> "On Packing".equals(order.getStatus()));
             if (allPaid) {
                 log.info("All orders for user {} are paid", username);
+                userOrders.forEach(order -> {
+                    order.setIsactive(false);
+                    temporaryOrderRepository.save(order);
+                });
                 TemporaryOrderModel minOrder = userOrders.stream()
                         .min(Comparator.comparingInt(order -> Integer.parseInt(order.getOrderid().substring(1, 4))))
                         .orElse(null);
-                int totalPrice = userOrders.stream().mapToInt(TemporaryOrderModel::getTotalprice).sum();
                 if (minOrder != null) {
                     TemporaryOrderModel fullOrderInfo = tempOrderMap.get(minOrder.getOrderid());
                     OrdersModel addOrders = new OrdersModel();
@@ -438,7 +441,6 @@ public class AdminController {
                     addOrders.setStatus(fullOrderInfo.getStatus());
                     addOrders.setUsername(fullOrderInfo.getUsername());
                     addOrders.setPhonenumber(fullOrderInfo.getPhonenumber());
-                    addOrders.setTotalprice(totalPrice);
                     addOrders.setCheckoutdate(fullOrderInfo.getCheckoutdate());
                     addOrders.setPaymentdate(fullOrderInfo.getPaymentdate());
                     ordersToInsert.add(addOrders);
@@ -489,7 +491,8 @@ public class AdminController {
         else{
             try {
                 for (TemporaryOrderModel order : orderData) {
-                    temporaryOrderRepository.deleteById(order.getId());
+                    order.setIsactive(false);
+                    temporaryOrderRepository.save(order);
                 }
                 return ResponseEntity.ok("Berhasil clear temporary order");
             } catch (Exception e) {

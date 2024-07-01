@@ -243,7 +243,7 @@ export default function DataKaryawan() {
   const handleOpenLogout = () => setOpenLogout(true);
   const handleCloseLogout = () => setOpenLogout(false);
   const { auth, logout } = useAuth();
-  const getFullname = auth.user ? auth.user.fullname : '';
+  const getUsername = auth.user ? auth.user.username : '';
 
   const fetchDataKaryawan = async () => {
     try {
@@ -504,7 +504,7 @@ export default function DataKaryawan() {
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle />}>
-          {getFullname}
+          {getUsername}
         </Button>
         <Modal
           aria-labelledby="spring-modal-title"

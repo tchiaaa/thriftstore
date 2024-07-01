@@ -1,5 +1,5 @@
 import React, { useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { TextField, Button, Grid, Typography, Autocomplete, Toolbar, Box, Drawer, CssBaseline, Modal, Backdrop, Fade, Select, InputLabel, MenuItem, FormControl, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Container, Alert, TableSortLabel, TablePagination, Chip } from '@mui/material';
+import { TextField, Button, Grid, Typography, Autocomplete, Toolbar, Box, Drawer, CssBaseline, Modal, Backdrop, Fade, Select, InputLabel, MenuItem, FormControl, TableContainer, Paper, Table, TableHead, TableRow, TableCell, TableBody, Container, Alert, TableSortLabel, TablePagination, Chip, InputAdornment } from '@mui/material';
 import AdminSidebar from './sidebar';
 import { AccountCircle } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,7 @@ import { visuallyHidden } from '@mui/utils';
 import PropTypes from 'prop-types';
 import axios from 'axios';
 import { useAuth } from '../authContext';
+import { NumericFormat } from 'react-number-format';
 
 const styleModal = {
   position: 'absolute',
@@ -80,7 +81,7 @@ const headCells = [
   { id: 'waitinglist', numeric: false, disablePadding: false, label: 'Username Waiting List' },
   { id: 'link', numeric: false, disablePadding: false, label: 'Checkout Link' },
   { id: 'status', numeric: false, disablePadding: false, label: 'Status' },
-  { id: 'aksi', numeric: false, disablePadding: false, label: 'Aksi' },
+  { id: 'aksi', numeric: false, disablePadding: false, label: '' },
 ];
 
 function EnhancedTableHead(props) {
@@ -151,7 +152,7 @@ const Pemesanan = () => {
   const handleOpenSubmitAll = () => setOpenSubmitAll(true);
   const handleCloseSubmitAll = () => setOpenSubmitAll(false);
   const { auth, logout } = useAuth();
-  const fullname = auth.user ? auth.user.fullname : '';
+  const getusername = auth.user ? auth.user.username : '';
   // bagian add colour
   const [openTambah, setOpenTambah] = useState(false);
   const handleOpenTambah = () => setOpenTambah(true);
@@ -350,30 +351,13 @@ const Pemesanan = () => {
 
   const handleAutocompleteItemChange = (event, newValue, rowId) => {
     // Jika newValue null atau undefined, atur arrItem menjadi array kosong
-    const arrItem = newValue || [];
-    console.log(arrItem);
-    console.log(event);
-    console.log(rowId);
-    // Inisialisasi total price dan total weight
-    let tempPrice = 0;
-    let tempWeight = 0;
-    const itemcodes = arrItem.map(item => item.itemcode);
-    console.log(itemcodes);
-    // Iterasi melalui arrItem dan jumlahkan price dan weight
-    arrItem.forEach(item => {
-      tempPrice += item.price || 0;
-      tempWeight += item.weight || 0;
-    });
-    console.log(tempPrice);
-    console.log(tempWeight);
+    const itemcodes = newValue.map(item => item.itemcode);
     setRows(prevRows =>
       prevRows.map(row =>
         row.id === rowId
           ? {
               ...row,
               itemcode: itemcodes,
-              totalprice: tempPrice,
-              totalweight: tempWeight,
             }
           : row
       )
@@ -521,7 +505,7 @@ const Pemesanan = () => {
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle />}>
-          {fullname}
+          {getusername}
         </Button>
         <Modal
           aria-labelledby="spring-modal-title"
@@ -588,8 +572,8 @@ const Pemesanan = () => {
             </FormControl>
           </Box>
           <Box sx={{ width: '100%', marginTop: 5 }}>
-            <TableContainer component={Paper} sx={{maxHeight: 370}}>
-              <Table stickyHeader>
+            <TableContainer component={Paper} sx={{maxHeight: 370, overflow: 'auto'}}>
+              <Table stickyHeader sx={{ width: '135%'}}>
                 <EnhancedTableHead
                     order={order}
                     orderBy={orderBy}
@@ -608,22 +592,24 @@ const Pemesanan = () => {
                           value={row.kodepemesanan}
                         />
                       </TableCell>
-                      <TableCell width={'15%'}>
+                      <TableCell width={'10%'}>
                         <TextField
+                          disabled
                           fullWidth
                           value={row.username}
                           onChange={(e) => handleInputChange(row.id, 'username', e.target.value)}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell width={'10%'}>
                         <TextField
+                          disabled
                           fullWidth
                           type="tel"
                           value={row.phonenumber}
                           onChange={(e) => handleInputChange(row.id, 'phonenumber', e.target.value)}
                         />
                       </TableCell>
-                      <TableCell width={200}>
+                      <TableCell width={'15%'}>
                         <Autocomplete
                           fullWidth
                           multiple
@@ -635,39 +621,54 @@ const Pemesanan = () => {
                           onChange={(event, newValue) => handleAutocompleteItemChange(event, newValue, row.id)}
                         />
                       </TableCell>
-                      <TableCell width={'12%'}>
-                        <TextField
+                      <TableCell width={'9%'}>
+                        <NumericFormat
+                          disabled
                           fullWidth
-                          type="number"
+                          autoComplete='off'
                           value={row.totalprice}
-                          onChange={(e) => handleInputChange(row.id, 'totalprice', e.target.value)}
+                          onValueChange={(e) => handleInputChange(row.id, 'totalprice', e.target.value)}
+                          thousandSeparator='.'
+                          decimalSeparator=','
+                          customInput={TextField}
+                          InputProps={{
+                            startAdornment: <InputAdornment position="start">Rp</InputAdornment>,
+                          }}
+                          variant="outlined"
                         />
                       </TableCell>
-                      <TableCell width={'10%'}>
-                        <TextField
+                      <TableCell width={'7%'}>
+                        <NumericFormat
+                          disabled
                           fullWidth
-                          type="number"
+                          autoComplete='off'
                           value={row.totalweight}
-                          onChange={(e) => handleInputChange(row.id, 'totalweight', e.target.value)}
+                          onValueChange={(e) => handleInputChange(row.id, 'totalweight', e.target.value)}
+                          customInput={TextField}
+                          InputProps={{
+                            endAdornment: <InputAdornment position="start">g</InputAdornment>,
+                          }}
+                          variant="outlined"
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell width={'12%'}>
                         <TextField
                           fullWidth
                           value={row.waitinglist}
                           onChange={(e) => handleInputChange(row.id, 'waitinglist', e.target.value)}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell width={'10%'}>
                         <TextField
                           InputProps={{
                             readOnly: true,
                           }}
+                          aria-readonly
                           fullWidth
                           value={row.link}
                         />
                       </TableCell>
-                      <TableCell width={'20%'}>
+                      <TableCell width={'8%'}>
                         {row.status === "Payment Not Done" && (
                           <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: 'red', textTransform: 'capitalize', maxHeight: 50}}>
                             Payment Not Done
@@ -694,7 +695,7 @@ const Pemesanan = () => {
                           </Button>
                         )}
                       </TableCell>
-                      <TableCell>
+                      <TableCell width={'5%'}>
                         <Button variant="contained" onClick={() => handleSubmit(row.id)} >
                           Save
                         </Button>
