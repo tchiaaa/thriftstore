@@ -1,3 +1,4 @@
+
 package com.LiqueStore.model;
 
 import jakarta.persistence.*;

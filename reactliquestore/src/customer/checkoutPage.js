@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { styled, alpha } from '@mui/material/styles';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
@@ -14,8 +14,7 @@ import AccountCircle from '@mui/icons-material/AccountCircle';
 import MailIcon from '@mui/icons-material/Mail';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 import MoreIcon from '@mui/icons-material/MoreVert';
-import { Backdrop, Container, Fade, Grid, Modal, Button, TextField, Autocomplete, Alert, RadioGroup, FormControl, FormControlLabel, Radio } from '@mui/material';
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom';
+import { Backdrop, Container, Fade, Grid, Modal, Button, TextField, Autocomplete, Alert, RadioGroup, FormControlLabel, Radio } from '@mui/material';
 import logoSmile from '../assets/smile.png'
 import axios from 'axios';
 import { useAuth } from '../authContext';
@@ -49,17 +48,6 @@ const SearchIconWrapper = styled('div')(({ theme }) => ({
   justifyContent: 'center',
   color: 'black'
 }));
-
-const liqueText = {
-    backgroundColor: 'black',
-    width: 'auto',
-    textAlign: 'center',
-    paddingLeft: 15,
-    paddingRight: 15,
-    marginLeft: '25vw',
-    transform: 'rotate(-3deg)',
-    display: 'inline-block',
-}
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
   color: 'black',
@@ -281,7 +269,7 @@ export default function CheckoutPage() {
   };
 
   const calculateShippingCost = () => {
-    axios.get(`http://localhost:8080/customer/api/rajaongkir/cost?origin=${originCityId}&destination=${selectedCity}&weight=${weight}`)
+    axios.get(`http://localhost:8080/customer/api/rajaongkir/cost?originType=city&origin=${originCityId}&destinationType=city&destination=${selectedCity}&weight=${weight}`)
       .then(response => {
         setCost(response.data.rajaongkir.results);
       })
@@ -392,7 +380,6 @@ export default function CheckoutPage() {
 
   const handleRadioChange = (event) => {
     setSelectedValue(event.target.value);
-    console.log(selectedValue);
   };
 
   const handleSaveAddress = () => {
@@ -400,13 +387,16 @@ export default function CheckoutPage() {
     console.log(selected);
     setSelectedData(selected);
     setSelectedCity(selected.cityid);
+    setOpenAddress(false);
+  };
+
+  useEffect(() => {
     if (originCityId && selectedCity && weight) {
       calculateShippingCost();
     } else {
       console.error('One or more parameters (originCityId, selectedCity, weight) are missing or invalid.');
     }
-    setOpenAddress(false);
-  };
+  }, [originCityId, selectedCity, weight]);
 
   const handleSubmitAddress = async (e) => {
     e.preventDefault();
@@ -475,6 +465,7 @@ export default function CheckoutPage() {
     calculateTotalPrice();
   }, [DataOrder, selectedShippingCost]);
 
+  console.log(productDeliveryPrice);
   const handlePayment = async () => {
     console.log(getId);
     if (getId === ''){
@@ -539,6 +530,7 @@ export default function CheckoutPage() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('orderid');
     setOpenLogout(false);
     logout();
   };
@@ -944,39 +936,55 @@ export default function CheckoutPage() {
                         <Typography variant="h5">Product price</Typography>
                     </Grid>
                     <Grid item xs={6}>
-                        <Typography variant="h5" style={{textAlign: 'right'}}>{formatCurrency(DataOrder.totalPrice)}</Typography>
+                        <Typography variant="h5" style={{textAlign: 'right'}}>{formatCurrency(DataOrder.totalPrice || 0)}</Typography>
                     </Grid>
                     {cost ? (
-                      <Grid item xs={12}>
-                        <Box marginY={2}>
-                          <Typography variant="h5">Shipping Cost</Typography>
-                          {cost.map((result, index) => (
-                            <Box key={index} marginY={1}>
-                              <Typography variant="h6">{result.name}</Typography>
-                              {result.costs.map((costDetail, idx) => (
-                                <Box
-                                  key={idx}
-                                  padding={1}
-                                  border={1}
-                                  borderRadius={2}
-                                  marginY={1}
-                                  style={{ 
-                                    cursor: 'pointer', 
-                                    backgroundColor: selectedShippingIndex === idx ? '#f0f0f0' : 'transparent',
-                                    color: selectedShippingIndex === idx ? 'black' : 'white'
-                                  }}
-                                  onClick={() => handleSelectShippingCost(costDetail, idx)}
-                                >
-                                  <Typography>Service: {costDetail.service}</Typography>
-                                  <Typography>Description: {costDetail.description}</Typography>
-                                  <Typography>Cost: {costDetail.cost[0].value}</Typography>
-                                  <Typography>ETD: {costDetail.cost[0].etd} hari</Typography>
-                                </Box>
-                              ))}
-                            </Box>
+                      cost.map((result, index) => (
+                        <React.Fragment key={index}>
+                          {result.costs.map((costDetail, idx) => (
+                            <React.Fragment key={`${index}-${idx}`}>
+                              <Grid item xs={6}>
+                                <Typography variant="h5">Delivery Fee (ID Express)</Typography>
+                              </Grid>
+                              <Grid item xs={6}>
+                                <Typography variant="h5" style={{ textAlign: 'right' }}>
+                                  {formatCurrency(costDetail.cost[0].value)}
+                                </Typography>
+                              </Grid>
+                            </React.Fragment>
                           ))}
-                        </Box>
-                      </Grid>
+                        </React.Fragment>
+                      ))
+                      // <Grid item xs={12}>
+                      //   <Box marginY={2}>
+                      //     <Typography variant="h5">Shipping Cost</Typography>
+                      //     {cost.map((result, index) => (
+                      //       <Box key={index} marginY={1}>
+                      //         <Typography variant="h6">{result.name}</Typography>
+                      //         {result.costs.map((costDetail, idx) => (
+                      //           <Box
+                      //             key={idx}
+                      //             padding={1}
+                      //             border={1}
+                      //             borderRadius={2}
+                      //             marginY={1}
+                      //             style={{ 
+                      //               cursor: 'pointer', 
+                      //               backgroundColor: selectedShippingIndex === idx ? '#f0f0f0' : 'transparent',
+                      //               color: selectedShippingIndex === idx ? 'black' : 'white'
+                      //             }}
+                      //             onClick={() => handleSelectShippingCost(costDetail, idx)}
+                      //           >
+                      //             <Typography>Service: {costDetail.service}</Typography>
+                      //             <Typography>Description: {costDetail.description}</Typography>
+                      //             <Typography>Cost: {costDetail.cost[0].value}</Typography>
+                      //             <Typography>ETD: {costDetail.cost[0].etd} hari</Typography>
+                      //           </Box>
+                      //         ))}
+                      //       </Box>
+                      //     ))}
+                      //   </Box>
+                      // </Grid>
                     ) : (
                       <>
                         <Grid item xs={6}>
@@ -991,13 +999,22 @@ export default function CheckoutPage() {
                       <Typography variant="h5">Admin fee</Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="h5" style={{textAlign: 'right'}}>Rp 2.000,00</Typography>
+                      {console.log(productDeliveryPrice)}
+                      {isNaN(productDeliveryPrice) ? (
+                        <Typography variant="h5" style={{textAlign: 'right'}}>
+                          Rp 0,00
+                        </Typography>
+                      ) : (
+                        <Typography variant="h5" style={{textAlign: 'right'}}>
+                          Rp 2.000,00
+                        </Typography>
+                      )}
                     </Grid>
                     <Grid item xs={6}>
                         <Typography variant="h5" fontWeight={'bolder'}>Total</Typography>
                     </Grid>
                     <Grid item xs={6}>
-                        <Typography variant="h5" style={{textAlign: 'right', fontWeight: 'bolder'}}>{formatCurrency(productDeliveryPrice)}</Typography>
+                        <Typography variant="h5" style={{textAlign: 'right', fontWeight: 'bolder'}}>{formatCurrency(productDeliveryPrice || 0)}</Typography>
                     </Grid>
                     <Grid item xs={12} display={'flex'} justifyContent={'flex-end'}>
                       <Button style={btnPaymentStyle} onClick={handlePayment}>Choose Payment</Button>

@@ -23,8 +23,8 @@ public class RajaOngkirService {
     }
 
     public String getProvinces() {
-//        String url = "https://pro.rajaongkir.com/api/province";
-        String url = "https://api.rajaongkir.com/starter/province";
+        String url = "https://pro.rajaongkir.com/api/province";
+//        String url = "https://api.rajaongkir.com/starter/province";
         HttpHeaders headers = new HttpHeaders();
         headers.set("key", apiKey);
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -34,8 +34,8 @@ public class RajaOngkirService {
     }
 
     public String getCities(int provinceId) {
-//        String url = "https://pro.rajaongkir.com/api/city?province=" + provinceId;
-        String url = "https://api.rajaongkir.com/starter/city?province=" + provinceId;
+        String url = "https://pro.rajaongkir.com/api/city?province=" + provinceId;
+//        String url = "https://api.rajaongkir.com/starter/city?province=" + provinceId;
         org.springframework.http.HttpHeaders headers = new HttpHeaders();
         headers.set("key", apiKey);
         HttpEntity<String> entity = new HttpEntity<>(headers);
@@ -44,18 +44,20 @@ public class RajaOngkirService {
         return response.getBody();
     }
 
-    public String getShippingCost(int origin, int destination, int weight) {
-//        String url = "https://pro.rajaongkir.com/api/cost";
-        String url = "https://api.rajaongkir.com/starter/cost";
+    public String getShippingCost(String originType, int origin, String destinationType, int destination, int weight) {
+        String url = "https://pro.rajaongkir.com/api/cost";
+//        String url = "https://api.rajaongkir.com/starter/cost";
         HttpHeaders headers = new HttpHeaders();
         headers.set("key", apiKey);
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
 
         MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
+        map.add("originType", originType);
         map.add("origin", String.valueOf(origin));
+        map.add("destinationType", destinationType);
         map.add("destination", String.valueOf(destination));
         map.add("weight", String.valueOf(weight));
-        map.add("courier", "jne");
+        map.add("courier", "ide");
 
         HttpEntity<MultiValueMap<String, String>> entity = new HttpEntity<>(map, headers);
 

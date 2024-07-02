@@ -9,6 +9,7 @@ import com.LiqueStore.repository.CustomerRepository;
 import com.LiqueStore.repository.EmployeeRepository;
 import com.LiqueStore.repository.TemporaryOrderRepository;
 import com.LiqueStore.service.LoginService;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -27,6 +28,7 @@ import java.util.logging.Logger;
 @CrossOrigin
 public class LoginController {
     private static final Logger logger = Logger.getLogger(LoginController.class.getName());
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(LoginController.class);
     @Autowired
     private LoginService loginService;
     @Autowired
@@ -67,9 +69,11 @@ public class LoginController {
             EmployeeModel getEmployee = employeeRepository.findByUsername(username);
             boolean isAuthenticated = loginService.authenticateEmployee(username, password);
             if (isAuthenticated) {
+                log.info("yes");
                 return ResponseEntity.ok(getEmployee);
             } else {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("invalid username or password");
+                log.info("no");
+                return ResponseEntity.badRequest().body("invalid username or password");
             }
         }
     }
@@ -86,9 +90,9 @@ public class LoginController {
         if (existingUsername != null) {
             return ResponseEntity.badRequest().body(new Response("Username sudah digunakan"));
         }
-        CustomerModel existingEmail = customerRepository.findByEmail(email);
-        if (existingEmail != null) {
-            return ResponseEntity.badRequest().body(new Response("Email sudah digunakan"));
+        CustomerModel existingPhoneNumber = customerRepository.findByPhonenumber(phonenumber);
+        if (existingPhoneNumber != null) {
+            return ResponseEntity.badRequest().body(new Response("Phone Number sudah digunakan"));
         }
         CustomerModel addCustomer = new CustomerModel();
         addCustomer.setUsername(username);
@@ -102,8 +106,6 @@ public class LoginController {
         addCustomer.setAccessRight(accessRightModel);
         addCustomer.setStatus("active");
         customerRepository.save(addCustomer);
-        TemporaryOrderModel temporaryOrderModel = new TemporaryOrderModel();
-        temporaryOrderModel.setUsername(username);
         logger.info(String.valueOf(addCustomer));
         return ResponseEntity.ok(new Response("berhasil register"));
     }

@@ -91,7 +91,7 @@ function Sidebar() {
               <ListItemText primary="Input Pengiriman" />
             </ListItem>
             <ListItem button component={Link} to="/manager/orderDelivery/reviewOrderDelivery">
-              <ListItemText primary="Review Pengiriman dan Pengiriman" />
+              <ListItemText primary="Review Pemesanan dan Pengiriman" />
             </ListItem>
           </List>
         </Collapse>

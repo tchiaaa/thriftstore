@@ -6,13 +6,14 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import axios from 'axios';
 import styled from 'styled-components';
-import { Alert, Backdrop, Button, CssBaseline, Drawer, Grid, IconButton, Modal, TextField, Typography } from '@mui/material';
+import { Alert, Backdrop, Button, CssBaseline, Drawer, FormHelperText, Grid, IconButton, InputAdornment, Modal, TextField, Typography } from '@mui/material';
 import AdminSidebar from './sidebar';
 import { useSpring, animated } from '@react-spring/web';
 import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../authContext';
 import { DataGrid } from '@mui/x-data-grid';
 import dayjs from 'dayjs';
+import { NumericFormat } from 'react-number-format';
 
 const RootContainer = styled.div`
   display: flex;
@@ -224,7 +225,6 @@ export default function ReviewStok() {
       try {
         const response = await axios.post('http://localhost:8080/admin/editTipe', { id, nama, varian, weight });
         console.log(response.data);
-        setOpenEdit(false);
         setShowSuccess(true);
         setmsgSuccess("Berhasil Mengubah Tipe Barang");
         setTimeout(() => {
@@ -241,6 +241,7 @@ export default function ReviewStok() {
           setShowError(false);
         }, 5000);
       }
+      setOpenEdit(false);
     } else {
       console.log("Validation failed");
     }
@@ -259,14 +260,14 @@ export default function ReviewStok() {
       const response = await axios.delete(`http://localhost:8080/admin/deleteTipe/${id}`);
       console.log(response.data);
       setShowSuccess(true);
-      setmsgSuccess("Berhasil Hapus Karyawan");
+      setmsgSuccess("Berhasil Hapus Tipe Barang");
       setTimeout(() => {
         setShowSuccess(false);
       }, 5000);
       fetchDataInventori();
     } catch (error) {
       console.error(error);
-      setMsgError("Gagal Hapus Karyawan");
+      setMsgError("Gagal Hapus Tipe Barang");
       setShowError(true);
       setTimeout(() => {
         setShowError(false);
@@ -325,7 +326,7 @@ export default function ReviewStok() {
     },
     {
       field: 'actions',
-      headerName: 'Aksi',
+      headerName: '',
       flex: 1,
       filterable: false,
       sortable: false,
@@ -400,19 +401,21 @@ export default function ReviewStok() {
             </Box>
           </Fade>
         </Modal>
-        <br></br>
         <Toolbar />
         <RootContainer>
           {showSuccess && (
-            <Alert variant="filled" severity="success" style={{ marginTop: 20 }}>
+            <Alert variant="filled" severity="success" style={{ marginBottom: 3 }}>
               { msgSuccess }
             </Alert>
           )}
           {showError && (
-            <Alert variant="filled" severity="error" style={{ marginTop: 20 }}>
+            <Alert variant="filled" severity="error" style={{ marginBottom: 3 }}>
               { msgError }
             </Alert>
           )}
+          <Typography variant='h3' marginBottom={5}>
+            Tipe Barang
+          </Typography>
           <Box sx={{ width: '100%' }}>
             <DataGrid
               rows={rows}
@@ -471,17 +474,26 @@ export default function ReviewStok() {
                       />
                     </Grid>
                     <Grid item xs={12}>
-                      <Typography>Berat Barang (g) *</Typography>
-                      <TextField
+                      <Typography>Berat Barang *</Typography>
+                      <NumericFormat
                         fullWidth
-                        type='number'
                         autoComplete='off'
                         value={weight}
+                        onValueChange={(values) => setweight(values.floatValue)}
+                        thousandSeparator='.'
+                        decimalSeparator=','
+                        customInput={TextField}
                         error={!!errors.weight}
-                        helperText={errors.weight}
-                        FormHelperTextProps={{ sx: { color: 'red' } }}
-                        onChange={(e) => setweight(e.target.value)}
+                        InputProps={{
+                          endAdornment: <InputAdornment position="start">g</InputAdornment>,
+                        }}
+                        variant="outlined"
                       />
+                      {!!errors.weight && (
+                        <FormHelperText error sx={{ color: 'red' }}>
+                          {errors.weight}
+                        </FormHelperText>
+                      )}
                     </Grid>
                     <Grid item xs={12}>
                       <Button variant="contained" onClick={handleConfirmEdit} fullWidth style={{ backgroundColor: 'black', color: 'white' }}>
@@ -570,16 +582,20 @@ export default function ReviewStok() {
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <Typography>Berat Barang (g) *</Typography>
-                    <TextField
+                    <Typography>Berat Barang *</Typography>
+                    <NumericFormat
                       fullWidth
-                      type='number'
                       autoComplete='off'
                       value={weight}
+                      onValueChange={(values) => setweight(values.floatValue)}
+                      thousandSeparator='.'
+                      decimalSeparator=','
+                      customInput={TextField}
                       error={!!errors.weight}
-                      helperText={errors.weight}
-                      FormHelperTextProps={{ sx: { color: 'red' } }}
-                      onChange={(e) => setweight(e.target.value)}
+                      InputProps={{
+                        endAdornment: <InputAdornment position="start">g</InputAdornment>,
+                      }}
+                      variant="outlined"
                     />
                   </Grid>
                   <Grid item xs={12}>

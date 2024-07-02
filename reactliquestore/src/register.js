@@ -5,7 +5,7 @@ import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import axios from 'axios';
 import { Alert, Box, Grid } from '@mui/material';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const containerStyle = {
   backgroundColor: 'black',
@@ -35,8 +35,8 @@ const btnRegister = {
 };
 
 function RegisterPage() {
+  const navigate = useNavigate();
   const [param, setParam] = useState('');
-  const [NomorWa, setNomorWa] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
@@ -45,37 +45,13 @@ function RegisterPage() {
   const [phonenumber, setPhonenumber] = useState('');
   const [birthdate, setBirthdate] = useState('');
   const [konfirmasiPassword, setKonfirmasiPassword] = useState('');
-  const [showSuccessInsert, setShowSuccessInsert] = useState(false);
-  const [message, setMessage] = useState('');
   const [showError, setShowError] = useState(false);
+  const [msgError, setMsgError] = useState();
   const [errors, setErrors] = useState({});
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const orderidFromQuery = params.get('orderid');
   console.log(orderidFromQuery);
-
-  useEffect(() => {
-    if (orderidFromQuery != null){
-      setParam(orderidFromQuery);
-    }
-    else{
-      setParam('');
-    }
-  }, [orderidFromQuery]);
-
-  const fetchDataOrder = async () => {
-    try {
-      const response = await axios.get(`http://localhost:8080/getNomorWa?orderid=${orderidFromQuery}`);
-      console.log(response.data);
-      setNomorWa(response.data);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
-
-  useEffect(() => {
-    fetchDataOrder()
-  });
 
   const validate = () => {
     let tempErrors = {};
@@ -122,8 +98,8 @@ function RegisterPage() {
     if (!phonenumber){
       tempErrors.phonenumber = 'phonenumber harus diisi';
     }
-    else if (phonenumber.length > 15) {
-      tempErrors.phonenumber = 'phonenumber barang maksimal berjumlah 15 karakter';
+    else if (phonenumber.length < 10 || phonenumber.length > 12) {
+      tempErrors.phonenumber = 'phonenumber harus berjumlah antara 10-12 digit';
     }
 
     setErrors(tempErrors);
@@ -134,7 +110,7 @@ function RegisterPage() {
     e.preventDefault();
     if (validate()){
       if (password !== konfirmasiPassword) {
-        setMessage("password harus sama dengan konfirmasi password");
+        setMsgError("password harus sama dengan konfirmasi password");
       }
       else {
         try {
@@ -147,24 +123,29 @@ function RegisterPage() {
           formData.append('phonenumber', phonenumber);
           formData.append('birthdate', birthdate);
           console.log([...formData]);
+
           const response = await axios.post('http://localhost:8080/register', formData);
           console.log(response.data);
-          setShowSuccessInsert(true);
-          setMessage(response.data.message);
-          if (response.data.message === 'berhasil register') {
-            setUsername('');
-            setPassword('');
-            setName('');
-            setEmail('');
-            setBirthdate('');
-            setPhonenumber('');
-            setUsernameIG('');
+
+          setUsername('');
+          setPassword('');
+          setName('');
+          setEmail('');
+          setBirthdate('');
+          setPhonenumber('');
+          setUsernameIG('');
+          setKonfirmasiPassword('');
+
+          localStorage.setItem('berhasilRegister', response.data.message);
+          if (orderidFromQuery == null){
+            navigate('/login');
+          } else {
+            navigate(`/login?orderid=${orderidFromQuery}`);
           }
-          setTimeout(() => {
-            setShowSuccessInsert(false);
-          }, 5000);
         } catch (error) {
+          console.log(error);
           setShowError(true);
+          setMsgError(error.response.data.message);
           setTimeout(() => {
             setShowError(false);
           }, 5000);
@@ -174,29 +155,24 @@ function RegisterPage() {
   };
 
   return (
-    <Container component="main" maxWidth="sm" style={containerStyle}>
-      {/* {showSuccessInsert && (
-        <Alert variant="filled" severity="success" style={{ marginTop: 20 }}>
-          { msgInsert }
-        </Alert>
-      )}
-      {showError && (
-        <Alert variant="filled" severity="danger" style={{ marginTop: 20 }}>
-          { msgError }
-        </Alert>
-      )} */}
-      <Box sx={{ marginTop: 10, display: 'flex', flexDirection: 'column', padding: 5, borderRadius: 5}}>
+    <Container component="main" maxWidth="sm" sx={{marginTop: 10}}>
+        {showError && (
+          <Alert variant="filled" severity="error" sx={{marginBottom: 5}}>
+            { msgError }
+          </Alert>
+        )}
+      <Box sx={{ display: 'flex', flexDirection: 'column', padding: 5, borderRadius: 5}} style={containerStyle}>
         <Typography component="h1" variant="h4">Register</Typography>
         <Box sx={{display: 'flex'}}>
           <Typography>Already have an account?</Typography>&nbsp;&nbsp;&nbsp;
           <Typography sx={{ color: '#FE8A01' }}>
             {param ? (
               <a href={`/login?orderid=${orderidFromQuery}`} style={{ color: '#FE8A01', textDecoration: 'none' }}>
-                Sign up here
+                Sign in here
               </a>
             ) : (
               <a href="/login" style={{ color: '#FE8A01', textDecoration: 'none' }}>
-                Sign up here
+                Sign in here
               </a>
             )}
           </Typography>
@@ -242,6 +218,7 @@ function RegisterPage() {
           <Grid item xs={12}>
             <TextField
               sx={textfieldStyle}
+              type='number'
               placeholder="Phonenumber"
               value={phonenumber}
               helperText={errors.phonenumber}
@@ -298,7 +275,6 @@ function RegisterPage() {
               onChange={(e) => setKonfirmasiPassword(e.target.value)}
             />
           </Grid>
-          {message && <Typography color="error">{message}</Typography>}
           <Grid item xs={12}>
             <Button style={btnRegister} fullWidth onClick={handleSubmit}>Register</Button>
           </Grid>

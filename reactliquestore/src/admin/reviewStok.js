@@ -1,20 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
 import Toolbar from '@mui/material/Toolbar';
-import Paper from '@mui/material/Paper';
-import { visuallyHidden } from '@mui/utils';
 import axios from 'axios';
-import styled, { ThemeProvider } from 'styled-components';
-import { Alert, Autocomplete, Backdrop, Button, CssBaseline, Drawer, Grid, Modal, TextField, Typography } from '@mui/material';
+import styled from 'styled-components';
+import { Alert, Autocomplete, Backdrop, Button, CssBaseline, Drawer, FormHelperText, Grid, IconButton, InputAdornment, Modal, TextField, Typography } from '@mui/material';
 import AdminSidebar from './sidebar';
 import { useSpring, animated } from '@react-spring/web';
 import { useDropzone } from 'react-dropzone';
@@ -22,6 +12,9 @@ import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../authContext';
 import { DataGrid, GridHeader } from '@mui/x-data-grid';
 import dayjs from 'dayjs';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+import { NumericFormat } from 'react-number-format';
 
 const RootContainer = styled.div`
   display: flex;
@@ -37,90 +30,6 @@ const btnTambahKaryawan = {
     backgroundColor: '#FE8A01',
     color: 'black',
     border: '3px solid black'
-};
-
-function descendingComparator(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-function getComparator(order, orderBy) {
-  return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort(array, comparator) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) {
-      return order;
-    }
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
-
-const headCells = [
-  { id: 'id', numeric: false, disablePadding: false, label: 'ID Barang' },
-  { id: 'nama', numeric: false, disablePadding: false, label: 'Nama Barang' },
-  { id: 'jenis', numeric: false, disablePadding: false, label: 'Jenis Barang' },
-  { id: 'berat', numeric: true, disablePadding: false, label: 'Berat Barang' },
-  { id: 'hargaModal', numeric: true, disablePadding: false, label: 'Harga Modal Barang' },
-  { id: 'hargaJual', numeric: true, disablePadding: false, label: 'Harga Jual Barang' },
-  { id: 'ukuran', numeric: true, disablePadding: false, label: 'Ukuran Barang' },
-  { id: 'lastupdate', numeric: false, disablePadding: false, label: 'Last Update Date' },
-  { id: 'status', numeric: false, disablePadding: false, label: 'Status Barang' },
-];
-
-function EnhancedTableHead(props) {
-  const { order, orderBy, onRequestSort } =
-    props;
-  const createSortHandler = (property) => (event) => {
-    onRequestSort(event, property);
-  };
-
-  return (
-    <TableHead>
-      <TableRow>
-        {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={'center'}
-            // align={headCell.numeric ? 'right' : 'left'}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
-            sortDirection={orderBy === headCell.id ? order : false}
-          >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={createSortHandler(headCell.id)}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box component="span" sx={visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                </Box>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  );
-}
-
-EnhancedTableHead.propTypes = {
-  onRequestSort: PropTypes.func.isRequired,
-  order: PropTypes.oneOf(['asc', 'desc']).isRequired,
-  orderBy: PropTypes.string.isRequired,
-  rowCount: PropTypes.number.isRequired,
 };
 
 const Fade = React.forwardRef(function Fade(props, ref) {
@@ -197,13 +106,9 @@ const StyledHeader = styled(GridHeader)`
 `;
 
 export default function ReviewStok() {
-  const [order, setOrder] = useState('asc');
-  const [orderBy, setOrderBy] = useState('calories');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [rows, setRows] = useState([]);
-  const [showSuccessInsert, setShowSuccessInsert] = useState(false);
-  const [messageInsert, setMessageInsert] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [msgSuccess, setmsgSuccess] = useState('');
   const [showError, setShowError] = useState(false);
   const [msgError, setMsgError] = useState();
   const [showMsgImage, setShowMsgImage] = useState(false);
@@ -220,9 +125,12 @@ export default function ReviewStok() {
   const [customWeight, setcustomWeight] = useState('');
   const [customCapitalPrice, setcustomCapitalPrice] = useState('');
   const [customDefaultPrice, setcustomDefaultPrice] = useState('');
-  const [size, setSize] = useState('');
   const [files, setFiles] = useState([]);
   const [errors, setErrors] = useState({});
+  const [openEdit, setOpenEdit] = useState(false);
+  const [openDelete, setOpenDelete] = useState(false);
+  const [updatedId, setUpdatedId] = useState('');
+  const handleCloseDelete = () => setOpenDelete(false);
   const { auth, logout } = useAuth();
   const getusername = auth.user ? auth.user.username : '';
   const getId = auth.user ? auth.user.id : '';
@@ -264,12 +172,6 @@ export default function ReviewStok() {
     }
     else if (customDefaultPrice.length > 15) {
       tempErrors.customDefaultPrice = 'Jenis barang maksimal 25 karakter';
-    }
-    if (!size) {
-      tempErrors.size = 'Ukuran barang harus diisi';
-    }
-    else if (size.length > 5) {
-      tempErrors.size = 'Jenis barang maksimal 25 karakter';
     }
 
     setErrors(tempErrors);
@@ -362,7 +264,6 @@ export default function ReviewStok() {
     setcustomWeight('');
     setcustomCapitalPrice('');
     setcustomDefaultPrice('');
-    setSize('');
     setFiles([]);
   };
 
@@ -384,11 +285,12 @@ export default function ReviewStok() {
       formData.append('customWeight', customWeight);
       formData.append('customCapitalPrice', customCapitalPrice);
       formData.append('customDefaultPrice', customDefaultPrice);
-      formData.append('size', size);
   
-      Array.from(files).forEach(file => {
-        formData.append('files', file.originalFile);
-      });
+      if (files && files.length > 0) {
+        Array.from(files).forEach(file => {
+          formData.append('files', file.originalFile);
+        });
+      }
       console.log([...formData]);
 
       try {
@@ -398,11 +300,10 @@ export default function ReviewStok() {
           }
         });
         console.log(response.data);
-        setOpen(false);
-        setShowSuccessInsert(true);
-        setMessageInsert("Berhasil Menambah Item Barang");
+        setShowSuccess(true);
+        setmsgSuccess("Berhasil Menambah Item Barang");
         setTimeout(() => {
-          setShowSuccessInsert(false);
+          setShowSuccess(false);
         }, 5000);
         fetchDataInventori();
         setErrors({});
@@ -411,7 +312,6 @@ export default function ReviewStok() {
         setcustomWeight('');
         setcustomCapitalPrice('');
         setcustomDefaultPrice('');
-        setSize('');
         setFiles([]);
       } catch (error) {
         setErrors(error.response);
@@ -421,9 +321,109 @@ export default function ReviewStok() {
           setShowError(false);
         }, 5000);
       }
+      setOpen(false);
     } else {
       console.log("Validation failed");
     }
+  };
+
+  
+  const handleOpenEdit = (row) => {
+    console.log(row);
+    setUpdatedId(row.id);
+    setname(row.nama);
+    settipeBarang(row.id);
+    setcustomWeight(row.customWeight);
+    setcustomCapitalPrice(row.customCapitalPrice);
+    setcustomDefaultPrice(row.customDefaultPrice);
+    setFiles(row.files);
+    setOpenEdit(true);
+  };
+
+  const handleCloseEdit = () => {
+    setOpenEdit(false);
+    setErrors({});
+    setname('');
+    settipeBarang('');
+    setcustomWeight('');
+    setcustomCapitalPrice('');
+    setcustomDefaultPrice('');
+  };
+
+  const handleConfirmEdit = async (e) => {
+    e.preventDefault();
+    if (validate()) {
+      try {
+        const typeId = tipeBarang.value;
+        const formData = new FormData();
+        formData.append('name', name);
+        formData.append('id', updatedId);
+        formData.append('typeId', typeId);
+        formData.append('customWeight', customWeight);
+        formData.append('customCapitalPrice', customCapitalPrice);
+        formData.append('customDefaultPrice', customDefaultPrice);
+    
+        Array.from(files).forEach(file => {
+          formData.append('files', file.originalFile);
+        });
+        console.log([...formData]);
+        const response = await axios.post('http://localhost:8080/admin/editInventori', formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        });
+        console.log(response.data);
+        setShowSuccess(true);
+        setmsgSuccess("Berhasil Mengubah Data Barang");
+        setTimeout(() => {
+          setShowSuccess(false);
+        }, 5000);
+        fetchDataInventori();
+        setname('');
+        settipeBarang('');
+        setcustomWeight('');
+        setcustomCapitalPrice('');
+        setcustomDefaultPrice('');
+      } catch (error) {
+        setShowError(true);
+        setMsgError("Gagal Mengubah Data Barang");
+        setTimeout(() => {
+          setShowError(false);
+        }, 5000);
+      }
+      setOpenEdit(false);
+    } else {
+      console.log("Validation failed");
+    }
+  };
+
+  const handleOpenDelete = (row) => {
+    setUpdatedId(row.id);
+    console.log(row.id)
+    setOpenDelete(true);
+  };
+
+  const handleConfirmDelete = async (e) => {
+    e.preventDefault();
+    try {
+      // const id = updatedId;
+      const response = await axios.delete(`http://localhost:8080/admin/deleteInventori/${updatedId}`);
+      console.log(response.data);
+      fetchDataInventori();
+      setShowSuccess(true);
+      setmsgSuccess("Berhasil Hapus Data Barang");
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 5000);
+    } catch (error) {
+      console.error(error);
+      setMsgError("Gagal Hapus Data Barang");
+      setShowError(true);
+      setTimeout(() => {
+        setShowError(false);
+      }, 5000);
+    }
+    setOpenDelete(false);
   };
 
   const columns = [
@@ -482,6 +482,55 @@ export default function ReviewStok() {
         return dayjs(lastupdate).format('DD/MM/YYYY');
       }
     },
+    {
+      field: 'status',
+      headerName: 'Status Barang',
+      flex: 1,
+      renderCell: (params) => {
+        const { row } = params;
+        return (
+          <>
+            {row.status === "available" && (
+              <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: '#4caf50'}}>
+                Available
+              </Button>
+            )}
+            {row.status === "checkout" && (
+              <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: '#757575' }}>
+                Checkout
+              </Button>
+            )}
+            {row.status === "payment" && (
+              <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: '#d32f2f' }}>
+                Payment
+              </Button>
+            )}
+            {row.status === "sold" && (
+              <Button style={{ borderRadius: '10px', border: '3px solid black', color: 'white', backgroundColor: 'darkgreen' }}>
+                Sold
+              </Button>
+            )}
+          </>
+        );
+      }
+    },
+    {
+      field: 'actions',
+      headerName: '',
+      flex: 1,
+      filterable: false,
+      sortable: false,
+      renderCell: (params) => (
+        <div>
+          <IconButton onClick={() => handleOpenEdit(params.row)}>
+            <EditIcon />
+          </IconButton>
+          <IconButton onClick={() => handleOpenDelete(params.row)}>
+            <DeleteIcon />
+          </IconButton>
+        </div>
+      )
+    }
   ];
 
   const handleLogout = () => {
@@ -547,19 +596,21 @@ export default function ReviewStok() {
             </Box>
           </Fade>
         </Modal>
-        <br></br>
         <Toolbar />
         <RootContainer>
-          {showSuccessInsert && (
-            <Alert variant="filled" severity="success" style={{ marginTop: 20 }}>
-              { messageInsert }
+          {showSuccess && (
+            <Alert variant="filled" severity="success" style={{ marginBottom: 3 }}>
+              { msgSuccess }
             </Alert>
           )}
           {showError && (
-            <Alert variant="filled" severity="danger" style={{ marginTop: 20 }}>
+            <Alert variant="filled" severity="error" style={{ marginBottom: 3 }}>
               { msgError }
             </Alert>
           )}
+          <Typography variant='h3' marginBottom={5}>
+            Review Stok
+          </Typography>
           <Box sx={{ width: '100%' }}>
             <DataGrid
               rows={rows}
@@ -575,6 +626,193 @@ export default function ReviewStok() {
               disableRowSelectionOnClick
               components={{ Header: StyledHeader }}
             />
+            
+            <br></br>
+            {/* ini modal edit data */}
+            <Modal
+              aria-labelledby="spring-modal-title"
+              aria-describedby="spring-modal-description"
+              open={openEdit}
+              onClose={handleCloseEdit}
+              closeAfterTransition
+              slots={{ backdrop: Backdrop }}
+              slotProps={{
+                backdrop: {
+                  TransitionComponent: Fade,
+                },
+              }}
+            >
+              <Fade in={openEdit}>
+                <Box sx={styleModalTambah}>
+                  <form>
+                    <Grid container spacing={3}>
+                      <Grid item xs={12}>
+                        <Typography>Nama Barang *</Typography>
+                        <TextField
+                          fullWidth
+                          value={name}
+                          error={!!errors.name}
+                          helperText={errors.name}
+                          FormHelperTextProps={{ sx: { color: 'red' } }}
+                          onChange={(e) => setname(e.target.value)}
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Typography>Jenis Barang *</Typography>
+                        <Autocomplete
+                          fullWidth
+                          options={optionsTipe}
+                          getOptionLabel={(option) => option.label}
+                          getOptionSelected={(option, value) => option.value === value} 
+                          renderInput={(params) => <TextField {...params} />}
+                          value={optionsTipe.find((option) => option.value === tipeBarang)}
+                          error={!!errors.tipeBarang}
+                          helperText={errors.tipeBarang}
+                          FormHelperTextProps={{ sx: { color: 'red' } }}
+                          onChange={handleAutocompleteChange}
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Typography>Berat Barang (g) *</Typography>
+                        <NumericFormat
+                          fullWidth
+                          autoComplete='off'
+                          value={customWeight}
+                          onValueChange={(values) => setcustomWeight(values.floatValue)}
+                          thousandSeparator='.'
+                          decimalSeparator=','
+                          customInput={TextField}
+                          error={!!errors.customWeight}
+                          InputProps={{
+                            endAdornment: <InputAdornment position="start">g</InputAdornment>,
+                          }}
+                          variant="outlined"
+                        />
+                        {!!errors.customWeight && (
+                          <FormHelperText error sx={{ color: 'red' }}>
+                            {errors.customWeight}
+                          </FormHelperText>
+                        )}
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography>Harga Modal Barang (Rp.) *</Typography>
+                        <NumericFormat
+                          fullWidth
+                          autoComplete='off'
+                          value={customCapitalPrice}
+                          onValueChange={(values) => setcustomCapitalPrice(values.floatValue)}
+                          thousandSeparator='.'
+                          decimalSeparator=','
+                          customInput={TextField}
+                          error={!!errors.customCapitalPrice}
+                          InputProps={{
+                            startAdornment: <InputAdornment position="start">Rp </InputAdornment>,
+                          }}
+                          variant="outlined"
+                        />
+                        {!!errors.customCapitalPrice && (
+                          <FormHelperText error sx={{ color: 'red' }}>
+                            {errors.customCapitalPrice}
+                          </FormHelperText>
+                        )}
+                      </Grid>
+                      <Grid item xs={6}>
+                        <Typography>Harga Jual Barang (Rp.) *</Typography>
+                        <NumericFormat
+                          fullWidth
+                          autoComplete='off'
+                          value={customDefaultPrice}
+                          onValueChange={(values) => setcustomDefaultPrice(values.floatValue)}
+                          thousandSeparator='.'
+                          decimalSeparator=','
+                          customInput={TextField}
+                          error={!!errors.customDefaultPrice}
+                          InputProps={{
+                            startAdornment: <InputAdornment position="start">Rp </InputAdornment>,
+                          }}
+                          variant="outlined"
+                        />
+                        {!!errors.customDefaultPrice && (
+                          <FormHelperText error sx={{ color: 'red' }}>
+                            {errors.customDefaultPrice}
+                          </FormHelperText>
+                        )}
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Box
+                          {...getRootProps()}
+                          sx={{
+                            border: '2px dashed #aaa',
+                            borderRadius: '4px',
+                            padding: '20px',
+                            textAlign: 'center',
+                            cursor: 'pointer',
+                            backgroundColor: isDragActive ? '#f0f0f0' : '#fafafa',
+                            transition: 'background-color 0.2s',
+                          }}
+                        >
+                          <input {...getInputProps()} />
+                          {isDragActive ? (
+                            <Typography>Drop the files here...</Typography>
+                          ) : (
+                            <Typography>Drag 'n' drop some files here, or click to select files</Typography>
+                          )}
+                        </Box>
+                        <Box mt={2} sx={{ display: 'flex', flexDirection: 'row', flexWrap: 'wrap' }}>
+                          {files.map((file, index) => (
+                            <Box key={index} mb={2} mr={2}>
+                              <Typography>{file.path}</Typography>
+                              <img src={file.preview} alt={file.path} style={{ maxWidth: '70%', maxHeight: '100px' }} />
+                            </Box>
+                          ))}
+                        </Box>
+                        {showMsgImage && (
+                          <Typography sx={{color: 'red'}}>
+                            { msgImageError }
+                          </Typography>
+                        )}
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Button variant="contained" onClick={handleConfirmEdit} fullWidth style={{ backgroundColor: 'black', color: 'white' }}>
+                          Submit
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </form>
+                </Box>
+              </Fade>
+            </Modal>
+
+            {/* ini modal delete tipe */}
+            <Modal
+              aria-labelledby="spring-modal-title"
+              aria-describedby="spring-modal-description"
+              open={openDelete}
+              onClose={handleCloseDelete}
+              closeAfterTransition
+              slots={{ backdrop: Backdrop }}
+              slotProps={{
+                backdrop: {
+                  TransitionComponent: Fade,
+                },
+              }}
+              >
+              <Fade in={openDelete}>
+                <Box sx={styleModal}>
+                  <Typography id="spring-modal-title" variant="h6" component="h2">
+                    Apakah kamu yakin ingin membuang data ini?
+                  </Typography>
+                  <Box sx={{ mt: 2 }}>
+                    <Button variant="outlined" onClick={handleConfirmDelete} sx={{ mr: 2, backgroundColor: '#FE8A01', color: 'white' }}>
+                      Ya
+                    </Button>
+                    <Button variant="outlined" onClick={handleCloseDelete}>
+                      Tidak
+                    </Button>
+                  </Box>
+                </Box>
+              </Fade>
+            </Modal>
           </Box>
           <Button style={btnTambahKaryawan} onClick={handleOpen}>+ Tambah Katalog</Button>
           <Modal
@@ -620,53 +858,71 @@ export default function ReviewStok() {
                       onChange={handleAutocompleteChange} 
                     />
                   </Grid>
-                  <Grid item xs={6}>
+                  <Grid item xs={12}>
                     <Typography>Berat Barang (g) *</Typography>
-                    <TextField
+                    <NumericFormat
                       fullWidth
-                      type='number'
+                      autoComplete='off'
                       value={customWeight}
+                      onValueChange={(values) => setcustomWeight(values.floatValue)}
+                      thousandSeparator='.'
+                      decimalSeparator=','
+                      customInput={TextField}
                       error={!!errors.customWeight}
-                      helperText={errors.customWeight}
-                      FormHelperTextProps={{ sx: { color: 'red' } }}
-                      onChange={(e) => setcustomWeight(e.target.value)}
+                      InputProps={{
+                        endAdornment: <InputAdornment position="start">g</InputAdornment>,
+                      }}
+                      variant="outlined"
                     />
+                     {!!errors.customWeight && (
+                      <FormHelperText error sx={{ color: 'red' }}>
+                        {errors.customWeight}
+                      </FormHelperText>
+                    )}
                   </Grid>
                   <Grid item xs={6}>
                     <Typography>Harga Modal Barang (Rp.) *</Typography>
-                    <TextField
+                    <NumericFormat
                       fullWidth
-                      type='number'
+                      autoComplete='off'
                       value={customCapitalPrice}
+                      onValueChange={(values) => setcustomCapitalPrice(values.floatValue)}
+                      thousandSeparator='.'
+                      decimalSeparator=','
+                      customInput={TextField}
                       error={!!errors.customCapitalPrice}
-                      helperText={errors.customCapitalPrice}
-                      FormHelperTextProps={{ sx: { color: 'red' } }}
-                      onChange={(e) => setcustomCapitalPrice(e.target.value)}
+                      InputProps={{
+                        startAdornment: <InputAdornment position="start">Rp </InputAdornment>,
+                      }}
+                      variant="outlined"
                     />
+                     {!!errors.customCapitalPrice && (
+                      <FormHelperText error sx={{ color: 'red' }}>
+                        {errors.customCapitalPrice}
+                      </FormHelperText>
+                    )}
                   </Grid>
                   <Grid item xs={6}>
                     <Typography>Harga Jual Barang (Rp.) *</Typography>
-                    <TextField
+                    <NumericFormat
                       fullWidth
-                      type='number'
+                      autoComplete='off'
                       value={customDefaultPrice}
+                      onValueChange={(values) => setcustomDefaultPrice(values.floatValue)}
+                      thousandSeparator='.'
+                      decimalSeparator=','
+                      customInput={TextField}
                       error={!!errors.customDefaultPrice}
-                      helperText={errors.customDefaultPrice}
-                      FormHelperTextProps={{ sx: { color: 'red' } }}
-                      onChange={(e) => setcustomDefaultPrice(e.target.value)}
+                      InputProps={{
+                        startAdornment: <InputAdornment position="start">Rp </InputAdornment>,
+                      }}
+                      variant="outlined"
                     />
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography>Ukuran Barang (m<sup>3</sup>) *</Typography>
-                    <TextField
-                      fullWidth
-                      type='number'
-                      value={size}
-                      error={!!errors.size}
-                      helperText={errors.size}
-                      FormHelperTextProps={{ sx: { color: 'red' } }}
-                      onChange={(e) => setSize(e.target.value)}
-                    />
+                     {!!errors.customDefaultPrice && (
+                      <FormHelperText error sx={{ color: 'red' }}>
+                        {errors.customDefaultPrice}
+                      </FormHelperText>
+                    )}
                   </Grid>
                   <Grid item xs={12}>
                     <Box

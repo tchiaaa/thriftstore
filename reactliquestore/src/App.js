@@ -11,7 +11,8 @@ import ReviewStokManager from './manager/reviewStok';
 import TipeStokAdmin from './admin/tipeStok';
 import TipeStokSupervisor from './supervisor/tipeStok';
 import TipeStokManager from './manager/tipeStok';
-import Pemesanan from './admin/pemesanan';
+import PemesananAdmin from './admin/pemesanan';
+import PemesananSupervisor from './supervisor/pemesanan';
 import CheckoutPage from './customer/checkoutPage';
 import PaymentPage from './customer/paymentPage';
 import PrivateRoute from './privateRoute';
@@ -44,7 +45,7 @@ function AppWrapper() {
           <Route path="/admin/stok/reviewStok" element={<ReviewStokAdmin />} />
           <Route path="/admin/stok/tipeBarang" element={<TipeStokAdmin />} />
           <Route path="/admin/orderDelivery/live" element={<Live />} />
-          <Route path="/admin/orderDelivery/pemesanan" element={<Pemesanan />} />
+          <Route path="/admin/orderDelivery/pemesanan" element={<PemesananAdmin />} />
           <Route path="/admin/orderDelivery/pengiriman" element={<PengirimanAdmin />} />
           <Route path="/admin/orderDelivery/reviewOrderDelivery" element={<ReviewOrderDeliveryAdmin />} />
         </Route>
@@ -56,9 +57,9 @@ function AppWrapper() {
           <Route path="/supervisor/karyawan/presensi/clockout" element={<ClockOutSupervisor />} />
           <Route path="/supervisor/stok/reviewStok" element={<ReviewStokSupervisor />} />
           <Route path="/supervisor/stok/tipeBarang" element={<TipeStokSupervisor />} />
-          {/* kurang pemesanan */}
+          <Route path="/supervisor/orderDelivery/pemesanan" element={<PemesananSupervisor />} />
           <Route path="/supervisor/orderDelivery/pengiriman" element={<PengirimanSupervisor />} />
-          <Route path="/manager/orderDelivery/reviewOrderDelivery" element={<ReviewOrderDeliverySupervisor />} />
+          <Route path="/supervisor/orderDelivery/reviewOrderDelivery" element={<ReviewOrderDeliverySupervisor />} />
         </Route>
 
         {/* MANAGER */}
@@ -80,7 +81,7 @@ function AppWrapper() {
           <Route path="/customer/checkoutPage" element={<CheckoutPage />} />
           <Route path="/customer/paymentPage" element={<PaymentPage />} />
         </Route>
-        <Route path="/checkout/:orderid" element={<CheckoutPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
         {/* <Route path="/customer/dashboard" element={<DashboardCustomer />} />
         <Route path="/customer/checkoutPage" element={<CheckoutPage />} />
         <Route path="/customer/paymentPage" element={<PaymentPage />} /> */}

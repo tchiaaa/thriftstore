@@ -180,21 +180,42 @@ public class ManagerController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new Response("Passcode Salah"));
         }
     }
-
     @GetMapping("/dataKaryawan")
-    public ResponseEntity<?> getAllEmployees(){
+    public ResponseEntity<?> getAllEmployees() {
+        boolean cekManager = false;
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd MMMM yyyy");
-        List<EmployeeModel> getAdminOnly = loginService.getEmployeesByAccessRightId(1);
-        logger.info(String.valueOf(getAdminOnly));
-        List<Map<String, Object>> employeeData = getAdminOnly.stream()
-                .filter(employee -> {
-                    if ("inactive".equalsIgnoreCase(employee.getStatus())) {
-                        // Jika status 'inactive', cetak pesan dan kembalikan false untuk memfilter data ini
-                        logger.info("Employee with ID " + employee.getId() + " is inactive and will not be included.");
-                        return false;
-                    }
-                    return true;
-                })
+        List<EmployeeModel> allEmployee = employeeRepository.findAll();
+        List<EmployeeModel> getAdminOnly = loginService.getEmployeesByAccessRightId(3);
+
+        // Memeriksa apakah ada manager dalam daftar karyawan
+        for (EmployeeModel employee : allEmployee) {
+            if (employee.getAccessRight().getId() == 3) {
+                cekManager = true;
+                break;
+            }
+        }
+
+        List<EmployeeModel> filteredEmployees;
+        if (!cekManager) {
+            // Jika tidak ada manager, gunakan getAdminOnly
+            filteredEmployees = getAdminOnly;
+        } else {
+            // Jika ada manager, filter out all employees with accessrightid = 3
+            filteredEmployees = allEmployee.stream()
+                    .filter(employee -> employee.getAccessRight().getId() != 3)
+                    .collect(Collectors.toList());
+        }
+
+        // Memetakan hasil filter menjadi Map
+        List<Map<String, Object>> employeeData = filteredEmployees.stream()
+//                    .filter(employee -> {
+//                    if ("inactive".equalsIgnoreCase(employee.getStatus())) {
+//                        // Jika status 'inactive', cetak pesan dan kembalikan false untuk memfilter data ini
+//                        logger.info("Employee with ID " + employee.getId() + " is inactive and will not be included.");
+//                        return false;
+//                    }
+//                    return true;
+//                }
                 .map(employee -> {
                     Map<String, Object> empData = new HashMap<>();
                     empData.put("id", employee.getId());
@@ -203,14 +224,13 @@ public class ManagerController {
                     empData.put("email", employee.getEmail());
                     LocalDate birthDate = employee.getBirthdate().toLocalDate();
                     empData.put("tanggallahir", birthDate.format(dateFormatter));
-                    logger.info(String.valueOf(birthDate));
-                    LocalDate currentDate = LocalDate.now();
-                    empData.put("umur", Period.between(birthDate, currentDate).getYears());
+                    empData.put("umur", Period.between(birthDate, LocalDate.now()).getYears());
                     empData.put("nomorwa", employee.getPhonenumber());
+                    empData.put("jam_masuk", employee.getJam_masuk());
+                    empData.put("jadwal_libur", employee.getJadwal_libur());
                     empData.put("status", employee.getStatus());
                     Timestamp firstJoinDate = employee.getFirstjoindate();
                     LocalDateTime firstJoinDateTime = LocalDateTime.ofInstant(firstJoinDate.toInstant(), ZoneId.systemDefault());
-                    logger.info(String.valueOf(firstJoinDateTime));
                     empData.put("firstjoindate", firstJoinDateTime.format(dateFormatter));
                     Timestamp lastUpdateDate = employee.getLastupdate();
                     if (lastUpdateDate != null) {
@@ -222,11 +242,13 @@ public class ManagerController {
                     empData.put("jabatan", employee.getAccessRight().getPosition());
                     return empData;
                 }).collect(Collectors.toList());
+
         logger.info(String.valueOf(employeeData));
         return ResponseEntity.ok(employeeData);
     }
 
-    @PostMapping("/tambahKaryawan")
+
+        @PostMapping("/tambahKaryawan")
     public ResponseEntity<?> tambahKaryawan(@RequestBody EmployeeModel employeeModel){
         EmployeeModel existingUsername = employeeRepository.findByUsername(employeeModel.getUsername());
         if (existingUsername != null) {
@@ -248,7 +270,8 @@ public class ManagerController {
         addEmployee.setJam_masuk(employeeModel.getJam_masuk());
         addEmployee.setJadwal_libur(employeeModel.getJadwal_libur());
         addEmployee.setPassword(passwordEncoder.encode("123"));
-        addEmployee.setStatus("bekerja");
+        addEmployee.setLastupdate(Timestamp.valueOf(LocalDateTime.now()));
+        addEmployee.setStatus("active");
         employeeRepository.save(addEmployee);
         logger.info(String.valueOf(addEmployee));
         return ResponseEntity.ok(addEmployee);
@@ -290,6 +313,7 @@ public class ManagerController {
             employee.setLastupdate(Timestamp.valueOf(LocalDateTime.now()));
             employee.setJam_masuk(employeeModel.getJam_masuk());
             employee.setJadwal_libur(employeeModel.getJadwal_libur());
+            employee.setStatus(employeeModel.getStatus());
             employeeRepository.save(employee);
             return ResponseEntity.ok(employee);
         } else {
@@ -542,22 +566,52 @@ public class ManagerController {
             empData.put("namapembeli", orders.getUsername());
             Timestamp checkoutdate = orders.getCheckoutdate();
             LocalDateTime checkoutDateTime = LocalDateTime.ofInstant(checkoutdate.toInstant(), ZoneId.systemDefault());
-            Timestamp paymentdate = orders.getCheckoutdate();
-            LocalDateTime paymentDateTime = LocalDateTime.ofInstant(paymentdate.toInstant(), ZoneId.systemDefault());
-            Timestamp packingdate = orders.getCheckoutdate();
-            LocalDateTime packingDateTime = LocalDateTime.ofInstant(packingdate.toInstant(), ZoneId.systemDefault());
-            Timestamp deliverypickupdate = orders.getCheckoutdate();
-            LocalDateTime deliverypickupDateTime = LocalDateTime.ofInstant(deliverypickupdate.toInstant(), ZoneId.systemDefault());
-            Timestamp deliverydonedate = orders.getCheckoutdate();
-            LocalDateTime deliverydoneDateTime = LocalDateTime.ofInstant(deliverydonedate.toInstant(), ZoneId.systemDefault());
             empData.put("checkoutdate", checkoutDateTime.format(dateFormatter));
-            empData.put("paymentdate", paymentDateTime.format(dateFormatter));
-            empData.put("packingdate", packingDateTime.format(dateFormatter));
-            empData.put("deliverypickupdate", deliverypickupDateTime.format(dateFormatter));
-            empData.put("deliverydonedate", deliverydoneDateTime.format(dateFormatter));
+            Timestamp paymentdate = orders.getPaymentdate();
+            empData.put("paymentdate", paymentdate != null ? LocalDateTime.ofInstant(paymentdate.toInstant(), ZoneId.systemDefault()).format(dateFormatter) : null);
+
+            Timestamp packingdate = orders.getPackingdate();
+            empData.put("packingdate", packingdate != null ? LocalDateTime.ofInstant(packingdate.toInstant(), ZoneId.systemDefault()).format(dateFormatter) : "null");
+
+            Timestamp deliverypickupdate = orders.getDeliverypickupdate();
+            empData.put("deliverypickupdate", deliverypickupdate != null ? LocalDateTime.ofInstant(deliverypickupdate.toInstant(), ZoneId.systemDefault()).format(dateFormatter) : null);
+
+            Timestamp deliverydonedate = orders.getDeliverydonedate();
+            empData.put("deliverydonedate", deliverydonedate != null ? LocalDateTime.ofInstant(deliverydonedate.toInstant(), ZoneId.systemDefault()).format(dateFormatter) : null);
+
             empData.put("status", orders.getStatus());
             return empData;
         }).collect(Collectors.toList());
         return ResponseEntity.ok(orderData);
+    }
+
+    @PostMapping("/editOrderDelivery")
+    public ResponseEntity<?> editOrderDelivery(@RequestBody OrdersModel ordersModel){
+        Optional<OrdersModel> optionalOrdersModel = ordersRepository.findById(ordersModel.getId());
+        if (optionalOrdersModel.isPresent()) {
+            OrdersModel editOrder = optionalOrdersModel.get();
+            editOrder.setCheckoutdate(ordersModel.getCheckoutdate());
+            editOrder.setPaymentdate(ordersModel.getPaymentdate());
+            editOrder.setPackingdate(ordersModel.getPackingdate());
+            editOrder.setDeliverypickupdate(ordersModel.getDeliverypickupdate());
+            editOrder.setDeliverydonedate(ordersModel.getDeliverydonedate());
+            editOrder.setStatus(ordersModel.getStatus());
+            ordersRepository.save(editOrder);
+            return ResponseEntity.ok(editOrder);
+        } else {
+            return ResponseEntity.badRequest().body("Employee not found with ID: " + ordersModel.getId());
+        }
+    }
+
+    @DeleteMapping("/deleteOrderDelivery/{id}")
+    public ResponseEntity<?> deleteOrderDelivery(@PathVariable String id) {
+        Optional<OrdersModel> optOrder = ordersRepository.findById(id);
+
+        if (optOrder.isPresent()) {
+            ordersRepository.deleteById(id);
+            return ResponseEntity.ok().body("Type deleted successfully.");
+        } else {
+            return ResponseEntity.badRequest().body("Type not found with ID: " + id);
+        }
     }
 }

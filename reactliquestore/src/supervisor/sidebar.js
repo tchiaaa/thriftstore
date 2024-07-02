@@ -24,13 +24,13 @@ function Sidebar() {
   };
 
   useEffect(() => {
-    if (location.pathname.startsWith('/manager/karyawan')) {
+    if (location.pathname.startsWith('/supervisor/karyawan')) {
+      setOpenKaryawan(true);
+    }
+    if (location.pathname.startsWith('/supervisor/stok')) {
       setOpenStok(true);
     }
-    if (location.pathname.startsWith('/manager/stok')) {
-      setOpenStok(true);
-    }
-    if (location.pathname.startsWith('/manager/orderDelivery')) {
+    if (location.pathname.startsWith('/supervisor/orderDelivery')) {
       setopenOrderDelivery(true);
     }
   }, [location.pathname]);
@@ -86,8 +86,8 @@ function Sidebar() {
             <ListItem button component={Link} to="/supervisor/orderDelivery/pengiriman">
               <ListItemText primary="Input Pengiriman" />
             </ListItem>
-            <ListItem button component={Link} to="/supervisor/orderDelivery/review">
-              <ListItemText primary="Review Pengiriman dan Pengiriman" />
+            <ListItem button component={Link} to="/supervisor/orderDelivery/reviewOrderDelivery">
+              <ListItemText primary="Review Pemesanan dan Pengiriman" />
             </ListItem>
           </List>
         </Collapse>

@@ -136,9 +136,9 @@ const PresensiManager = () => {
           </Fade>
         </Modal>
         <Toolbar />
-        <center><Container>
+        <center><Container component="main" maxWidth="sm">
           {showSuccess && (
-            <Alert variant="filled" severity="success" style={{ marginTop: 20 }}>
+            <Alert variant="filled" severity="success">
               { message }
             </Alert>
           )}

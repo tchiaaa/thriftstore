@@ -63,7 +63,7 @@ public class AdminController {
             empData.put("customWeight", item.getCustomweight());
             empData.put("customCapitalPrice", item.getCustomcapitalprice());
             empData.put("customDefaultPrice", item.getCustomdefaultprice());
-            empData.put("size", item.getSize());
+            empData.put("files", item.getFiles());
             Timestamp lastUpdateDate = item.getLastupdate();
             if (lastUpdateDate != null) {
                 LocalDateTime lastUpdateDateTime = LocalDateTime.ofInstant(lastUpdateDate.toInstant(), ZoneId.systemDefault());
@@ -85,8 +85,7 @@ public class AdminController {
                                              @RequestParam("customWeight") int customWeight,
                                              @RequestParam("customCapitalPrice") int customCapitalPrice,
                                              @RequestParam("customDefaultPrice") int customDefaultPrice,
-                                             @RequestParam("size") int size,
-                                             @RequestParam("files") List<MultipartFile> files) {
+                                             @RequestParam(value = "files", required = false) List<MultipartFile> files) {
         Optional<TypeModel> optionalTypeModel = typeRepository.findById(typeId);
         String itemCode;
         if (optionalTypeModel.isPresent()) {
@@ -105,7 +104,7 @@ public class AdminController {
         } else {
             return ResponseEntity.badRequest().body("Employee not found with ID: " + typeId);
         }
-        List<String> fileNames = fileStorageService.storeFiles(files);
+
         ItemModel itemModel = new ItemModel();
         itemModel.setName(name);
         itemModel.setTypeId(new TypeModel(typeId));
@@ -114,12 +113,55 @@ public class AdminController {
         itemModel.setCustomweight(customWeight);
         itemModel.setCustomcapitalprice(customCapitalPrice);
         itemModel.setCustomdefaultprice(customDefaultPrice);
-        itemModel.setSize(size);
-        itemModel.setFiles(fileNames);
+        if (files != null && !files.isEmpty()) {
+            List<String> fileNames = fileStorageService.storeFiles(files);
+            itemModel.setFiles(fileNames);
+        }
         itemModel.setStatus("available");
+        itemModel.setLastupdate(Timestamp.valueOf(LocalDateTime.now()));
         ItemModel savedItem = itemRepository.save(itemModel);
         logger.info(String.valueOf(savedItem));
         return ResponseEntity.ok(savedItem);
+    }
+
+    @PostMapping("/editInventori")
+    public ResponseEntity<?> editInventori(@RequestParam("name") String name,
+                                           @RequestParam("id") int id,
+                                           @RequestParam("typeId") int typeId,
+                                           @RequestParam("customWeight") int customWeight,
+                                           @RequestParam("customCapitalPrice") int customCapitalPrice,
+                                           @RequestParam("customDefaultPrice") int customDefaultPrice,
+                                           @RequestParam(value = "files", required = false) List<MultipartFile> files){
+        Optional<ItemModel> optionalItemModel = itemRepository.findById(id);
+        if (optionalItemModel.isPresent()){
+            ItemModel getItem = optionalItemModel.get();
+            getItem.setName(name);
+            getItem.setTypeId(new TypeModel(typeId));
+            getItem.setCustomweight(customWeight);
+            getItem.setCustomcapitalprice(customCapitalPrice);
+            getItem.setCustomdefaultprice(customDefaultPrice);
+            if (files != null && !files.isEmpty()) {
+                List<String> fileNames = fileStorageService.storeFiles(files);
+                getItem.setFiles(fileNames);
+            }
+            getItem.setLastupdate(Timestamp.valueOf(LocalDateTime.now()));
+            ItemModel savedItem = itemRepository.save(getItem);
+            return ResponseEntity.ok(savedItem);
+        }
+        else{
+            return ResponseEntity.badRequest().body("item barang tidak ditemukan");
+        }
+    }
+
+    @DeleteMapping("/deleteInventori/{id}")
+    public ResponseEntity<?> deleteInventori(@PathVariable int id) {
+        Optional<ItemModel> optItem = itemRepository.findById(id);
+        if (optItem.isPresent()) {
+            itemRepository.deleteById(id);
+            return ResponseEntity.ok().body("Item deleted successfully.");
+        } else {
+            return ResponseEntity.badRequest().body("Item not found with ID: " + id);
+        }
     }
 
     @GetMapping("/dataTipe")
@@ -161,6 +203,7 @@ public class AdminController {
         addType.setWeight(typeModel.getWeight());
         addType.setVarian(typeModel.getVarian());
         addType.setTypecode(tipeKode);
+        addType.setLastupdate(Timestamp.valueOf(LocalDateTime.now()));
         typeRepository.save(addType);
         logger.info(String.valueOf(addType));
         return ResponseEntity.ok(addType);
@@ -224,7 +267,6 @@ public class AdminController {
         }
         else{
             return ResponseEntity.badRequest().body("Colour not found with ID: " + id);
-
         }
     }
 
@@ -256,6 +298,7 @@ public class AdminController {
             addTemporaryOrder.setStatus("Payment Not Done");
             addTemporaryOrder.setCheckoutdate(Timestamp.valueOf(LocalDateTime.now()));
             addTemporaryOrder.setMasterorderid(tempOrderid);
+            addTemporaryOrder.setIsactive(true);
             TemporaryOrderModel savedTempOrder = temporaryOrderRepository.save(addTemporaryOrder);
             return ResponseEntity.ok(savedTempOrder);
         }
@@ -281,6 +324,7 @@ public class AdminController {
             addTemporaryOrder.setTotalprice(totalprice);
             addTemporaryOrder.setTotalweight(typeModel.getWeight());
             addTemporaryOrder.setStatus("Payment Not Done");
+            addTemporaryOrder.setIsactive(true);
             addTemporaryOrder.setCheckoutdate(Timestamp.valueOf(LocalDateTime.now()));
             if (lowestOrderIdOrder.isPresent()){
                 TemporaryOrderModel temporaryOrderModel = lowestOrderIdOrder.get();
@@ -319,7 +363,7 @@ public class AdminController {
                 } else if (substringOrderId.startsWith("0")) {
                     substringOrderId = substringOrderId.substring(1); // Menghapus angka '0' di depan jika ada
                 }
-                if (firstChar.equals(orderColourModel.getColourcode())) {
+                if (firstChar.equals(orderColourModel.getColourcode()) && tempOrder.isIsactive()) {
                     Map<String, Object> orderMap = new HashMap<>();
                     orderMap.put("colourid", tempOrder.getColourid());
                     orderMap.put("id", tempOrder.getId());
@@ -427,13 +471,10 @@ public class AdminController {
             boolean allPaid = userOrders.stream().allMatch(order -> "On Packing".equals(order.getStatus()));
             if (allPaid) {
                 log.info("All orders for user {} are paid", username);
-                userOrders.forEach(order -> {
-                    order.setIsactive(false);
-                    temporaryOrderRepository.save(order);
-                });
                 TemporaryOrderModel minOrder = userOrders.stream()
                         .min(Comparator.comparingInt(order -> Integer.parseInt(order.getOrderid().substring(1, 4))))
                         .orElse(null);
+                log.info("ini data min order {}", minOrder);
                 if (minOrder != null) {
                     TemporaryOrderModel fullOrderInfo = tempOrderMap.get(minOrder.getOrderid());
                     OrdersModel addOrders = new OrdersModel();
@@ -443,14 +484,29 @@ public class AdminController {
                     addOrders.setPhonenumber(fullOrderInfo.getPhonenumber());
                     addOrders.setCheckoutdate(fullOrderInfo.getCheckoutdate());
                     addOrders.setPaymentdate(fullOrderInfo.getPaymentdate());
+                    addOrders.setItemidall(fullOrderInfo.getItemidall());
                     ordersToInsert.add(addOrders);
                     log.info("Order for user {} added: {}", username, addOrders);
+                    List<TemporaryOrderModel> updateIsActive = temporaryOrderRepository.findAllByMasterorderid(minOrder.getOrderid());
+                    // Update isIsactive()() to false for each found order
+                    for (TemporaryOrderModel orderToUpdate : updateIsActive) {
+                        orderToUpdate.setIsactive(false);
+                        temporaryOrderRepository.save(orderToUpdate);
+                    }
                 }
             }
         }
         if (!ordersToInsert.isEmpty()) {
             ordersRepository.saveAll(ordersToInsert);
             log.info("Orders saved successfully");
+            // Update isIsactive()() to false for the corresponding temporary orders
+            for (OrdersModel order : ordersToInsert) {
+                TemporaryOrderModel tempOrder = tempOrderMap.get(order.getId());
+                if (tempOrder != null) {
+                    tempOrder.setIsactive(false);
+                    temporaryOrderRepository.save(tempOrder);
+                }
+            }
             return ResponseEntity.ok("Orders have been submitted successfully");
         } else {
             log.warn("No orders to submit");
@@ -462,14 +518,16 @@ public class AdminController {
     public ResponseEntity<?> checkUpdateTransaction(@RequestBody List<TemporaryOrderModel> temporaryOrderModels){
         logger.info("masuk transaksinya");
         List<String> failedOrders = new ArrayList<>();
-
         for (TemporaryOrderModel order : temporaryOrderModels) {
-            try {
-                logger.info(order.getMasterorderid());
-                midtransService.checkAndUpdateOrderStatus(order.getMasterorderid());
-            } catch (Exception e) {
-                failedOrders.add(order.getOrderid());
-                logger.info(e.getMessage());
+            TemporaryOrderModel temporaryOrderModel = temporaryOrderRepository.findByOrderid(order.getOrderid());
+            if (temporaryOrderModel.isIsactive()){
+                try {
+                    logger.info(order.getMasterorderid());
+                    midtransService.checkAndUpdateOrderStatus(order.getMasterorderid());
+                } catch (Exception e) {
+                    failedOrders.add(order.getOrderid());
+                    logger.info(e.getMessage());
+                }
             }
         }
 
@@ -528,11 +586,9 @@ public class AdminController {
             .map(orders -> {
                 Map<String, Object> empData = new HashMap<>();
                 empData.put("id", orders.getId());
-                String itemName = orders.getItemidall().stream()
-                        .map(itemCodeToNameMap::get)
-                        .filter(Objects::nonNull)
-                        .findFirst()
-                        .orElse("Unknown Item");
+                List<String> itemName = orders.getItemidall().stream()
+                        .map(itemCode -> itemCodeToNameMap.getOrDefault(itemCode, "Unknown Item"))
+                        .collect(Collectors.toList());
                 empData.put("namabarang", itemName);
                 empData.put("namacust", orders.getUsername());
                 Timestamp checkoutdate = orders.getCheckoutdate();
@@ -591,7 +647,7 @@ public class AdminController {
         List<Map<String, Object>> orderData = getAllOrders.stream().map(orders -> {
             Map<String, Object> empData = new HashMap<>();
             empData.put("orderid", orders.getId());
-            String[] itemDetails = orders.getItemidall().stream()
+            List<String[]> itemDetails = orders.getItemidall().stream()
                     .map(itemCode -> {
                         ItemModel item = getAllItem.stream()
                                 .filter(i -> i.getItemcode().equals(itemCode))
@@ -602,17 +658,22 @@ public class AdminController {
                         }
                         Optional<TypeModel> getSelectedType = typeRepository.findById(item.getTypeId().getId());
                         String typeName = "";
-                        if (getSelectedType.isPresent()){
+                        if (getSelectedType.isPresent()) {
                             TypeModel typeModel = getSelectedType.get();
                             typeName = typeModel.getNama();
                         }
                         String itemName = itemCodeToNameMap.getOrDefault(itemCode, "Unknown Item");
                         return new String[]{itemName, typeName};
                     })
-                    .findFirst()
-                    .orElse(new String[]{"Unknown Item", "Unknown Type"});
-            empData.put("namabarang", itemDetails[0]);
-            empData.put("jenisbarang", itemDetails[1]);
+                    .toList();
+            List<String> itemNames = itemDetails.stream()
+                    .map(details -> details[0])
+                    .toList();
+            List<String> itemTypes = itemDetails.stream()
+                    .map(details -> details[1])
+                    .toList();
+            empData.put("namabarang", String.join(", ", itemNames));
+            empData.put("jenisbarang", String.join(", ", itemTypes));
             empData.put("namapembeli", orders.getUsername());
             Timestamp checkoutdate = orders.getCheckoutdate();
             if (checkoutdate != null) {

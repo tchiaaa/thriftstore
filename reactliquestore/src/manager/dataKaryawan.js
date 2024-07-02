@@ -79,6 +79,8 @@ const headCells = [
   { id: 'nomorwa', numeric: true, disablePadding: false, label: 'Nomor HP' },
   { id: 'email', numeric: false, disablePadding: false, label: 'Email' },
   { id: 'username', numeric: false, disablePadding: false, label: 'Username' },
+  { id: 'jam_masuk', numeric: false, disablePadding: false, label: 'Jam Masuk' },
+  { id: 'jadwal_libur', numeric: false, disablePadding: false, label: 'Jadwal Libur' },
   { id: 'firstjoindate', numeric: false, disablePadding: false, label: 'Tanggal Pertama Bekerja' },
   { id: 'lastupdate', numeric: false, disablePadding: false, label: 'Last Update' },
   { id: 'status', numeric: false, disablePadding: false, label: 'Status' },
@@ -203,7 +205,6 @@ export default function DataKaryawan() {
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('calories');
   const [page, setPage] = useState(0);
-  const [dense, setDense] = useState(false);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [rows, setRows] = useState([]);
   const [showSuccessInsert, setShowSuccessInsert] = useState(false);
@@ -220,7 +221,6 @@ export default function DataKaryawan() {
 
   // variabel edit
   const optHarilibur = ['senin', 'selasa', 'rabu', 'kamis', 'jumat', 'sabtu', 'minggu'];
-  const [rolesKaryawan, setRolesKaryawan] = useState([]);
   const [id, setId] = useState('');
   const [username, setUsername] = useState('');
   const [fullname, setFullname] = useState('');
@@ -231,6 +231,9 @@ export default function DataKaryawan() {
   const [entryhour, setEntryhour] = useState('');
   const [jadwal_libur, setJadwal_libur] = useState('');
   const [accessRight, setAccessRight] = useState('');
+  const [rolesKaryawan, setRolesKaryawan] = useState([]);
+  const [status, setStatus] = useState('');
+  const listStatus = ['active', 'suspended', 'inactive', 'unknown'];
 
   const [openTambah, setOpenTambah] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
@@ -245,13 +248,19 @@ export default function DataKaryawan() {
   const { auth, logout } = useAuth();
   const getUsername = auth.user ? auth.user.username : '';
 
+  const formatTime = (timeString) => {
+    if (!timeString) return '';
+    return timeString.slice(0, 5); // Mengambil substring dari posisi 0 sampai 5
+  };
+
   const fetchDataKaryawan = async () => {
     try {
       const response = await axios.get('http://localhost:8080/manager/dataKaryawan');
-      console.log(response.data.status);
-      if (response.data.status !== "inactive") {
-        setRows(response.data);
-      }
+      console.log(response.data);
+      // if (response.data.status !== "inactive") {
+      //   setRows(response.data);
+      // }
+      setRows(response.data);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -320,10 +329,6 @@ export default function DataKaryawan() {
     setPage(0);
   };
 
-  const handleChangeDense = (event) => {
-    setDense(event.target.checked);
-  };
-
   // Avoid a layout jump when reaching the last page with empty rows.
   const emptyRows =
     page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
@@ -384,6 +389,7 @@ export default function DataKaryawan() {
       const formattedEntryhour = removeSeconds(response.data.jam_masuk);
       setEntryhour(formattedEntryhour);
       setJadwal_libur(response.data.jadwal_libur);
+      setStatus(response.data.status);
     } catch (error) {
       console.error('Error fetching data:', error);
     }
@@ -405,7 +411,7 @@ export default function DataKaryawan() {
       console.log(jam_masuk);
       console.log(jadwal_libur);
       try {
-        const response = await axios.post('http://localhost:8080/manager/editKaryawan', { fullname, accessRight, birthdate, phonenumber, email, username, firstjoindate, jam_masuk, jadwal_libur, id });
+        const response = await axios.post('http://localhost:8080/manager/editKaryawan', { fullname, accessRight, birthdate, phonenumber, email, username, firstjoindate, jam_masuk, jadwal_libur, status, id });
         console.log(response.data);
         setShowSuccessUpdate(true);
         setMessageUpdate("Berhasil Ubah Data Karyawan");
@@ -413,7 +419,6 @@ export default function DataKaryawan() {
           setShowSuccessUpdate(false);
         }, 5000);
         fetchDataKaryawan();
-        setOpenEdit(false);
       } catch (error) {
         setErrors(error.response);
         setMsgError("Gagal Ubah Data Karyawan");
@@ -422,6 +427,7 @@ export default function DataKaryawan() {
           setShowError(false);
         }, 5000);
       }
+      setOpenEdit(false);
     } else {
       console.log("Validation failed");
     }
@@ -437,7 +443,6 @@ export default function DataKaryawan() {
         setShowSuccessDelete(false);
       }, 5000);
       fetchDataKaryawan();
-      setOpenDelete(false);
     } catch (error) {
       console.error('Error deleting employee:', error);
       setMsgError("Gagal Hapus Karyawan");
@@ -446,6 +451,7 @@ export default function DataKaryawan() {
         setShowError(false);
       }, 5000);
     }
+    setOpenDelete(false);
   };
 
   const handleConfirmTambah = async (e) => {
@@ -461,7 +467,6 @@ export default function DataKaryawan() {
           setShowSuccessInsert(false);
         }, 5000);
         fetchDataKaryawan();
-        setOpenTambah(false);
       } catch (error) {
         setErrors(error.response);
         setMsgError("Gagal Tambah Karyawan");
@@ -470,6 +475,7 @@ export default function DataKaryawan() {
           setShowError(false);
         }, 5000);
       }
+      setOpenTambah(false);
     } else {
       console.log("Validation failed");
     }
@@ -560,12 +566,11 @@ export default function DataKaryawan() {
             </Alert>
           )}
           <Box sx={{ width: '100%' }}>
-              <Paper sx={{ width: '100%', mb: 2 }}>
+            <Paper sx={{ width: '100%', mb: 2 }}>
               <TableContainer>
                   <Table
                   sx={{ minWidth: 750 }}
                   aria-labelledby="tableTitle"
-                  size={dense ? 'small' : 'medium'}
                   >
                   <EnhancedTableHead
                       order={order}
@@ -590,24 +595,31 @@ export default function DataKaryawan() {
                           <TableCell align="center">{row.nomorwa}</TableCell>
                           <TableCell align="center">{row.email}</TableCell>
                           <TableCell align="center">{row.username}</TableCell>
+                          <TableCell align="center">{formatTime(row.jam_masuk)}</TableCell>
+                          <TableCell align="center">{row.jadwal_libur}</TableCell>
                           <TableCell align="center">{row.firstjoindate}</TableCell>
                           <TableCell align="center">{row.lastupdate || '-'}</TableCell>
                           <TableCell align="center">
-                          {row.status === "bekerja" && (
-                            <Button style={{ borderRadius: '25px', border: '3px solid black', color: 'white', backgroundColor: '#4caf50'}}>
+                          {row.status === "active" && (
+                            <Button style={{ borderRadius: '25px', border: '3px solid black', color: 'white', backgroundColor: 'green'}}>
                               Bekerja
                             </Button>
                           )}
-                          {row.status === "cuti" && (
-                            <Button style={{ borderRadius: '25px', border: '3px solid black', color: 'white', backgroundColor: '#757575' }}>
-                              Cuti
+                          {row.status === "suspended" && (
+                            <Button style={{ borderRadius: '25px', border: '3px solid black', color: 'white', backgroundColor: 'yellowgreen' }}>
+                              Suspended
                             </Button>
                           )}
-                          {row.status === "berhenti" && (
-                            <Button style={{ borderRadius: '25px', border: '3px solid black', color: 'white', backgroundColor: '#d32f2f' }}>
-                              Berhenti
+                          {row.status === "inactive" && (
+                            <Button style={{ borderRadius: '25px', border: '3px solid black', color: 'white', backgroundColor: 'red' }}>
+                              Inactive
                             </Button>
-                          )}  
+                          )}
+                            {row.status === "unknown" && (
+                            <Button style={{ borderRadius: '25px', border: '3px solid black', color: 'white', backgroundColor: 'grey' }}>
+                              Unknown
+                            </Button>
+                          )}
                           </TableCell>
                           <TableCell sx={{display: 'flex'}}>
                             <Tooltip title="edit">
@@ -734,6 +746,19 @@ export default function DataKaryawan() {
                                       onChange={(event, value) => setJadwal_libur(value)}
                                     />
                                   </Grid>
+                                  <Grid item xs={12}>
+                                    <Typography>Status *</Typography>
+                                    <Autocomplete
+                                      fullWidth
+                                      value={status}
+                                      onChange={(event, newValue) => {
+                                        setStatus(newValue)
+                                      }}
+                                      options={listStatus}
+                                      renderInput={(params) => <TextField {...params} />}
+                                      error={!!errors.status}
+                                    />
+                                  </Grid>
                                     <Grid item xs={12}>
                                       <Button variant="contained" onClick={handleConfirmEdit} fullWidth style={{ backgroundColor: 'black', color: 'white' }}>
                                         Submit
@@ -778,12 +803,8 @@ export default function DataKaryawan() {
                       );
                       })}
                       {emptyRows > 0 && (
-                      <TableRow
-                          style={{
-                          height: (dense ? 33 : 53) * emptyRows,
-                          }}
-                      >
-                          <TableCell colSpan={10} />
+                      <TableRow>
+                        <TableCell colSpan={10} />
                       </TableRow>
                       )}
                   </TableBody>
@@ -799,10 +820,6 @@ export default function DataKaryawan() {
                   onRowsPerPageChange={handleChangeRowsPerPage}
               />
               </Paper>
-              <FormControlLabel
-              control={<Switch checked={dense} onChange={handleChangeDense} />}
-              label="Dense padding"
-              />
           </Box>
           <Button style={btnTambahKaryawan} onClick={handleOpenTambah}>+ Tambah Karyawan</Button>
           {/* ini modal tambah tipe */}

@@ -214,12 +214,12 @@ const ClockOut = () => {
         <Toolbar />
         <center><RootContainer>
           {showSuccess && (
-            <Alert variant="filled" severity="success" style={{ marginTop: 20 }}>
+            <Alert variant="filled" severity="success" style={{ marginBottom: 20 }}>
               { msgSuccess }
             </Alert>
           )}
           {showError && (
-            <Alert variant="filled" severity="error" style={{ marginTop: 20 }}>
+            <Alert variant="filled" severity="error" style={{ marginBottom: 20 }}>
               { msgError }
             </Alert>
           )}

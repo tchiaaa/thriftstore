@@ -241,7 +241,11 @@ public class CustomerController {
     }
 
     @GetMapping("/api/rajaongkir/cost")
-    public String getShippingCost(@RequestParam int origin, @RequestParam int destination, @RequestParam int weight) {
-        return rajaOngkirService.getShippingCost(origin, destination, weight);
+    public String getShippingCost(@RequestParam String originType,
+                                  @RequestParam int origin,
+                                  @RequestParam String destinationType,
+                                  @RequestParam int destination,
+                                  @RequestParam int weight) {
+        return rajaOngkirService.getShippingCost(originType, origin, destinationType, destination, weight);
     }
 }

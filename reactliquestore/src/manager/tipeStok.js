@@ -1,26 +1,19 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TablePagination from '@mui/material/TablePagination';
-import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
 import Toolbar from '@mui/material/Toolbar';
-import Paper from '@mui/material/Paper';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
-import { visuallyHidden } from '@mui/utils';
 import axios from 'axios';
 import styled from 'styled-components';
-import { Alert, Backdrop, Button, CssBaseline, Drawer, Grid, IconButton, Modal, TextField, Tooltip, Typography } from '@mui/material';
-import SupervisorSidebar from './sidebar';
+import { Alert, Backdrop, Button, CssBaseline, Drawer, FormHelperText, Grid, IconButton, InputAdornment, Modal, TextField, Typography } from '@mui/material';
+import AdminSidebar from './sidebar';
 import { useSpring, animated } from '@react-spring/web';
 import { AccountCircle } from '@mui/icons-material';
 import { useAuth } from '../authContext';
+import { DataGrid } from '@mui/x-data-grid';
+import dayjs from 'dayjs';
+import { NumericFormat } from 'react-number-format';
 
 const RootContainer = styled.div`
   display: flex;
@@ -36,88 +29,6 @@ const btnTambahKaryawan = {
     backgroundColor: '#FE8A01',
     color: 'black',
     border: '3px solid black'
-};
-
-function descendingComparator(a, b, orderBy) {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-}
-
-function getComparator(order, orderBy) {
-  return order === 'desc'
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-}
-
-function stableSort(array, comparator) {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) {
-      return order;
-    }
-    return a[1] - b[1];
-  });
-  return stabilizedThis.map((el) => el[0]);
-}
-
-const headCells = [
-  { id: 'name', numeric: false, disablePadding: false, label: 'Jenis Barang' },
-  { id: 'varian', numeric: true, disablePadding: false, label: 'Varian' },
-  { id: 'weight', numeric: true, disablePadding: false, label: 'Berat' },
-  { id: 'capitalPrice', numeric: true, disablePadding: false, label: 'Harga Modal' },
-  { id: 'defaultPrice', numeric: true, disablePadding: false, label: 'Harga Jual' },
-  { id: 'lastupdate', numeric: false, disablePadding: false, label: 'Last Update Date' },
-  { id: 'aksi', numeric: false, disablePadding: false, }
-];
-
-function EnhancedTableHead(props) {
-  const { order, orderBy, onRequestSort } =
-    props;
-  const createSortHandler = (property) => (event) => {
-    onRequestSort(event, property);
-  };
-
-  return (
-    <TableHead>
-      <TableRow>
-        {headCells.map((headCell) => (
-          <TableCell
-            key={headCell.id}
-            align={'center'}
-            // align={headCell.numeric ? 'right' : 'left'}
-            padding={headCell.disablePadding ? 'none' : 'normal'}
-            sortDirection={orderBy === headCell.id ? order : false}
-          >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : 'asc'}
-              onClick={createSortHandler(headCell.id)}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <Box component="span" sx={visuallyHidden}>
-                  {order === 'desc' ? 'sorted descending' : 'sorted ascending'}
-                </Box>
-              ) : null}
-            </TableSortLabel>
-          </TableCell>
-        ))}
-      </TableRow>
-    </TableHead>
-  );
-}
-
-EnhancedTableHead.propTypes = {
-  onRequestSort: PropTypes.func.isRequired,
-  order: PropTypes.oneOf(['asc', 'desc']).isRequired,
-  orderBy: PropTypes.string.isRequired,
-  rowCount: PropTypes.number.isRequired,
 };
 
 const Fade = React.forwardRef(function Fade(props, ref) {
@@ -191,24 +102,14 @@ const styleModalTambah = {
 };
 
 export default function ReviewStok() {
-  const [order, setOrder] = useState('asc');
-  const [orderBy, setOrderBy] = useState('calories');
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
   const [rows, setRows] = useState([]);
-  const [showSuccessInsert, setShowSuccessInsert] = useState(false);
-  const [messageInsert, setMessageInsert] = useState('');
-  const [showSuccessUpdate, setShowSuccessUpdate] = useState(false);
-  const [messageUpdate, setMessageUpdate] = useState('');
-  const [showSuccessDelete, setShowSuccessDelete] = useState(false);
-  const [messageDelete, setMessageDelete] = useState('');
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [msgSuccess, setmsgSuccess] = useState('');
   const [showError, setShowError] = useState(false);
   const [msgError, setMsgError] = useState();
   const [nama, setnama] = useState('');
   const [varian, setvarian] = useState('');
   const [weight, setweight] = useState('');
-  const [capitalprice, setcapitalprice] = useState('');
-  const [defaultprice, setdefaultprice] = useState('');
   const [errors, setErrors] = useState({});
   const [openTambah, setOpenTambah] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
@@ -220,16 +121,7 @@ export default function ReviewStok() {
   const handleOpenLogout = () => setOpenLogout(true);
   const handleCloseLogout = () => setOpenLogout(false);
   const { auth, logout } = useAuth();
-  const getUsername = auth.user ? auth.user.fullname : '';
-  
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(amount);
-  };
+  const getusername = auth.user ? auth.user.username : '';
 
   const validate = () => {
     let tempErrors = {};
@@ -237,36 +129,22 @@ export default function ReviewStok() {
   // Validasi Nama
   if (!nama) {
     tempErrors.nama = 'Jenis barang harus diisi';
-  } else if (nama.length >= 255){
+  } else if (nama.length > 255){
     tempErrors.nama = 'Jenis barang maksimal 255 karakter'
   }
 
   // Validasi Varian
   if (!varian) {
     tempErrors.varian = 'varian barang harus diisi';
-  } else if (varian.length >= 255){
+  } else if (varian.length > 255){
     tempErrors.varian = 'varian barang maksimal 255 karakter'
   }
 
   // Validasi Weight
   if (!weight) {
     tempErrors.weight = 'Berat barang harus diisi';
-  } else if (weight.length >= 10) { // contoh panjang maksimal 10 karakter
+  } else if (weight.length > 10) { // contoh panjang maksimal 10 karakter
     tempErrors.weight = 'Berat barang maksimal 10 karakter';
-  }
-
-  // Validasi Capital Price
-  if (!capitalprice) {
-    tempErrors.capitalprice = 'Harga modal barang harus diisi';
-  } else if (capitalprice.length >= 15) { // contoh panjang maksimal 15 karakter
-    tempErrors.capitalprice = 'Harga modal barang maksimal 15 karakter';
-  }
-
-  // Validasi Default Price
-  if (!defaultprice) {
-    tempErrors.defaultprice = 'Harga jual barang harus diisi';
-  } else if (defaultprice.length >= 15) { // contoh panjang maksimal 15 karakter
-    tempErrors.defaultprice = 'Harga jual barang maksimal 15 karakter';
   }
 
     setErrors(tempErrors);
@@ -275,7 +153,7 @@ export default function ReviewStok() {
 
   const fetchDataInventori = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/supervisor/dataTipe');
+      const response = await axios.get('http://localhost:8080/admin/dataTipe');
       console.log(response.data);
       setRows(response.data);
     } catch (error) {
@@ -287,62 +165,30 @@ export default function ReviewStok() {
     fetchDataInventori();
   }, []);
 
-  const handleRequestSort = (event, property) => {
-    const isAsc = orderBy === property && order === 'asc';
-    setOrder(isAsc ? 'desc' : 'asc');
-    setOrderBy(property);
-  };
-
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-
-  // Avoid a layout jump when reaching the last page with empty rows.
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
-
-  const visibleRows = useMemo(
-    () =>
-      stableSort(rows, getComparator(order, orderBy)).slice(
-        page * rowsPerPage,
-        page * rowsPerPage + rowsPerPage,
-      ),
-    [order, orderBy, page, rowsPerPage, rows],
-  );
-
   const handleCloseTambah = () => {
     setOpenTambah(false);
     setErrors({});
     setnama('');
     setvarian('');
     setweight('');
-    setcapitalprice('');
-    setdefaultprice('');
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (validate()) {
       try {
-        const response = await axios.post('http://localhost:8080/supervisor/tambahTipe', { nama, varian, weight, capitalprice, defaultprice });
+        const response = await axios.post('http://localhost:8080/admin/tambahTipe', { nama, varian, weight });
         console.log(response.data);
         setOpenTambah(false);
-        setShowSuccessInsert(true);
-        setMessageInsert("Berhasil Menambah Tipe Barang");
+        setShowSuccess(true);
+        setmsgSuccess("Berhasil Menambah Tipe Barang");
         setTimeout(() => {
-          setShowSuccessInsert(false);
+          setShowSuccess(false);
         }, 5000);
         fetchDataInventori();
         setnama('');
         setvarian('');
         setweight('');
-        setcapitalprice('');
-        setdefaultprice('');
       } catch (error) {
         setErrors(error.response);
         setShowError(true);
@@ -361,8 +207,6 @@ export default function ReviewStok() {
     setnama(row.nama);
     setvarian(row.varian);
     setweight(row.weight);
-    setcapitalprice(row.capitalPrice);
-    setdefaultprice(row.defaultPrice);
     setOpenEdit(true);
   };
 
@@ -372,40 +216,32 @@ export default function ReviewStok() {
     setnama('');
     setvarian('');
     setweight('');
-    setcapitalprice('');
-    setdefaultprice('');
   };
 
   const handleConfirmEdit = async (e) => {
     e.preventDefault();
     if (validate()) {
-      console.log(varian);
-      console.log(weight);
-      console.log(capitalprice);
-      console.log(defaultprice);
       const id = updatedId;
       try {
-        const response = await axios.post('http://localhost:8080/supervisor/editTipe', { id, nama, varian, weight, capitalprice, defaultprice });
+        const response = await axios.post('http://localhost:8080/admin/editTipe', { id, nama, varian, weight });
         console.log(response.data);
-        setOpenEdit(false);
-        setShowSuccessUpdate(true);
-        setMessageUpdate("Berhasil Mengubah Tipe Barang");
+        setShowSuccess(true);
+        setmsgSuccess("Berhasil Mengubah Tipe Barang");
         setTimeout(() => {
-          setShowSuccessUpdate(false);
+          setShowSuccess(false);
         }, 5000);
         fetchDataInventori();
         setnama('');
         setvarian('');
         setweight('');
-        setcapitalprice('');
-        setdefaultprice('');
       } catch (error) {
         setShowError(true);
-        setMessageUpdate("Gagal Mengubah Tipe Barang");
+        setMsgError("Gagal Mengubah Tipe Barang");
         setTimeout(() => {
           setShowError(false);
         }, 5000);
       }
+      setOpenEdit(false);
     } else {
       console.log("Validation failed");
     }
@@ -421,33 +257,91 @@ export default function ReviewStok() {
     e.preventDefault();
     try {
       const id = updatedId;
-      const response = await axios.delete(`http://localhost:8080/supervisor/deleteTipe/${id}`);
+      const response = await axios.delete(`http://localhost:8080/admin/deleteTipe/${id}`);
       console.log(response.data);
-      setShowSuccessDelete(true);
-      setMessageDelete("Berhasil Hapus Karyawan");
+      setShowSuccess(true);
+      setmsgSuccess("Berhasil Hapus Tipe Barang");
       setTimeout(() => {
-        setShowSuccessDelete(false);
+        setShowSuccess(false);
       }, 5000);
       fetchDataInventori();
-      setOpenDelete(false);
-      setnama('');
-      setweight('');
-      setcapitalprice('');
-      setdefaultprice('');
     } catch (error) {
       console.error(error);
-      setMsgError("Gagal Hapus Karyawan");
+      setMsgError("Gagal Hapus Tipe Barang");
       setShowError(true);
       setTimeout(() => {
         setShowError(false);
       }, 5000);
     }
+    setOpenDelete(false);
   };
 
   const handleLogout = () => {
     setOpenLogout(false);
     logout();
   };
+
+  const columns = [
+    {
+      field: 'typecode',
+      headerName: 'Kode Barang',
+      flex: 1,
+      editable: true,
+    },
+    {
+      field: 'nama',
+      headerName: 'Jenis Barang',
+      flex: 1,
+      editable: true,
+    },
+    {
+      field: 'varian',
+      headerName: 'Varian',
+      flex: 1,
+      editable: true,
+    },
+    {
+      field: 'weight',
+      headerName: 'Berat (g)',
+      type: 'number',
+      flex: 1,
+      editable: true,
+      valueFormatter: (weight) => `${weight} g`,
+    },
+    {
+      field: 'lastupdate',
+      headerName: 'Last Update',
+      type: 'date',
+      flex: 1,
+      editable: true,
+      valueGetter: (lastupdate) => {
+        console.log(lastupdate);
+        return lastupdate;
+      },
+      valueFormatter: (lastupdate) => {
+        const formdate = dayjs(lastupdate).format('DD/MM/YYYY');
+        console.log(formdate);
+        return dayjs(lastupdate).format('DD/MM/YYYY');
+      }
+    },
+    {
+      field: 'actions',
+      headerName: '',
+      flex: 1,
+      filterable: false,
+      sortable: false,
+      renderCell: (params) => (
+        <div>
+          <IconButton onClick={() => handleOpenEdit(params.row)}>
+            <EditIcon />
+          </IconButton>
+          <IconButton onClick={() => handleOpenDelete(params.row)}>
+            <DeleteIcon />
+          </IconButton>
+        </div>
+      )
+    }
+  ];
 
   const drawerWidth = 300;
 
@@ -467,7 +361,7 @@ export default function ReviewStok() {
           }}
           open
         >
-          <SupervisorSidebar />
+          <AdminSidebar />
         </Drawer>
       </Box>
       <Box
@@ -475,7 +369,7 @@ export default function ReviewStok() {
         sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}
       >
         <Button style={{float: 'right'}} color="inherit" onClick={handleOpenLogout} startIcon={<AccountCircle />}>
-          {getUsername}
+          {getusername}
         </Button>
         <Modal
           aria-labelledby="spring-modal-title"
@@ -507,215 +401,155 @@ export default function ReviewStok() {
             </Box>
           </Fade>
         </Modal>
-        <br></br>
         <Toolbar />
         <RootContainer>
-          {showSuccessInsert && (
-            <Alert variant="filled" severity="success" style={{ marginTop: 20 }}>
-              { messageInsert }
-            </Alert>
-          )}
-          {showSuccessUpdate && (
-            <Alert variant="filled" severity="success" style={{ marginTop: 20 }}>
-              { messageUpdate }
-            </Alert>
-          )}
-          {showSuccessDelete && (
-            <Alert variant="filled" severity="success" style={{ marginTop: 20 }}>
-              { messageDelete }
+          {showSuccess && (
+            <Alert variant="filled" severity="success" style={{ marginBottom: 3 }}>
+              { msgSuccess }
             </Alert>
           )}
           {showError && (
-            <Alert variant="filled" severity="danger" style={{ marginTop: 20 }}>
+            <Alert variant="filled" severity="error" style={{ marginBottom: 3 }}>
               { msgError }
             </Alert>
           )}
+          <Typography variant='h3' marginBottom={5}>
+            Tipe Barang
+          </Typography>
           <Box sx={{ width: '100%' }}>
-            <Paper sx={{ width: '100%', mb: 2 }}>
-              <TableContainer>
-                  <Table
-                  sx={{ minWidth: 750 }}
-                  aria-labelledby="tableTitle"
-                  >
-                  <EnhancedTableHead
-                      order={order}
-                      orderBy={orderBy}
-                      onRequestSort={handleRequestSort}
-                      rowCount={rows.length}
-                  />
-                  <TableBody>
-                      {visibleRows.map((row) => {
-                      return (
-                        <>
-                        <TableRow
-                        hover
-                        tabIndex={-1}
-                        key={row.id}
-                        sx={{ cursor: 'pointer' }}
-                        >
-                          <TableCell align="center">{row.nama}</TableCell>
-                          <TableCell align="center">{row.varian}</TableCell>
-                          <TableCell align="right">{row.weight} g</TableCell>
-                          <TableCell align="right">{formatCurrency(row.capitalPrice)}</TableCell>
-                          <TableCell align="right">{formatCurrency(row.defaultPrice)}</TableCell>
-                          <TableCell align="center">{row.lastupdate}</TableCell>
-                          <TableCell sx={{display: 'flex'}}>
-                            <Tooltip title="edit">
-                              <IconButton onClick={() => handleOpenEdit(row)}>
-                                <EditIcon />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Delete">
-                              <IconButton onClick={() => handleOpenDelete(row)}>
-                                <DeleteIcon />
-                              </IconButton>
-                            </Tooltip>
-                          </TableCell>
-                        </TableRow>
-
-                        {/* ini modal edit data */}
-                        <Modal
-                          aria-labelledby="spring-modal-title"
-                          aria-describedby="spring-modal-description"
-                          open={openEdit}
-                          onClose={handleCloseEdit}
-                          closeAfterTransition
-                          slots={{ backdrop: Backdrop }}
-                          slotProps={{
-                            backdrop: {
-                              TransitionComponent: Fade,
-                            },
-                          }}
-                        >
-                          <Fade in={openEdit}>
-                            <Box sx={styleModalTambah}>
-                            <form>
-                              <Grid container spacing={3}>
-                                <Grid item xs={12}>
-                                  <Typography>Jenis Barang *</Typography>
-                                  <TextField
-                                    fullWidth
-                                    autoComplete='off'
-                                    value={nama}
-                                    error={!!errors.nama}
-                                    helperText={errors.nama}
-                                    FormHelperTextProps={{ sx: { color: 'red' } }}
-                                    onChange={(e) => setnama(e.target.value)}
-                                  />
-                                </Grid>
-                                <Grid item xs={12}>
-                                  <Typography>Varian Barang *</Typography>
-                                  <TextField
-                                    fullWidth
-                                    autoComplete='off'
-                                    value={varian}
-                                    error={!!errors.varian}
-                                    helperText={errors.varian}
-                                    FormHelperTextProps={{ sx: { color: 'red' } }}
-                                    onChange={(e) => setvarian(e.target.value)}
-                                  />
-                                </Grid>
-                                <Grid item xs={12}>
-                                  <Typography>Berat Barang (g) *</Typography>
-                                  <TextField
-                                    fullWidth
-                                    type='number'
-                                    autoComplete='off'
-                                    value={weight}
-                                    error={!!errors.weight}
-                                    helperText={errors.weight}
-                                    FormHelperTextProps={{ sx: { color: 'red' } }}
-                                    onChange={(e) => setweight(e.target.value)}
-                                  />
-                                </Grid>
-                                <Grid item xs={12}>
-                                  <Typography>Harga Modal Barang (Rp.) *</Typography>
-                                  <TextField
-                                    fullWidth
-                                    type='number'
-                                    autoComplete='off'
-                                    value={capitalprice}
-                                    error={!!errors.capitalprice}
-                                    helperText={errors.capitalprice}
-                                    FormHelperTextProps={{ sx: { color: 'red' } }}
-                                    onChange={(e) => setcapitalprice(e.target.value)}
-                                  />
-                                </Grid>
-                                <Grid item xs={12}>
-                                  <Typography>Harga Jual Barang (Rp.) *</Typography>
-                                  <TextField
-                                    fullWidth
-                                    type='number'
-                                    autoComplete='off'
-                                    value={defaultprice}
-                                    error={!!errors.defaultprice}
-                                    helperText={errors.defaultprice}
-                                    FormHelperTextProps={{ sx: { color: 'red' } }}
-                                    onChange={(e) => setdefaultprice(e.target.value)}
-                                  />
-                                </Grid>
-                                <Grid item xs={12}>
-                                  <Button variant="contained" onClick={handleConfirmEdit} fullWidth style={{ backgroundColor: 'black', color: 'white' }}>
-                                    Submit
-                                  </Button>
-                                </Grid>
-                              </Grid>
-                            </form>
-                            </Box>
-                          </Fade>
-                        </Modal>
-
-                        {/* ini modal delete tipe */}
-                        <Modal
-                          aria-labelledby="spring-modal-title"
-                          aria-describedby="spring-modal-description"
-                          open={openDelete}
-                          onClose={handleCloseDelete}
-                          closeAfterTransition
-                          slots={{ backdrop: Backdrop }}
-                          slotProps={{
-                            backdrop: {
-                              TransitionComponent: Fade,
-                            },
-                          }}
-                          >
-                          <Fade in={openDelete}>
-                            <Box sx={styleModal}>
-                              <Typography id="spring-modal-title" variant="h6" component="h2">
-                                Apakah kamu yakin ingin membuang data ini?
-                              </Typography>
-                              <Box sx={{ mt: 2 }}>
-                                <Button variant="outlined" onClick={handleConfirmDelete} sx={{ mr: 2, backgroundColor: '#FE8A01', color: 'white' }}>
-                                  Ya
-                                </Button>
-                                <Button variant="outlined" onClick={handleCloseDelete}>
-                                  Tidak
-                                </Button>
-                              </Box>
-                            </Box>
-                          </Fade>
-                        </Modal>
-                        </>
-                      );
-                      })}
-                      {emptyRows > 0 && (
-                      <TableRow>
-                        <TableCell colSpan={10} />
-                      </TableRow>
+            <DataGrid
+              rows={rows}
+              columns={columns}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 5,
+                  },
+                },
+              }}
+              pageSizeOptions={[5]}
+              disableRowSelectionOnClick
+            />
+            <br></br>
+            {/* ini modal edit data */}
+            <Modal
+              aria-labelledby="spring-modal-title"
+              aria-describedby="spring-modal-description"
+              open={openEdit}
+              onClose={handleCloseEdit}
+              closeAfterTransition
+              slots={{ backdrop: Backdrop }}
+              slotProps={{
+                backdrop: {
+                  TransitionComponent: Fade,
+                },
+              }}
+            >
+              <Fade in={openEdit}>
+                <Box sx={styleModalTambah}>
+                <form>
+                  <Grid container spacing={3}>
+                    <Grid item xs={12}>
+                      <Typography>Jenis Barang *</Typography>
+                      <TextField
+                        fullWidth
+                        autoComplete='off'
+                        value={nama}
+                        error={!!errors.nama}
+                        helperText={errors.nama}
+                        FormHelperTextProps={{ sx: { color: 'red' } }}
+                        onChange={(e) => setnama(e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Typography>Varian Barang *</Typography>
+                      <TextField
+                        fullWidth
+                        autoComplete='off'
+                        value={varian}
+                        error={!!errors.varian}
+                        helperText={errors.varian}
+                        FormHelperTextProps={{ sx: { color: 'red' } }}
+                        onChange={(e) => setvarian(e.target.value)}
+                      />
+                    </Grid>
+                    <Grid item xs={12}>
+                      <Typography>Berat Barang *</Typography>
+                      <NumericFormat
+                        fullWidth
+                        autoComplete='off'
+                        value={weight}
+                        onValueChange={(values) => setweight(values.floatValue)}
+                        thousandSeparator='.'
+                        decimalSeparator=','
+                        customInput={TextField}
+                        error={!!errors.weight}
+                        InputProps={{
+                          endAdornment: <InputAdornment position="start">g</InputAdornment>,
+                        }}
+                        variant="outlined"
+                      />
+                      {!!errors.weight && (
+                        <FormHelperText error sx={{ color: 'red' }}>
+                          {errors.weight}
+                        </FormHelperText>
                       )}
-                  </TableBody>
-                  </Table>
-              </TableContainer>
-              <TablePagination
-                  rowsPerPageOptions={[5, 10, 25]}
-                  component="div"
-                  count={rows.length}
-                  rowsPerPage={rowsPerPage}
-                  page={page}
-                  onPageChange={handleChangePage}
-                  onRowsPerPageChange={handleChangeRowsPerPage}
-              />
-              </Paper>
+                    </Grid>
+                    {/* <NumericFormat
+                  fullWidth
+                  autoComplete='off'
+                  value={weight}
+                  onValueChange={(e) => setweight(e.target.value)}
+                  thousandSeparator='.'
+                  decimalSeparator=','
+                  customInput={TextField}
+                  error={!!errors.weight}
+                  InputProps={{
+                    endAdornment: <InputAdornment position="start">g</InputAdornment>,
+                  }}
+                  variant="outlined"
+                /> */}
+                    <Grid item xs={12}>
+                      <Button variant="contained" onClick={handleConfirmEdit} fullWidth style={{ backgroundColor: 'black', color: 'white' }}>
+                        Submit
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </form>
+                </Box>
+              </Fade>
+            </Modal>
+
+            {/* ini modal delete tipe */}
+            <Modal
+              aria-labelledby="spring-modal-title"
+              aria-describedby="spring-modal-description"
+              open={openDelete}
+              onClose={handleCloseDelete}
+              closeAfterTransition
+              slots={{ backdrop: Backdrop }}
+              slotProps={{
+                backdrop: {
+                  TransitionComponent: Fade,
+                },
+              }}
+              >
+              <Fade in={openDelete}>
+                <Box sx={styleModal}>
+                  <Typography id="spring-modal-title" variant="h6" component="h2">
+                    Apakah kamu yakin ingin membuang data ini?
+                  </Typography>
+                  <Box sx={{ mt: 2 }}>
+                    <Button variant="outlined" onClick={handleConfirmDelete} sx={{ mr: 2, backgroundColor: '#FE8A01', color: 'white' }}>
+                      Ya
+                    </Button>
+                    <Button variant="outlined" onClick={handleCloseDelete}>
+                      Tidak
+                    </Button>
+                  </Box>
+                </Box>
+              </Fade>
+            </Modal>
           </Box>
           <Button style={btnTambahKaryawan} onClick={handleOpenTambah}>+ Tambah Jenis Barang</Button>
           
@@ -762,42 +596,20 @@ export default function ReviewStok() {
                     />
                   </Grid>
                   <Grid item xs={12}>
-                    <Typography>Berat Barang (g) *</Typography>
-                    <TextField
+                    <Typography>Berat Barang *</Typography>
+                    <NumericFormat
                       fullWidth
-                      type='number'
                       autoComplete='off'
                       value={weight}
+                      onValueChange={(values) => setweight(values.floatValue)}
+                      thousandSeparator='.'
+                      decimalSeparator=','
+                      customInput={TextField}
                       error={!!errors.weight}
-                      helperText={errors.weight}
-                      FormHelperTextProps={{ sx: { color: 'red' } }}
-                      onChange={(e) => setweight(e.target.value)}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Typography>Harga Modal Barang (Rp.) *</Typography>
-                    <TextField
-                      fullWidth
-                      type='number'
-                      autoComplete='off'
-                      value={capitalprice}
-                      error={!!errors.capitalprice}
-                      helperText={errors.capitalprice}
-                      FormHelperTextProps={{ sx: { color: 'red' } }}
-                      onChange={(e) => setcapitalprice(e.target.value)}
-                    />
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Typography>Harga Jual Barang (Rp.) *</Typography>
-                    <TextField
-                      fullWidth
-                      type='number'
-                      autoComplete='off'
-                      value={defaultprice}
-                      error={!!errors.defaultprice}
-                      helperText={errors.defaultprice}
-                      FormHelperTextProps={{ sx: { color: 'red' } }}
-                      onChange={(e) => setdefaultprice(e.target.value)}
+                      InputProps={{
+                        endAdornment: <InputAdornment position="start">g</InputAdornment>,
+                      }}
+                      variant="outlined"
                     />
                   </Grid>
                   <Grid item xs={12}>

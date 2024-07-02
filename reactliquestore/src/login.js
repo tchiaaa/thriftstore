@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import axios from 'axios';
-import { Box, Grid } from '@mui/material';
+import { Alert, Box, Grid } from '@mui/material';
 import { useAuth } from './authContext';
 import { useLocation } from 'react-router-dom';
 
@@ -36,10 +36,13 @@ const btnLogin = {
 };
 
 function LoginPage() {
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [msgSuccess, setmsgSuccess] = useState('');
+  const [showError, setShowError] = useState(false);
+  const [msgError, setMsgError] = useState();
   const [param, setParam] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState();
   const [errors, setErrors] = useState({});
   const { login } = useAuth();
   const location = useLocation();
@@ -55,6 +58,18 @@ function LoginPage() {
     }
   }, [orderidFromQuery]);
 
+  useEffect(() => {
+    const storedMessage = localStorage.getItem('berhasilRegister');
+    if (storedMessage) {
+      setShowSuccess(true);
+      setmsgSuccess(storedMessage);
+      setTimeout(() => {
+        setShowSuccess(false);
+      }, 5000);
+      localStorage.removeItem('berhasilRegister')
+    }
+  }, []);
+
   const validate = () => {
     let tempErrors = {};
     if (!username){
@@ -66,6 +81,7 @@ function LoginPage() {
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
+  console.log(orderidFromQuery);
   
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -77,68 +93,89 @@ function LoginPage() {
       try {
         const response = await axios.post('http://localhost:8080/login', formData);
         console.log(response.data);
-        if (orderidFromQuery != null && response.data.cekPhoneOrder) {
-          localStorage.setItem('orderid', orderidFromQuery);
+        if (response.data.customer) {
+          if (orderidFromQuery != null && response.data.cekPhoneOrder) {
+            localStorage.setItem('orderid', orderidFromQuery);
+          }
+          login(response.data.customer);
         }
-        login(response.data);
+        else{
+          login(response.data);
+        }
       } catch (error) {
-        setError("invalid username or password");
+        console.error("error fetching data: ", error);
+        setShowError(true);
+        setMsgError("Invalid Username or Password");
+        setTimeout(() => {
+          setShowError(false);
+        }, 5000);
       }
     }
   };
 
   return (
-    <Container component="main" maxWidth="sm" style={containerStyle}>
-      <Box sx={{ marginTop: 10, display: 'flex', flexDirection: 'column', padding: 5, borderRadius: 5}}>
-        <Typography component="h1" variant="h4">Login</Typography>
-        <Box sx={{display: 'flex'}}>
-          <Typography>Don't have an account?</Typography>&nbsp;&nbsp;&nbsp;
-          <Typography sx={{ color: '#FE8A01' }}>
-            {param ? (
-              <a href={`/register?orderid=${orderidFromQuery}`} style={{ color: '#FE8A01', textDecoration: 'none' }}>
-                Sign up here
-              </a>
-            ) : (
-              <a href="/register" style={{ color: '#FE8A01', textDecoration: 'none' }}>
-                Sign up here
-              </a>
-            )}
-          </Typography>
+    <>
+      <Container component="main" maxWidth="sm" sx={{marginTop: 10}}>
+        {showSuccess && (
+          <Alert variant="filled" severity="success" sx={{marginBottom: 5}}>
+            { msgSuccess }
+          </Alert>
+        )}
+        {showError && (
+          <Alert variant="filled" severity="error" sx={{marginBottom: 5}}>
+            { msgError }
+          </Alert>
+        )}
+        <Box sx={{ display: 'flex', flexDirection: 'column', padding: 5, borderRadius: 5}} style={containerStyle}>
+          <Typography component="h1" variant="h4">Login</Typography>
+          <Box sx={{display: 'flex'}}>
+            <Typography>Don't have an account?</Typography>&nbsp;&nbsp;&nbsp;
+            <Typography sx={{ color: '#FE8A01' }}>
+              {param ? (
+                <a href={`/register?orderid=${orderidFromQuery}`} style={{ color: '#FE8A01', textDecoration: 'none' }}>
+                  Sign up here
+                </a>
+              ) : (
+                <a href="/register" style={{ color: '#FE8A01', textDecoration: 'none' }}>
+                  Sign up here
+                </a>
+              )}
+            </Typography>
+          </Box>
+          <Grid container spacing={3} marginTop={1}>
+            <Grid item xs={12}>
+              <TextField
+                sx={textfieldStyle}
+                className='input'
+                placeholder="Username"
+                value={username}
+                autoComplete='off'
+                fullWidth
+                helperText={errors.username}
+                FormHelperTextProps={{ sx: { color: 'red' } }}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                sx={textfieldStyle}
+                placeholder="Password"
+                type="password"
+                value={password}
+                fullWidth
+                helperText={errors.password}
+                FormHelperTextProps={{ sx: { color: 'red' } }}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <Button style={btnLogin} fullWidth onClick={handleSubmit}>Login</Button>
+            </Grid>
+          </Grid>
+          <Typography sx={{ color: '#FE8A01', marginTop: 3, textAlign: 'center' }}>Forgot Password ?</Typography>
         </Box>
-        <Grid container spacing={3} marginTop={1}>
-          <Grid item xs={12}>
-            <TextField
-              sx={textfieldStyle}
-              className='input'
-              placeholder="Username"
-              value={username}
-              autoComplete='off'
-              fullWidth
-              helperText={errors.username}
-              FormHelperTextProps={{ sx: { color: 'red' } }}
-              onChange={(e) => setUsername(e.target.value)}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              sx={textfieldStyle}
-              placeholder="Password"
-              type="password"
-              value={password}
-              fullWidth
-              helperText={errors.password}
-              FormHelperTextProps={{ sx: { color: 'red' } }}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </Grid>
-          {error && <Typography color="error">{error}</Typography>}
-          <Grid item xs={12}>
-            <Button style={btnLogin} fullWidth onClick={handleSubmit}>Login</Button>
-          </Grid>
-        </Grid>
-        <Typography sx={{ color: '#FE8A01', marginTop: 3, textAlign: 'center' }}>Forgot Password ?</Typography>
-      </Box>
-  </Container>
+    </Container>
+  </>
   );
 }
 
