@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import axios from 'axios';
+import { API_BASE_URL } from './constants';
 import { Alert, Box, Grid } from '@mui/material';
 import { useAuth } from './authContext';
 import { useLocation } from 'react-router-dom';
@@ -81,7 +82,6 @@ function LoginPage() {
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
-  console.log(orderidFromQuery);
   
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -91,15 +91,20 @@ function LoginPage() {
       formData.append("password", password);
       formData.append("orderid", orderidFromQuery);
       try {
-        const response = await axios.post('http://localhost:8080/login', formData);
+        const response = await axios.post(`http://localhost:8080/login`, formData);
         console.log(response.data);
         if (response.data.customer) {
+          console.log("ini customer");
           if (orderidFromQuery != null && response.data.cekPhoneOrder) {
+            console.log("ini customer punya orderid");
             localStorage.setItem('orderid', orderidFromQuery);
           }
+          console.log("ini customer");
           login(response.data.customer);
+          console.log("ini customer");
         }
         else{
+          console.log("ini employee");
           login(response.data);
         }
       } catch (error) {

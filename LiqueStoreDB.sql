@@ -5,7 +5,7 @@
 -- Dumped from database version 14.11
 -- Dumped by pg_dump version 14.11
 
--- Started on 2024-07-01 10:17:20
+-- Started on 2024-07-02 21:39:27
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -40,7 +40,7 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- TOC entry 215 (class 1259 OID 24602)
+-- TOC entry 210 (class 1259 OID 172294)
 -- Name: absensi; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -58,7 +58,7 @@ CREATE TABLE public.absensi (
 ALTER TABLE public.absensi OWNER TO postgres;
 
 --
--- TOC entry 214 (class 1259 OID 24601)
+-- TOC entry 211 (class 1259 OID 172297)
 -- Name: absensi_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -75,7 +75,7 @@ ALTER TABLE public.absensi_id_seq OWNER TO postgres;
 
 --
 -- TOC entry 3451 (class 0 OID 0)
--- Dependencies: 214
+-- Dependencies: 211
 -- Name: absensi_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -83,7 +83,7 @@ ALTER SEQUENCE public.absensi_id_seq OWNED BY public.absensi.id;
 
 
 --
--- TOC entry 213 (class 1259 OID 24588)
+-- TOC entry 212 (class 1259 OID 172298)
 -- Name: accessright; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -96,7 +96,7 @@ CREATE TABLE public.accessright (
 ALTER TABLE public.accessright OWNER TO postgres;
 
 --
--- TOC entry 212 (class 1259 OID 24587)
+-- TOC entry 213 (class 1259 OID 172301)
 -- Name: accessright_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -113,7 +113,7 @@ ALTER TABLE public.accessright_id_seq OWNER TO postgres;
 
 --
 -- TOC entry 3452 (class 0 OID 0)
--- Dependencies: 212
+-- Dependencies: 213
 -- Name: accessright_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -121,7 +121,7 @@ ALTER SEQUENCE public.accessright_id_seq OWNED BY public.accessright.id;
 
 
 --
--- TOC entry 218 (class 1259 OID 24623)
+-- TOC entry 214 (class 1259 OID 172302)
 -- Name: type; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -138,7 +138,7 @@ CREATE TABLE public.type (
 ALTER TABLE public.type OWNER TO postgres;
 
 --
--- TOC entry 217 (class 1259 OID 24622)
+-- TOC entry 215 (class 1259 OID 172307)
 -- Name: type_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -155,7 +155,7 @@ ALTER TABLE public.type_id_seq OWNER TO postgres;
 
 --
 -- TOC entry 3453 (class 0 OID 0)
--- Dependencies: 217
+-- Dependencies: 215
 -- Name: type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -163,7 +163,7 @@ ALTER SEQUENCE public.type_id_seq OWNED BY public.type.id;
 
 
 --
--- TOC entry 224 (class 1259 OID 122933)
+-- TOC entry 216 (class 1259 OID 172308)
 -- Name: address; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -183,7 +183,7 @@ CREATE TABLE public.address (
 ALTER TABLE public.address OWNER TO postgres;
 
 --
--- TOC entry 223 (class 1259 OID 90112)
+-- TOC entry 217 (class 1259 OID 172314)
 -- Name: customer; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -204,7 +204,7 @@ CREATE TABLE public.customer (
 ALTER TABLE public.customer OWNER TO postgres;
 
 --
--- TOC entry 225 (class 1259 OID 155664)
+-- TOC entry 218 (class 1259 OID 172320)
 -- Name: detailorders; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -221,7 +221,7 @@ CREATE TABLE public.detailorders (
 ALTER TABLE public.detailorders OWNER TO postgres;
 
 --
--- TOC entry 211 (class 1259 OID 24578)
+-- TOC entry 219 (class 1259 OID 172324)
 -- Name: employee; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -245,7 +245,7 @@ CREATE TABLE public.employee (
 ALTER TABLE public.employee OWNER TO postgres;
 
 --
--- TOC entry 210 (class 1259 OID 24577)
+-- TOC entry 220 (class 1259 OID 172329)
 -- Name: emplyoee_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -262,7 +262,7 @@ ALTER TABLE public.emplyoee_id_seq OWNER TO postgres;
 
 --
 -- TOC entry 3454 (class 0 OID 0)
--- Dependencies: 210
+-- Dependencies: 220
 -- Name: emplyoee_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -270,7 +270,7 @@ ALTER SEQUENCE public.emplyoee_id_seq OWNED BY public.employee.id;
 
 
 --
--- TOC entry 220 (class 1259 OID 24630)
+-- TOC entry 221 (class 1259 OID 172330)
 -- Name: item; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -294,7 +294,7 @@ ALTER TABLE public.item OWNER TO postgres;
 
 --
 -- TOC entry 3455 (class 0 OID 0)
--- Dependencies: 220
+-- Dependencies: 221
 -- Name: COLUMN item.status; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -305,7 +305,7 @@ sold (merah)';
 
 
 --
--- TOC entry 219 (class 1259 OID 24629)
+-- TOC entry 222 (class 1259 OID 172335)
 -- Name: item_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -322,7 +322,7 @@ ALTER TABLE public.item_id_seq OWNER TO postgres;
 
 --
 -- TOC entry 3456 (class 0 OID 0)
--- Dependencies: 219
+-- Dependencies: 222
 -- Name: item_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
@@ -330,7 +330,7 @@ ALTER SEQUENCE public.item_id_seq OWNED BY public.item.id;
 
 
 --
--- TOC entry 222 (class 1259 OID 81927)
+-- TOC entry 223 (class 1259 OID 172336)
 -- Name: ordercolour; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -345,7 +345,7 @@ CREATE TABLE public.ordercolour (
 ALTER TABLE public.ordercolour OWNER TO postgres;
 
 --
--- TOC entry 216 (class 1259 OID 24616)
+-- TOC entry 224 (class 1259 OID 172340)
 -- Name: orders; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -359,7 +359,7 @@ CREATE TABLE public.orders (
     deliverydonedate timestamp without time zone,
     status character varying(25) NOT NULL,
     id character varying(20) NOT NULL,
-    itemidall character varying(255)[]
+    itemidall character varying(255)[] NOT NULL
 );
 
 
@@ -367,7 +367,7 @@ ALTER TABLE public.orders OWNER TO postgres;
 
 --
 -- TOC entry 3457 (class 0 OID 0)
--- Dependencies: 216
+-- Dependencies: 224
 -- Name: COLUMN orders.status; Type: COMMENT; Schema: public; Owner: postgres
 --
 
@@ -379,7 +379,7 @@ COMMENT ON COLUMN public.orders.status IS '1 = Payment Not Done
 
 
 --
--- TOC entry 221 (class 1259 OID 81920)
+-- TOC entry 225 (class 1259 OID 172345)
 -- Name: temporaryorder; Type: TABLE; Schema: public; Owner: postgres
 --
 
@@ -397,14 +397,15 @@ CREATE TABLE public.temporaryorder (
     paymentdate timestamp without time zone,
     status character varying(25) NOT NULL,
     checkoutdate timestamp without time zone NOT NULL,
-    masterorderid character varying(20) NOT NULL
+    masterorderid character varying(20) NOT NULL,
+    isactive boolean
 );
 
 
 ALTER TABLE public.temporaryorder OWNER TO postgres;
 
 --
--- TOC entry 3247 (class 2604 OID 24605)
+-- TOC entry 3245 (class 2604 OID 172351)
 -- Name: absensi id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -412,7 +413,7 @@ ALTER TABLE ONLY public.absensi ALTER COLUMN id SET DEFAULT nextval('public.abse
 
 
 --
--- TOC entry 3246 (class 2604 OID 24591)
+-- TOC entry 3246 (class 2604 OID 172352)
 -- Name: accessright id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -420,7 +421,7 @@ ALTER TABLE ONLY public.accessright ALTER COLUMN id SET DEFAULT nextval('public.
 
 
 --
--- TOC entry 3245 (class 2604 OID 24581)
+-- TOC entry 3251 (class 2604 OID 172353)
 -- Name: employee id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -428,7 +429,7 @@ ALTER TABLE ONLY public.employee ALTER COLUMN id SET DEFAULT nextval('public.emp
 
 
 --
--- TOC entry 3249 (class 2604 OID 24633)
+-- TOC entry 3252 (class 2604 OID 172354)
 -- Name: item id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -436,7 +437,7 @@ ALTER TABLE ONLY public.item ALTER COLUMN id SET DEFAULT nextval('public.item_id
 
 
 --
--- TOC entry 3248 (class 2604 OID 24626)
+-- TOC entry 3247 (class 2604 OID 172355)
 -- Name: type id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -444,8 +445,8 @@ ALTER TABLE ONLY public.type ALTER COLUMN id SET DEFAULT nextval('public.type_id
 
 
 --
--- TOC entry 3434 (class 0 OID 24602)
--- Dependencies: 215
+-- TOC entry 3429 (class 0 OID 172294)
+-- Dependencies: 210
 -- Data for Name: absensi; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -457,12 +458,13 @@ COPY public.absensi (id, employeeid, username, password, clockin, clockout, toda
 12	11	lino	$2a$06$uceFpazrvdCYdK0Q5AaV7e0eApmDLxuwLU71lrtFJ/yd8Tp.J2E7W	2024-06-24 23:39:28.376592	\N	2024-06-24
 13	10	budi	$2a$06$v1YT0SfH1ZBjG/hGeG5EPebSE5slYAaNZy5/Rauf/QScXvheEVkYe	2024-06-25 00:17:55.29728	2024-06-25 00:19:46.13749	2024-06-25
 14	41	miki	$2a$06$897xUH1r...kKsBomzK1Eucxn5kt.pPKQ4V5sw.dTjz5MDCzwS.eW	2024-06-25 00:32:07.077286	\N	2024-06-25
+15	44	harry	$2a$10$IagloWKsGaTMDdqNschQPOUjsxRbUgz/.edSvrF868dyw2x29UNv2	2024-07-02 12:47:21.340075	2024-07-02 12:53:43.726469	2024-07-02
 \.
 
 
 --
--- TOC entry 3432 (class 0 OID 24588)
--- Dependencies: 213
+-- TOC entry 3431 (class 0 OID 172298)
+-- Dependencies: 212
 -- Data for Name: accessright; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -475,8 +477,8 @@ COPY public.accessright (id, "position") FROM stdin;
 
 
 --
--- TOC entry 3443 (class 0 OID 122933)
--- Dependencies: 224
+-- TOC entry 3435 (class 0 OID 172308)
+-- Dependencies: 216
 -- Data for Name: address; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -486,72 +488,81 @@ COPY public.address (id, addressname, addressdetail, city, state, zipcode, note,
 140	school	pantai melasti	surabaya	jawa timur	890321		139	1
 141	work	darmo satelit indah	surabaya	jawa timur	883441	masuk gang sempit	139	1
 144	Home	JL. Kaliurang Utara 9 / 10	Bangka Selatan	Bangka Belitung	645764		21	29
+161	home	kaliurang barat 2	Surabaya	Jawa Timur	786773		160	444
+165	home	rubngkut mapan 2	Surabaya	Jawa Timur	898934		164	444
 \.
 
 
 --
--- TOC entry 3442 (class 0 OID 90112)
--- Dependencies: 223
+-- TOC entry 3436 (class 0 OID 172314)
+-- Dependencies: 217
 -- Data for Name: customer; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.customer (id, name, username, password, email, usernameig, phonenumber, birthdate, accessrightid, status) FROM stdin;
 21	rich bryan	bryan	$2a$10$CxtlnEGaS/1kZgPnePQIeehQcclUJgQ8PF5ALlm1Ak1C2M0QiolnW	bryan@gmail.com	rich_brayn	023859345	2024-05-28 00:00:00	4	active
 139	michael evan	michael	$2a$10$3/ESlFNzTM//Tkp/ZPlbE.rPqOYVgxIFFqTAy8pMPvrc7sLOpS8/u	techaw@gmail.com	teki_pai	034238585435	1995-11-16 00:00:00	4	active
+159	christo	toto	$2a$10$IZ0taGtn0TdFB3R1oqDRK.Ix30gbFqqT4oZ//VDVtHdT8A1IQF5DS	toto@gmail.com	toto_	065678	2024-07-11 00:00:00	4	active
+160	titik	titi	$2a$10$Adv0jnMwOh3DHWKKTx5.L.aVkeB4HzyP0tyxYmxPgfOaaE1ixyh0q	titi@gmail.com	titkie_	088	2002-03-09 00:00:00	4	active
+164	andik	andi	$2a$10$x7.nN5xrhcimtl4zXqF7qORBzLxXkZXWtj8xpgkYN/7wc7pglISeq	andi@gmail.com	andi_	333	2024-07-11 00:00:00	4	active
+171	michelle louise	michelle	$2a$10$VmBAeosV2nGWupybxxpZ/.DT6nkAkLeqPqLa.t642fY7pE/1drMeK	michelle@gmail.com	mich_elle	5647567	2024-07-04 00:00:00	4	active
 \.
 
 
 --
--- TOC entry 3444 (class 0 OID 155664)
--- Dependencies: 225
+-- TOC entry 3437 (class 0 OID 172320)
+-- Dependencies: 218
 -- Data for Name: detailorders; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.detailorders (id, orderid, totalweight, deliveryprice, totalprice, paymentdate) FROM stdin;
 2	U011240630	100	30000	52000	2024-06-30 23:11:57.737303
 3	B005240630	150	35000	67000	2024-06-30 23:19:04.309321
+162	U012240701	150	0	32000	2024-07-01 23:54:57.366077
+166	U007240702	150	0	30000	2024-07-02 00:15:55.979973
 \.
 
 
 --
--- TOC entry 3430 (class 0 OID 24578)
--- Dependencies: 211
+-- TOC entry 3438 (class 0 OID 172324)
+-- Dependencies: 219
 -- Data for Name: employee; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.employee (id, username, fullname, email, birthdate, password, phonenumber, accessrightid, status, firstjoindate, lastupdate, jam_masuk, jadwal_libur) FROM stdin;
-11	lino	marcelino	marcelino@gmail.com	2000-06-06	$2a$06$uceFpazrvdCYdK0Q5AaV7e0eApmDLxuwLU71lrtFJ/yd8Tp.J2E7W	023878475394	1	bekerja	2024-05-06 07:00:00	2024-06-15 09:56:53.355684	11:00:00	rabu
-43	kimi	james	kim@gmail.com	2024-05-29	$2a$10$W4KkZTpx92P3rg63HNjD.O/AU2BC.LSuBpYBO9MxphYgcTJWDvqBe	087235442	2	bekerja	2024-06-06 07:00:00	\N	23:50:00	sabtu
-44	harry	harri	test@gmail.com	2004-03-04	$2a$10$IagloWKsGaTMDdqNschQPOUjsxRbUgz/.edSvrF868dyw2x29UNv2	08593534532	1	bekerja	2024-06-06 07:00:00	2024-06-25 00:24:59.661853	00:28:00	kamis
-45	niki	nikita	niki@gmail.com	1998-06-09	$2a$10$7yzjWpJ0UOJDIQrTSUnMtOsN/LW8jElxqG7LihmmMCP.2DNFTQO1e	089534534534	1	bekerja	2023-03-31 07:00:00	2024-06-25 00:35:36.968253	10:40:00	sabtu
-8	alvin	alvin putra	manager@gmail.com	2000-09-18	$2a$06$IF0B3JXThgK2tnXPbRN/Xeqodo.WaepmAconsETEAY2WZ50dhQou6	0877987234	3	bekerja	2024-05-17 01:26:42.562503	\N	10:00:00	minggu
-9	evan	michael evan	supervisor@gmail.com	2001-02-09	$2a$06$vF.D94MLGzDSpu6/jYonPuWv.vOP2oxmvn4hERWdG6u6YTsHDxNzC	07889273483	2	bekerja	2024-05-17 01:28:08.273531	\N	10:00:00	minggu
-10	budi	budi raharjo	admin@gmail.com	2000-03-05	$2a$06$v1YT0SfH1ZBjG/hGeG5EPebSE5slYAaNZy5/Rauf/QScXvheEVkYe	0809874534	1	bekerja	2024-05-17 01:29:11.279085	\N	10:00:00	minggu
 41	miki	mikasa	mikasa@gmail.com	2001-03-01	$2a$06$897xUH1r...kKsBomzK1Eucxn5kt.pPKQ4V5sw.dTjz5MDCzwS.eW	0982354345	1	inactive	2024-06-05 07:00:00	\N	14:35:00	sabtu
+8	alvin	alvin putra	manager@gmail.com	2000-09-18	$2a$06$IF0B3JXThgK2tnXPbRN/Xeqodo.WaepmAconsETEAY2WZ50dhQou6	0877987234	3	active	2024-05-17 01:26:42.562503	\N	10:00:00	minggu
+9	evan	michael evan	supervisor@gmail.com	2001-02-09	$2a$06$vF.D94MLGzDSpu6/jYonPuWv.vOP2oxmvn4hERWdG6u6YTsHDxNzC	07889273483	2	active	2024-05-17 01:28:08.273531	\N	10:00:00	minggu
+10	budi	budi raharjo	admin@gmail.com	2000-03-05	$2a$06$v1YT0SfH1ZBjG/hGeG5EPebSE5slYAaNZy5/Rauf/QScXvheEVkYe	0809874534	1	active	2024-05-17 01:29:11.279085	\N	10:00:00	minggu
+45	niki	nikita	niki@gmail.com	1998-06-09	$2a$10$7yzjWpJ0UOJDIQrTSUnMtOsN/LW8jElxqG7LihmmMCP.2DNFTQO1e	089534534534	1	active	2023-03-31 07:00:00	2024-06-25 00:35:36.968253	10:40:00	sabtu
+43	kimi	james	kim@gmail.com	2024-05-29	$2a$10$W4KkZTpx92P3rg63HNjD.O/AU2BC.LSuBpYBO9MxphYgcTJWDvqBe	087235442	2	suspended	2024-06-06 07:00:00	\N	23:50:00	sabtu
+44	harry	harri	test@gmail.com	2004-03-04	$2a$10$IagloWKsGaTMDdqNschQPOUjsxRbUgz/.edSvrF868dyw2x29UNv2	08593534532	1	unknown	2024-06-06 07:00:00	2024-06-25 00:24:59.661853	00:28:00	kamis
+11	lino	marcelino	marcelino@gmail.com	2000-06-06	$2a$06$uceFpazrvdCYdK0Q5AaV7e0eApmDLxuwLU71lrtFJ/yd8Tp.J2E7W	023878475394	1	inactive	2024-05-06 07:00:00	2024-07-02 15:08:07.860736	11:00:00	rabu
 \.
 
 
 --
--- TOC entry 3439 (class 0 OID 24630)
--- Dependencies: 220
+-- TOC entry 3440 (class 0 OID 172330)
+-- Dependencies: 221
 -- Data for Name: item; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.item (id, typeid, employeeid, name, size, lastupdate, customweight, customcapitalprice, customdefaultprice, files, status, itemcode) FROM stdin;
 8	11	10	hoodie pull & bear	35	2024-06-28 13:31:36.112288	150	150000	250000	{centang.png,"guitar tutor.png"}	available	HS240500001
-10	11	10	tas	45	2024-06-28 13:31:36.112288	150	150000	300000	{centang.png}	available	HS240600001
 11	11	10	tas	45	2024-06-28 13:31:36.112288	150	150000	300000	{centang.png}	available	HS240600002
 12	11	10	tas	45	2024-06-28 13:31:36.112288	150	150000	300000	{centang.png}	available	HS240600003
 14	11	9	H&M	67	2024-06-28 13:31:36.112288	150	150000	300000	{centang.png,"guitar tutor.png"}	available	HS240600004
-15	11	10	nully	67	2024-06-28 13:31:36.112288	100	200000	400000	{"1. IQ Test.png"}	available	HS240600005
 16	28	10	hakaido	56	2024-06-28 13:31:36.112288	150	150000	300000	{centang.png}	available	SC240600001
 17	11	10	sepatu	100	2024-06-28 13:31:36.112288	100	200000	400000	{"1. IQ Test.png"}	available	HS240600006
+18	11	10	yeezy	24	\N	100	30000	40000	{"guitar tutor.png"}	available	HS240700001
+19	28	10	hert	0	2024-07-02 02:31:31.807003	150	3400	6553	\N	available	SC240700001
+20	53	10	hokky	0	2024-07-02 02:41:53.050044	2000	34000	67000	{"1. IQ Test.png"}	available	B1240700001
 \.
 
 
 --
--- TOC entry 3441 (class 0 OID 81927)
--- Dependencies: 222
+-- TOC entry 3442 (class 0 OID 172336)
+-- Dependencies: 223
 -- Data for Name: ordercolour; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -561,43 +572,46 @@ COPY public.ordercolour (id, name, colourcode, colourhex) FROM stdin;
 30	Hitam	H	#000000
 31	Biru	B	#0000ff
 32	Pink	P	#FFC0CB
-1	Jingga	J	#ffsdf
 \.
 
 
 --
--- TOC entry 3435 (class 0 OID 24616)
--- Dependencies: 216
+-- TOC entry 3443 (class 0 OID 172340)
+-- Dependencies: 224
 -- Data for Name: orders; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
 COPY public.orders (username, phonenumber, checkoutdate, paymentdate, packingdate, deliverypickupdate, deliverydonedate, status, id, itemidall) FROM stdin;
-bryan	023859345	2024-06-30 12:01:26.516322	2024-06-30 13:37:27	\N	\N	\N	On Packing	K001240630	\N
-bryan	023859345	2024-06-30 22:56:34.396752	2024-06-30 23:12:16	\N	\N	\N	On Packing	U011240630	\N
-bryan	023859345	2024-06-30 23:18:23.215925	2024-06-30 23:19:07	\N	\N	\N	On Packing	B005240630	\N
+bryan	023859345	2024-06-30 22:56:34.396752	2024-06-30 23:12:16	\N	\N	\N	On Packing	U011240630	{HS240500001}
+andi	333	2024-07-02 00:11:32.776912	2024-07-02 00:16:03	2024-07-02 00:47:40.14663	2024-07-02 00:47:56.177776	\N	On Delivery	U007240702	{HS240600005,SC240600001}
 \.
 
 
 --
--- TOC entry 3440 (class 0 OID 81920)
--- Dependencies: 221
+-- TOC entry 3444 (class 0 OID 172345)
+-- Dependencies: 225
 -- Data for Name: temporaryorder; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY public.temporaryorder (id, orderid, colourid, username, phonenumber, totalprice, totalweight, waitinglist, itemidall, link, paymentdate, status, checkoutdate, masterorderid) FROM stdin;
-148	K004240630	13	\N	0898930	15000	150	\N	\N	http://localhost:3000/login?orderid=K004240630	\N	Payment Not Done	2024-06-30 12:01:26.516322	K004240630
-149	K005240630	13	\N	0898930	30000	150	\N	\N	http://localhost:3000/login?orderid=K005240630	\N	Payment Not Done	2024-06-30 12:01:26.516322	K004240630
-145	K001240630	13	bryan	023859345	20000	100	\N	\N	http://localhost:3000/login?orderid=K001240630	2024-06-30 13:37:27	On Packing	2024-06-30 12:01:26.516322	K001240630
-147	K003240630	13	bryan	023859345	100000	2000	\N	\N	http://localhost:3000/login?orderid=K003240630	2024-06-30 13:37:27	On Packing	2024-06-30 12:01:26.516322	K001240630
-154	U011240630	14	bryan	023859345	20000	100	\N	\N	http://localhost:3000/login?orderid=U011240630	2024-06-30 23:12:16	On Packing	2024-06-30 22:56:34.396752	U011240630
-155	B005240630	31	bryan	023859345	0	0	{}	{}	http://localhost:3000/login?orderid=B005240630	2024-06-30 23:19:07	On Packing	2024-06-30 23:18:23.215925	B005240630
-146	K002240630	13	\N	898538094	50000	150	\N	\N	http://localhost:3000/login?orderid=K002240630	2024-06-30 22:05:22	On Packing	2024-06-30 12:01:26.516322	K002240630
+COPY public.temporaryorder (id, orderid, colourid, username, phonenumber, totalprice, totalweight, waitinglist, itemidall, link, paymentdate, status, checkoutdate, masterorderid, isactive) FROM stdin;
+145	K001240630	13	bryan	023859345	20000	100	\N	\N	http://localhost:3000/login?orderid=K001240630	2024-06-30 13:37:27	On Packing	2024-06-30 12:01:26.516322	K001240630	t
+146	K002240630	13	\N	898538094	50000	150	\N	\N	http://localhost:3000/login?orderid=K002240630	2024-06-30 22:05:22	On Packing	2024-06-30 12:01:26.516322	K002240630	t
+147	K003240630	13	bryan	023859345	100000	2000	\N	\N	http://localhost:3000/login?orderid=K003240630	2024-06-30 13:37:27	On Packing	2024-06-30 12:01:26.516322	K001240630	t
+148	K004240630	13	\N	0898930	15000	150	\N	\N	http://localhost:3000/login?orderid=K004240630	\N	Payment Not Done	2024-06-30 12:01:26.516322	K004240630	t
+149	K005240630	13	\N	0898930	30000	150	\N	\N	http://localhost:3000/login?orderid=K005240630	\N	Payment Not Done	2024-06-30 12:01:26.516322	K004240630	t
+155	B005240630	31	bryan	023859345	0	0	{}	{}	http://localhost:3000/login?orderid=B005240630	2024-06-30 23:19:07	On Packing	2024-06-30 23:18:23.215925	B005240630	t
+156	U012240701	14	\N	088	30000	150	\N	\N	http://localhost:3000/login?orderid=U012240701	\N	Payment Not Done	2024-07-01 23:29:52.550097	U012240701	f
+157	U015240701	14	\N	099	80000	2000	\N	\N	http://localhost:3000/login?orderid=U015240701	\N	Payment Not Done	2024-07-01 23:31:22.177674	U015240701	f
+158	U008240701	14	\N	767889	9000	100	\N	\N	http://localhost:3000/login?orderid=U008240701	\N	Payment Not Done	2024-07-01 23:31:48.910385	U008240701	f
+154	U011240630	14	bryan	023859345	20000	100	{}	{HS240500001}	http://localhost:3000/login?orderid=U011240630	2024-06-30 23:12:16	On Packing	2024-06-30 22:56:34.396752	U011240630	f
+163	U007240702	14	andi	333	28000	150	{}	{HS240600005,SC240600001}	http://localhost:3000/login?orderid=U007240702	2024-07-02 00:16:03	On Packing	2024-07-02 00:11:32.776912	U007240702	f
+174	K008240702	13	\N	5675653	30000	150	\N	\N	http://localhost:3000/login?orderid=K008240702	\N	Payment Not Done	2024-07-02 12:44:24.227838	K008240702	t
 \.
 
 
 --
--- TOC entry 3437 (class 0 OID 24623)
--- Dependencies: 218
+-- TOC entry 3433 (class 0 OID 172302)
+-- Dependencies: 214
 -- Data for Name: type; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
@@ -611,16 +625,16 @@ COPY public.type (id, nama, weight, lastupdate, varian, typecode) FROM stdin;
 
 --
 -- TOC entry 3458 (class 0 OID 0)
--- Dependencies: 214
+-- Dependencies: 211
 -- Name: absensi_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.absensi_id_seq', 14, true);
+SELECT pg_catalog.setval('public.absensi_id_seq', 15, true);
 
 
 --
 -- TOC entry 3459 (class 0 OID 0)
--- Dependencies: 212
+-- Dependencies: 213
 -- Name: accessright_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -629,7 +643,7 @@ SELECT pg_catalog.setval('public.accessright_id_seq', 4, true);
 
 --
 -- TOC entry 3460 (class 0 OID 0)
--- Dependencies: 210
+-- Dependencies: 220
 -- Name: emplyoee_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
@@ -638,24 +652,24 @@ SELECT pg_catalog.setval('public.emplyoee_id_seq', 45, true);
 
 --
 -- TOC entry 3461 (class 0 OID 0)
--- Dependencies: 219
+-- Dependencies: 222
 -- Name: item_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.item_id_seq', 17, true);
+SELECT pg_catalog.setval('public.item_id_seq', 20, true);
 
 
 --
 -- TOC entry 3462 (class 0 OID 0)
--- Dependencies: 217
+-- Dependencies: 215
 -- Name: type_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.type_id_seq', 155, true);
+SELECT pg_catalog.setval('public.type_id_seq', 174, true);
 
 
 --
--- TOC entry 3260 (class 2606 OID 24607)
+-- TOC entry 3256 (class 2606 OID 172357)
 -- Name: absensi absensi_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -664,7 +678,7 @@ ALTER TABLE ONLY public.absensi
 
 
 --
--- TOC entry 3258 (class 2606 OID 24593)
+-- TOC entry 3258 (class 2606 OID 172359)
 -- Name: accessright accessright_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -673,7 +687,7 @@ ALTER TABLE ONLY public.accessright
 
 
 --
--- TOC entry 3280 (class 2606 OID 122939)
+-- TOC entry 3264 (class 2606 OID 172361)
 -- Name: address address_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -682,7 +696,7 @@ ALTER TABLE ONLY public.address
 
 
 --
--- TOC entry 3278 (class 2606 OID 90118)
+-- TOC entry 3266 (class 2606 OID 172363)
 -- Name: customer customer_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -691,7 +705,7 @@ ALTER TABLE ONLY public.customer
 
 
 --
--- TOC entry 3282 (class 2606 OID 155668)
+-- TOC entry 3268 (class 2606 OID 172365)
 -- Name: detailorders delivery_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -700,7 +714,7 @@ ALTER TABLE ONLY public.detailorders
 
 
 --
--- TOC entry 3256 (class 2606 OID 24585)
+-- TOC entry 3270 (class 2606 OID 172367)
 -- Name: employee emplyoee_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -709,7 +723,7 @@ ALTER TABLE ONLY public.employee
 
 
 --
--- TOC entry 3268 (class 2606 OID 24635)
+-- TOC entry 3272 (class 2606 OID 172369)
 -- Name: item item_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -718,7 +732,7 @@ ALTER TABLE ONLY public.item
 
 
 --
--- TOC entry 3274 (class 2606 OID 139281)
+-- TOC entry 3274 (class 2606 OID 172371)
 -- Name: ordercolour ordercolour_colourcode_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -727,7 +741,7 @@ ALTER TABLE ONLY public.ordercolour
 
 
 --
--- TOC entry 3276 (class 2606 OID 98305)
+-- TOC entry 3276 (class 2606 OID 172373)
 -- Name: ordercolour ordercolour_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -736,7 +750,7 @@ ALTER TABLE ONLY public.ordercolour
 
 
 --
--- TOC entry 3262 (class 2606 OID 106513)
+-- TOC entry 3278 (class 2606 OID 172375)
 -- Name: orders orders_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -745,7 +759,7 @@ ALTER TABLE ONLY public.orders
 
 
 --
--- TOC entry 3270 (class 2606 OID 139285)
+-- TOC entry 3280 (class 2606 OID 172377)
 -- Name: temporaryorder temporaryorder_orderid_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -754,7 +768,7 @@ ALTER TABLE ONLY public.temporaryorder
 
 
 --
--- TOC entry 3272 (class 2606 OID 81926)
+-- TOC entry 3282 (class 2606 OID 172379)
 -- Name: temporaryorder temporaryorder_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -763,7 +777,7 @@ ALTER TABLE ONLY public.temporaryorder
 
 
 --
--- TOC entry 3264 (class 2606 OID 24628)
+-- TOC entry 3260 (class 2606 OID 172381)
 -- Name: type type_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -772,7 +786,7 @@ ALTER TABLE ONLY public.type
 
 
 --
--- TOC entry 3266 (class 2606 OID 131091)
+-- TOC entry 3262 (class 2606 OID 172383)
 -- Name: type type_typecode_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -781,7 +795,7 @@ ALTER TABLE ONLY public.type
 
 
 --
--- TOC entry 3284 (class 2606 OID 24646)
+-- TOC entry 3283 (class 2606 OID 172384)
 -- Name: absensi absensi_employeeid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -790,7 +804,7 @@ ALTER TABLE ONLY public.absensi
 
 
 --
--- TOC entry 3289 (class 2606 OID 147484)
+-- TOC entry 3284 (class 2606 OID 172389)
 -- Name: address address_customerid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -799,7 +813,7 @@ ALTER TABLE ONLY public.address
 
 
 --
--- TOC entry 3288 (class 2606 OID 114728)
+-- TOC entry 3285 (class 2606 OID 172394)
 -- Name: customer customer_accessrightid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -808,7 +822,7 @@ ALTER TABLE ONLY public.customer
 
 
 --
--- TOC entry 3283 (class 2606 OID 57344)
+-- TOC entry 3286 (class 2606 OID 172399)
 -- Name: employee employee_accessrightid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -817,7 +831,7 @@ ALTER TABLE ONLY public.employee
 
 
 --
--- TOC entry 3287 (class 2606 OID 98306)
+-- TOC entry 3289 (class 2606 OID 172404)
 -- Name: temporaryorder fk811ocficc1xvwkmb4v61j2uun; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -826,7 +840,7 @@ ALTER TABLE ONLY public.temporaryorder
 
 
 --
--- TOC entry 3286 (class 2606 OID 122959)
+-- TOC entry 3287 (class 2606 OID 172409)
 -- Name: item item_employeeid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -835,7 +849,7 @@ ALTER TABLE ONLY public.item
 
 
 --
--- TOC entry 3285 (class 2606 OID 122954)
+-- TOC entry 3288 (class 2606 OID 172414)
 -- Name: item item_typeid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -843,7 +857,7 @@ ALTER TABLE ONLY public.item
     ADD CONSTRAINT item_typeid_fkey FOREIGN KEY (typeid) REFERENCES public.type(id) ON UPDATE CASCADE ON DELETE CASCADE NOT VALID;
 
 
--- Completed on 2024-07-01 10:17:20
+-- Completed on 2024-07-02 21:39:27
 
 --
 -- PostgreSQL database dump complete

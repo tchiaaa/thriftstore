@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { API_BASE_URL } from '../constants';
 import PropTypes from 'prop-types';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -128,7 +129,7 @@ export default function Live() {
 
   const fetchDataType = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/admin/dataTipe');
+      const response = await axios.get(`http://localhost:8080/admin/dataTipe`);
       console.log(response.data);
       setDataTipe(response.data);
     } catch (error) {
@@ -138,7 +139,7 @@ export default function Live() {
 
   const fetchDataColour = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/admin/getColour');
+      const response = await axios.get(`http://localhost:8080/admin/getColour`);
       console.log(response.data);
       setColourData(response.data);
     } catch (error) {
@@ -210,7 +211,7 @@ export default function Live() {
         formData.append('phonenumber', PhoneNumber);
         formData.append('totalprice', TotalPrice);
         formData.append('typecode', typecode);
-        const response = await axios.post('http://localhost:8080/admin/tambahTemporaryOrder', formData);
+        const response = await axios.post(`http://localhost:8080/admin/tambahTemporaryOrder`, formData);
         console.log(response.data.orderid);
         setCheckoutLink(`http://localhost:3000/login?orderid=${response.data.orderid}`);
         // Convert phone number to international format

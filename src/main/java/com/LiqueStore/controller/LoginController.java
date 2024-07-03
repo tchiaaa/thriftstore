@@ -62,6 +62,7 @@ public class LoginController {
                 response.put("cekPhoneOrder", cekPhoneOrder);
                 return ResponseEntity.ok(response);
             } else {
+                log.info("tidak masuk");
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("invalid username or password");
             }
         }
