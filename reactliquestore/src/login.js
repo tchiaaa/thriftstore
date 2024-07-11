@@ -82,7 +82,6 @@ function LoginPage() {
     setErrors(tempErrors);
     return Object.keys(tempErrors).length === 0;
   };
-  console.log(orderidFromQuery);
   
   const handleSubmit = async (e) => {
     e.preventDefault();
