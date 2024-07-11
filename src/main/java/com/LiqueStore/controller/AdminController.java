@@ -4,14 +4,20 @@ import com.LiqueStore.model.*;
 import com.LiqueStore.repository.*;
 import com.LiqueStore.service.FileStorageService;
 import com.LiqueStore.service.MidtransService;
+import com.LiqueStore.service.RajaOngkirService;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import org.apache.poi.ss.usermodel.*;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -22,7 +28,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/admin")
+@RequestMapping("/backend/admin")
 @CrossOrigin
 public class AdminController {
     private static final Logger logger = Logger.getLogger(AdminController.class.getName());
@@ -41,6 +47,8 @@ public class AdminController {
     private FileStorageService fileStorageService;
     @Autowired
     private MidtransService midtransService;
+    @Autowired
+    private RajaOngkirService rajaOngkirService;
 
     @GetMapping("/daftarTipe")
     public ResponseEntity<?> daftarTipe(){
@@ -477,21 +485,26 @@ public class AdminController {
                 log.info("ini data min order {}", minOrder);
                 if (minOrder != null) {
                     TemporaryOrderModel fullOrderInfo = tempOrderMap.get(minOrder.getOrderid());
-                    OrdersModel addOrders = new OrdersModel();
-                    addOrders.setId(fullOrderInfo.getOrderid());
-                    addOrders.setStatus(fullOrderInfo.getStatus());
-                    addOrders.setUsername(fullOrderInfo.getUsername());
-                    addOrders.setPhonenumber(fullOrderInfo.getPhonenumber());
-                    addOrders.setCheckoutdate(fullOrderInfo.getCheckoutdate());
-                    addOrders.setPaymentdate(fullOrderInfo.getPaymentdate());
-                    addOrders.setItemidall(fullOrderInfo.getItemidall());
-                    ordersToInsert.add(addOrders);
-                    log.info("Order for user {} added: {}", username, addOrders);
-                    List<TemporaryOrderModel> updateIsActive = temporaryOrderRepository.findAllByMasterorderid(minOrder.getOrderid());
-                    // Update isIsactive()() to false for each found order
-                    for (TemporaryOrderModel orderToUpdate : updateIsActive) {
-                        orderToUpdate.setIsactive(false);
-                        temporaryOrderRepository.save(orderToUpdate);
+                    if (fullOrderInfo.getItemidall() != null && !fullOrderInfo.getItemidall().isEmpty()) {
+                        OrdersModel addOrders = new OrdersModel();
+                        addOrders.setId(fullOrderInfo.getOrderid());
+                        addOrders.setStatus(fullOrderInfo.getStatus());
+                        addOrders.setUsername(fullOrderInfo.getUsername());
+                        addOrders.setPhonenumber(fullOrderInfo.getPhonenumber());
+                        addOrders.setCheckoutdate(fullOrderInfo.getCheckoutdate());
+                        addOrders.setPaymentdate(fullOrderInfo.getPaymentdate());
+                        addOrders.setItemidall(fullOrderInfo.getItemidall());
+                        ordersToInsert.add(addOrders);
+                        log.info("Order for user {} added: {}", username, addOrders);
+
+                        // Update isIsactive() to false for each found order
+                        List<TemporaryOrderModel> updateIsActive = temporaryOrderRepository.findAllByMasterorderid(minOrder.getOrderid());
+                        for (TemporaryOrderModel orderToUpdate : updateIsActive) {
+                            orderToUpdate.setIsactive(false);
+                            temporaryOrderRepository.save(orderToUpdate);
+                        }
+                    } else {
+                        log.warn("Skipping order for user {} because itemidall is empty or null", username);
                     }
                 }
             }
@@ -704,5 +717,80 @@ public class AdminController {
             return empData;
         }).collect(Collectors.toList());
         return ResponseEntity.ok(orderData);
+    }
+
+    @GetMapping("/api/rajaongkir/waybill")
+    public ResponseEntity<?> waybill() {
+        logger.info("tesdt");
+        boolean cekStatus = false;
+        List<OrdersModel> getAll = ordersRepository.findAll();
+        logger.info(String.valueOf(getAll));
+        for (OrdersModel order : getAll) {
+            logger.info(String.valueOf(order));
+            String noResi = order.getNo_resi();
+            if (noResi == null || noResi.isEmpty()) {
+                logger.info("No resi kosong untuk order: " + order.getId());
+                continue;
+            }
+            String status = rajaOngkirService.getDeliveryStatus(noResi);
+            if ("DELIVERED".equals(status)) {
+                order.setStatus("done");  // Pastikan field status yang benar digunakan
+                order.setDeliverydonedate(Timestamp.valueOf(LocalDateTime.now()));
+                ordersRepository.save(order);  // Simpan perubahan ke database
+                cekStatus = true;
+            }
+        }
+        if (cekStatus){
+            return ResponseEntity.ok("Berhasil update order");
+        }
+        else {
+            return ResponseEntity.ok("tidak ada perubahan data");
+        }
+    }
+
+    @PostMapping("/api/excel/upload")
+    public ResponseEntity<String> uploadExcelFile(@RequestParam("file") MultipartFile file) {
+        try {
+            InputStream inputStream = file.getInputStream();
+            Workbook workbook = WorkbookFactory.create(inputStream);
+
+            Sheet sheet = workbook.getSheetAt(0);
+            Iterator<Row> rowIterator = sheet.iterator();
+
+            // Skip header row if needed
+            if (rowIterator.hasNext()) {
+                rowIterator.next(); // Skip header row
+            }
+            DataFormatter dataFormatter = new DataFormatter();
+            while (rowIterator.hasNext()) {
+                Row row = rowIterator.next();
+                Cell cellNoResi = row.getCell(0);
+                Cell cellPhoneNumber = row.getCell(21);
+                if (cellPhoneNumber != null) {
+                    String getPhone = dataFormatter.formatCellValue(cellPhoneNumber);
+                    logger.info("Raw Phone Number: " + getPhone);
+
+                    String phoneNumber = "0" + getPhone;
+                    logger.info("Formatted Phone Number: " + phoneNumber);
+                    OrdersModel ordersModel = ordersRepository.findByPhonenumber(phoneNumber);
+                    if (ordersModel != null) {
+                        if (ordersModel.getDeliverypickupdate() != null){
+                            if (ordersModel.getNo_resi().isEmpty()){
+                                ordersModel.setNo_resi(cellNoResi.getStringCellValue());
+                                ordersRepository.save(ordersModel);
+                            }
+                        }
+                    }
+                }
+            }
+
+            workbook.close();
+            inputStream.close();
+
+            return ResponseEntity.ok("File uploaded successfully");
+        } catch (IOException e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Failed to upload file");
+        }
     }
 }

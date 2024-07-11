@@ -30,6 +30,7 @@ import ReviewOrderDeliveryManager from './manager/reviewOrderDelivery';
 import PresensiManager from './manager/presensi';
 import PresensiSupervisor from './supervisor/presensi';
 import Live from './admin/live';
+import Resi from './admin/resi';
 
 function AppWrapper() {
   const navigate = useNavigate();
@@ -45,6 +46,7 @@ function AppWrapper() {
           <Route path="/admin/stok/reviewStok" element={<ReviewStokAdmin />} />
           <Route path="/admin/stok/tipeBarang" element={<TipeStokAdmin />} />
           <Route path="/admin/orderDelivery/live" element={<Live />} />
+          <Route path="/admin/orderDelivery/no_resi" element={<Resi />} />
           <Route path="/admin/orderDelivery/pemesanan" element={<PemesananAdmin />} />
           <Route path="/admin/orderDelivery/pengiriman" element={<PengirimanAdmin />} />
           <Route path="/admin/orderDelivery/reviewOrderDelivery" element={<ReviewOrderDeliveryAdmin />} />

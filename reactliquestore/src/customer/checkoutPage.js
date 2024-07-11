@@ -444,13 +444,17 @@ export default function CheckoutPage() {
     }
   };
 
-  const handleSelectShippingCost = (selectedCost, index) => {
-    setSelectedShippingCost(selectedCost);
-    setSelectedShippingIndex(index);
-  };
+  // const handleSelectShippingCost = (selectedCost, index) => {
+  //   setSelectedShippingCost(selectedCost);
+  //   setSelectedShippingIndex(index);
+  // };
 
 
   useEffect(() => {
+    if (cost && cost.length > 0 && cost[0].costs.length > 0) {
+      setSelectedShippingCost(cost[0].costs[0]);
+      setSelectedShippingIndex(0);
+    }
     // Contoh: menghitung total price berdasarkan DataOrder dan selectedShippingCost
     const calculateTotalPrice = () => {
       let totalPrice = parseInt(DataOrder.totalPrice) + 2000;
@@ -463,7 +467,7 @@ export default function CheckoutPage() {
     };
   
     calculateTotalPrice();
-  }, [DataOrder, selectedShippingCost]);
+  }, [cost, DataOrder, selectedShippingCost]);
 
   console.log(productDeliveryPrice);
   const handlePayment = async () => {

@@ -65,6 +65,9 @@ const AdminSidebar = () => {
           <ListItem button component={Link} to="/admin/orderDelivery/live">
             <ListItemText primary="Input Pemesanan Live" />
           </ListItem>
+          <ListItem button component={Link} to="/admin/orderDelivery/no_resi">
+            <ListItemText primary="Input Nomor Resi" />
+          </ListItem>
           <ListItem button component={Link} to="/admin/orderDelivery/pemesanan">
             <ListItemText primary="Input Pemesanan" />
           </ListItem>

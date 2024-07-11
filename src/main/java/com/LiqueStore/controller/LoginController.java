@@ -24,7 +24,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 @RestController
-@RequestMapping
+@RequestMapping("/backend")
 @CrossOrigin
 public class LoginController {
     private static final Logger logger = Logger.getLogger(LoginController.class.getName());

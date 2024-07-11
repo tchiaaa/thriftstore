@@ -1,6 +1,7 @@
 
 package com.LiqueStore.model;
 
+import com.LiqueStore.StringListConverter;
 import jakarta.persistence.*;
 
 import java.sql.Timestamp;
@@ -19,6 +20,8 @@ public class ItemModel {
     private int customweight;
     private int customcapitalprice;
     private int customdefaultprice;
+    @Column(columnDefinition = "VARCHAR(5000)")
+    @Convert(converter = StringListConverter.class)
     private List<String> files;
     private String status;
 

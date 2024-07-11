@@ -36,6 +36,7 @@ const btnLogin = {
 };
 
 function LoginPage() {
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
   const [showSuccess, setShowSuccess] = useState(false);
   const [msgSuccess, setmsgSuccess] = useState('');
   const [showError, setShowError] = useState(false);
@@ -91,7 +92,7 @@ function LoginPage() {
       formData.append("password", password);
       formData.append("orderid", orderidFromQuery);
       try {
-        const response = await axios.post('http://localhost:8080/login', formData);
+        const response = await axios.post(`${backendUrl}/login`, formData);
         console.log(response.data);
         if (response.data.customer) {
           if (orderidFromQuery != null && response.data.cekPhoneOrder) {

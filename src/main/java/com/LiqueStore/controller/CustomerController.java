@@ -17,7 +17,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/customer")
+@RequestMapping("/backend/customer")
 @CrossOrigin
 public class CustomerController {
     private static final Logger logger = Logger.getLogger(ManagerController.class.getName());
@@ -90,42 +90,6 @@ public class CustomerController {
         response.put("token", token);
         logger.info(String.valueOf(response));
         return ResponseEntity.ok(response);
-        // Item details
-//        List<Map<String, Object>> itemDetails = new ArrayList<>();
-//        Map<String, Object> item1 = new HashMap<>();
-//        item1.put("id", "item1");
-//        item1.put("price", 100000);
-//        item1.put("quantity", 1);
-//        item1.put("name", "Product 1");
-//        itemDetails.add(item1);
-//
-//        Map<String, Object> item2 = new HashMap<>();
-//        item2.put("id", "item2");
-//        item2.put("price", 50000);
-//        item2.put("quantity", 2);
-//        item2.put("name", "Product 2");
-//        itemDetails.add(item2);
-//        params.put("item_details", itemDetails);
-
-//
-
-//        Billing Address
-//        Map<String, Object> billingAddress = new HashMap<>();
-//        billingAddress.put("first_name", "John");
-//        billingAddress.put("last_name", "Doe");
-//        billingAddress.put("phone", "081234567890");
-//        billingAddress.put("address", "Jl. Kebon Jeruk");
-//        billingAddress.put("city", "Jakarta");
-//        billingAddress.put("postal_code", "12345");
-//        billingAddress.put("country_code", "IDN");
-//        customerDetails.put("billing_address", billingAddress);
-
-//        Expiry
-//        Map<String, Object> expiry = new HashMap<>();
-//        expiry.put("start_time", "2024-06-22 18:00:00 +0700");
-//        expiry.put("unit", "hour");
-//        expiry.put("duration", 24);
-//        params.put("expiry", expiry);
     }
 
     @GetMapping("/getCustData")
@@ -248,4 +212,5 @@ public class CustomerController {
                                   @RequestParam int weight) {
         return rajaOngkirService.getShippingCost(originType, origin, destinationType, destination, weight);
     }
+
 }

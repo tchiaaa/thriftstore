@@ -74,6 +74,7 @@ const styleModal = {
 };
 
 export default function Pengiriman() {
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
   const [rows, setRows] = useState([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [msgSuccess, setMsgSuccess] = useState();
@@ -87,7 +88,7 @@ export default function Pengiriman() {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/admin/dataOrder');
+      const response = await axios.get(`${backendUrl}/admin/dataOrder`);
       console.log(response.data);
       setRows(response.data);
     } catch (error) {
@@ -106,7 +107,7 @@ export default function Pengiriman() {
 
   const handlePackingdateChange = async (rowId) => {
     try {
-      const response = await axios.post(`http://localhost:8080/admin/updatePackingdate?rowId=${rowId}`);
+      const response = await axios.post(`${backendUrl}/admin/updatePackingdate?rowId=${rowId}`);
       console.log(response.data);
       fetchData();
       setShowSuccess(true);
@@ -136,7 +137,7 @@ export default function Pengiriman() {
       return;
     }
     try {
-      const response = await axios.post(`http://localhost:8080/admin/updateDeliverydate?rowId=${rowId}`);
+      const response = await axios.post(`${backendUrl}/admin/updateDeliverydate?rowId=${rowId}`);
       console.log(response.data);
       fetchData();
       setShowSuccess(true);

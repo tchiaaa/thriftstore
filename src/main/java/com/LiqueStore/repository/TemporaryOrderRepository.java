@@ -9,5 +9,4 @@ public interface TemporaryOrderRepository extends JpaRepository<TemporaryOrderMo
     TemporaryOrderModel findByOrderid(String orderid);
     List<TemporaryOrderModel> findAllByMasterorderid(String masterorderid);
     List<TemporaryOrderModel> findAllByOrderidIn(List<String> orderid);
-    List<TemporaryOrderModel> findByPhonenumber(String phonenumber);
 }

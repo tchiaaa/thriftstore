@@ -74,6 +74,7 @@ const styleModal = {
 };
 
 export default function ReviewOrderDelivery() {
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
   const [rows, setRows] = useState([]);
   const [openLogout, setOpenLogout] = useState(false);
   const handleOpenLogout = () => setOpenLogout(true);
@@ -83,7 +84,7 @@ export default function ReviewOrderDelivery() {
 
   const fetchData = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/admin/getAllOrders');
+      const response = await axios.get(`${backendUrl}/admin/getAllOrders`);
       console.log(response.data);
       setRows(response.data);
     } catch (error) {
@@ -91,8 +92,18 @@ export default function ReviewOrderDelivery() {
     }
   };
 
+  const updateStatus = async () => {
+    try {
+      const response = await axios.get(`${backendUrl}/admin/api/rajaongkir/waybill`);
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
   useEffect(() => {
     fetchData();
+    updateStatus();
   }, []);
 
   const handleLogout = () => {

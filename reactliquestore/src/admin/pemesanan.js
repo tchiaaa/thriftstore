@@ -130,6 +130,7 @@ EnhancedTableHead.propTypes = {
 
 const Pemesanan = () => {
   const drawerWidth = 300;
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
   const [order, setOrder] = useState('asc');
   const [orderBy, setOrderBy] = useState('calories');
   const [page, setPage] = useState(0);
@@ -238,7 +239,7 @@ const Pemesanan = () => {
 
   const fetchDataColour = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/admin/getColour');
+      const response = await axios.get(`${backendUrl}/admin/getColour`);
       console.log(response.data);
       setColourData(response.data);
     } catch (error) {
@@ -248,7 +249,7 @@ const Pemesanan = () => {
 
   const fetchDataItem = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/admin/getItem');
+      const response = await axios.get(`${backendUrl}/admin/getItem`);
       console.log(response.data);
       setItemData(response.data);
     } catch (error) {
@@ -279,7 +280,7 @@ const Pemesanan = () => {
       setTableColour(newValue.colourhex);
       setOrderData([]);
       try {
-        const response = await axios.get(`http://localhost:8080/admin/getSelectedColour/${newValue.id}`);
+        const response = await axios.get(`${backendUrl}/admin/getSelectedColour/${newValue.id}`);
         console.log(response.data);
         getStatus(response.data);
         setOrderData(response.data);
@@ -293,7 +294,7 @@ const Pemesanan = () => {
   const getStatus = async (data) => {
     try {
         console.log(data);
-        const response = await axios.post('http://localhost:8080/admin/checkUpdateTransaction', data);
+        const response = await axios.post(`${backendUrl}/admin/checkUpdateTransaction`, data);
         console.log(response.data);
     } catch (error) {
         console.error("Error fetching transaction status", error);
@@ -345,7 +346,7 @@ const Pemesanan = () => {
 
     console.log([...formData]);
     try {
-      const response = await axios.post('http://localhost:8080/admin/inputTemporaryOrder', formData);
+      const response = await axios.post(`${backendUrl}/admin/inputTemporaryOrder`, formData);
       console.log(response.data);
       setShowSuccess(true);
       setMsgSuccess("Berhasil Menyimpan Order Sementara");
@@ -365,7 +366,7 @@ const Pemesanan = () => {
     e.preventDefault();
     console.log(orderData);
     try {
-      const response = await axios.post('http://localhost:8080/admin/deleteTemporaryOrder', orderData);
+      const response = await axios.post(`${backendUrl}/admin/deleteTemporaryOrder`, orderData);
       console.log(response.data);
       setOpenClearAll(false);
       setOrderData([]);
@@ -390,7 +391,7 @@ const Pemesanan = () => {
     e.preventDefault();
     console.log(orderData);
     try {
-      const response = await axios.post('http://localhost:8080/admin/inputOrder', orderData);
+      const response = await axios.post(`${backendUrl}/admin/inputOrder`, orderData);
       console.log(response.data);
       setOpenSubmitAll(false);
       setOrderData([]);
@@ -415,7 +416,7 @@ const Pemesanan = () => {
     try {
       const name = namaColour;
       const colourhex = hexColour;
-      const response = await axios.post('http://localhost:8080/admin/tambahWarna', { name, colourhex });
+      const response = await axios.post(`${backendUrl}/admin/tambahWarna`, { name, colourhex });
       console.log(response.data);
       setOpenTambah(false);
       setShowSuccess(true);

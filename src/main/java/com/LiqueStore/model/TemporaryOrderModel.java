@@ -1,5 +1,6 @@
 package com.LiqueStore.model;
 
+import com.LiqueStore.StringListConverter;
 import jakarta.persistence.*;
 
 import java.sql.Timestamp;
@@ -17,7 +18,11 @@ public class TemporaryOrderModel {
     private String phonenumber;
     private int totalprice;
     private int totalweight;
+    @Column(columnDefinition = "VARCHAR(255)")
+    @Convert(converter = StringListConverter.class)
     private List<String> waitinglist;
+    @Column(columnDefinition = "VARCHAR(255)")
+    @Convert(converter = StringListConverter.class)
     private List<String> itemidall;
     private String link;
     private Timestamp paymentdate;

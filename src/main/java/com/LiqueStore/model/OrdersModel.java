@@ -1,5 +1,6 @@
 package com.LiqueStore.model;
 
+import com.LiqueStore.StringListConverter;
 import jakarta.persistence.*;
 
 import java.sql.Timestamp;
@@ -10,6 +11,8 @@ import java.util.List;
 public class OrdersModel {
     @Id
     private String id;
+    @Column(columnDefinition = "VARCHAR(255)")
+    @Convert(converter = StringListConverter.class)
     private List<String> itemidall;
     private String username;
     private String phonenumber;
@@ -19,6 +22,7 @@ public class OrdersModel {
     private Timestamp deliverypickupdate;
     private Timestamp deliverydonedate;
     private String status;
+    private String no_resi;
 
     public OrdersModel() {
     }
@@ -101,5 +105,13 @@ public class OrdersModel {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getNo_resi() {
+        return no_resi;
+    }
+
+    public void setNo_resi(String no_resi) {
+        this.no_resi = no_resi;
     }
 }

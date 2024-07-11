@@ -106,6 +106,7 @@ const StyledHeader = styled(GridHeader)`
 `;
 
 export default function ReviewStok() {
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
   const [rows, setRows] = useState([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [msgSuccess, setmsgSuccess] = useState('');
@@ -215,7 +216,7 @@ export default function ReviewStok() {
 
   const fetchDataInventori = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/admin/dataInventori');
+      const response = await axios.get(`${backendUrl}/admin/dataInventori`);
       console.log(response.data);
       setRows(response.data);
     } catch (error) {
@@ -224,7 +225,7 @@ export default function ReviewStok() {
   };
   const fetchDataTipeBarang = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/admin/daftarTipe');
+      const response = await axios.get(`${backendUrl}/admin/daftarTipe`);
       console.log(response.data);
       setTypeData(response.data);
     } catch (error) {
@@ -294,7 +295,7 @@ export default function ReviewStok() {
       console.log([...formData]);
 
       try {
-        const response = await axios.post('http://localhost:8080/admin/tambahInventori', formData, {
+        const response = await axios.post(`${backendUrl}/admin/tambahInventori`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -367,7 +368,7 @@ export default function ReviewStok() {
           formData.append('files', file.originalFile);
         });
         console.log([...formData]);
-        const response = await axios.post('http://localhost:8080/admin/editInventori', formData, {
+        const response = await axios.post(`${backendUrl}/admin/editInventori`, formData, {
           headers: {
             'Content-Type': 'multipart/form-data'
           }
@@ -407,7 +408,7 @@ export default function ReviewStok() {
     e.preventDefault();
     try {
       // const id = updatedId;
-      const response = await axios.delete(`http://localhost:8080/admin/deleteInventori/${updatedId}`);
+      const response = await axios.delete(`${backendUrl}/admin/deleteInventori/${updatedId}`);
       console.log(response.data);
       fetchDataInventori();
       setShowSuccess(true);

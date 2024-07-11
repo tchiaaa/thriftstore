@@ -73,6 +73,7 @@ const styleModal = {
 };
 
 export default function Live() {
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
   const [ShowSuccess, setShowSuccess] = useState(false);
   const [CekKode, setCekKode] = useState(false);
   const [MsgInsert, setMsgInsert] = useState('');
@@ -128,7 +129,7 @@ export default function Live() {
 
   const fetchDataType = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/admin/dataTipe');
+      const response = await axios.get(`${backendUrl}/admin/dataTipe`);
       console.log(response.data);
       setDataTipe(response.data);
     } catch (error) {
@@ -138,7 +139,7 @@ export default function Live() {
 
   const fetchDataColour = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/admin/getColour');
+      const response = await axios.get(`${backendUrl}/admin/getColour`);
       console.log(response.data);
       setColourData(response.data);
     } catch (error) {
@@ -171,7 +172,7 @@ export default function Live() {
     else {
       setColourOrder(newValue);
       try {
-        const response = await axios.get(`http://localhost:8080/admin/getColourOrder/${newValue.value}`);
+        const response = await axios.get(`${backendUrl}/admin/getColourOrder/${newValue.value}`);
         console.log(response.data);
         setColourcode(response.data.colourcode);
       } catch (error) {
@@ -210,14 +211,14 @@ export default function Live() {
         formData.append('phonenumber', PhoneNumber);
         formData.append('totalprice', TotalPrice);
         formData.append('typecode', typecode);
-        const response = await axios.post('http://localhost:8080/admin/tambahTemporaryOrder', formData);
+        const response = await axios.post(`${backendUrl}/admin/tambahTemporaryOrder`, formData);
         console.log(response.data.orderid);
-        setCheckoutLink(`http://localhost:3000/login?orderid=${response.data.orderid}`);
+        setCheckoutLink(`http://157.173.221.67/login?orderid=${response.data.orderid}`);
         // Convert phone number to international format
         const internationalPhoneNumber = `+62${PhoneNumber.substring(1)}`; // Assuming Indonesian format
 
         // Generate message for WhatsApp
-        const message = `Selamat anda menang!. Silakan klik link berikut untuk melanjutkan ke checkout:\n http://localhost:3000/login?orderid=${response.data.orderid}`;
+        const message = `Selamat anda menang!. Silakan klik link berikut untuk melanjutkan ke checkout:\n http://157.173.221.67:3000/login?orderid=${response.data.orderid}`;
         // 081216509966
         // Encode message for URL
         const encodedMessage = encodeURIComponent(message);
@@ -227,7 +228,7 @@ export default function Live() {
 
         // Open WhatsApp Web in new tab
         // window.location.href = whatsappUrl;
-        const response2 = await axios.post(`http://localhost:8080/admin/simpanCheckoutLink/${response.data.orderid}`);
+        const response2 = await axios.post(`${backendUrl}/admin/simpanCheckoutLink/${response.data.orderid}`);
         console.log(response2.data);
         setShowSuccess(true);
         setMsgInsert("Berhasil Menambah Pemesanan");

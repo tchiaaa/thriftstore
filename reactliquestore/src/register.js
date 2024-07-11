@@ -35,6 +35,7 @@ const btnRegister = {
 };
 
 function RegisterPage() {
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
   const navigate = useNavigate();
   const [param, setParam] = useState('');
   const [username, setUsername] = useState('');
@@ -124,7 +125,7 @@ function RegisterPage() {
           formData.append('birthdate', birthdate);
           console.log([...formData]);
 
-          const response = await axios.post('http://localhost:8080/register', formData);
+          const response = await axios.post(`${backendUrl}/register`, formData);
           console.log(response.data);
 
           setUsername('');

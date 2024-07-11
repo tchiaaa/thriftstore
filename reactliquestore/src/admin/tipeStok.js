@@ -102,6 +102,7 @@ const styleModalTambah = {
 };
 
 export default function ReviewStok() {
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
   const [rows, setRows] = useState([]);
   const [showSuccess, setShowSuccess] = useState(false);
   const [msgSuccess, setmsgSuccess] = useState('');
@@ -153,7 +154,7 @@ export default function ReviewStok() {
 
   const fetchDataInventori = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/admin/dataTipe');
+      const response = await axios.get(`${backendUrl}/admin/dataTipe`);
       console.log(response.data);
       setRows(response.data);
     } catch (error) {
@@ -177,7 +178,7 @@ export default function ReviewStok() {
     e.preventDefault();
     if (validate()) {
       try {
-        const response = await axios.post('http://localhost:8080/admin/tambahTipe', { nama, varian, weight });
+        const response = await axios.post(`${backendUrl}/admin/tambahTipe`, { nama, varian, weight });
         console.log(response.data);
         setOpenTambah(false);
         setShowSuccess(true);
@@ -223,7 +224,7 @@ export default function ReviewStok() {
     if (validate()) {
       const id = updatedId;
       try {
-        const response = await axios.post('http://localhost:8080/admin/editTipe', { id, nama, varian, weight });
+        const response = await axios.post(`${backendUrl}/admin/editTipe`, { id, nama, varian, weight });
         console.log(response.data);
         setShowSuccess(true);
         setmsgSuccess("Berhasil Mengubah Tipe Barang");
@@ -257,7 +258,7 @@ export default function ReviewStok() {
     e.preventDefault();
     try {
       const id = updatedId;
-      const response = await axios.delete(`http://localhost:8080/admin/deleteTipe/${id}`);
+      const response = await axios.delete(`${backendUrl}/admin/deleteTipe/${id}`);
       console.log(response.data);
       setShowSuccess(true);
       setmsgSuccess("Berhasil Hapus Tipe Barang");

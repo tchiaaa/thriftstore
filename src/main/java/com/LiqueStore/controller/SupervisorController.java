@@ -26,7 +26,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/supervisor")
+@RequestMapping("/backend/supervisor")
 @CrossOrigin
 public class SupervisorController {
     private static final Logger logger = Logger.getLogger(ManagerController.class.getName());

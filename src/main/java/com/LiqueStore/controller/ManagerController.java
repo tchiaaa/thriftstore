@@ -27,7 +27,7 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/manager")
+@RequestMapping("/backend/manager")
 @CrossOrigin
 public class ManagerController {
     private static final Logger logger = Logger.getLogger(ManagerController.class.getName());
