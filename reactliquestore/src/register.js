@@ -11,8 +11,9 @@ const containerStyle = {
   backgroundColor: 'black',
   color: 'white',
   borderRadius: 25,
-  boxShadow: '10px 10px 5px grey',
+  boxShadow: '24px 24px 28px rgba(0, 0, 0, 0.22)',
 };
+
 
 const textfieldStyle = {
   input: {
@@ -219,7 +220,7 @@ function RegisterPage() {
             <TextField
               sx={textfieldStyle}
               type='number'
-              placeholder="Phonenumber"
+              placeholder="Phone number"
               value={phonenumber}
               helperText={errors.phonenumber}
               FormHelperTextProps={{ sx: { color: 'red' } }}

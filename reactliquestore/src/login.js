@@ -13,7 +13,7 @@ const containerStyle = {
   backgroundColor: 'black',
   color: 'white',
   borderRadius: 25,
-  boxShadow: '10px 10px 5px grey',
+  boxShadow: '24px 24px 28px rgba(0, 0, 0, 0.22',
 };
 
 const textfieldStyle = {
@@ -21,6 +21,11 @@ const textfieldStyle = {
     color: 'white',
     border: '1px solid white',
     borderRadius: '10px',
+    '&:hover': {
+      color: 'white',
+      border: '1px solid white',
+      borderRadius: '10px',
+    },
   },
   placeholder: {
     color: 'lightgray',
@@ -177,7 +182,7 @@ function LoginPage() {
               <Button style={btnLogin} fullWidth onClick={handleSubmit}>Login</Button>
             </Grid>
           </Grid>
-          <Typography sx={{ color: '#FE8A01', marginTop: 3, textAlign: 'center' }}>Forgot Password ?</Typography>
+          <Typography sx={{ color: '#FE8A01', marginTop: 3, textAlign: 'left', cursor: 'pointer' }}>Forgot Password ?</Typography>
         </Box>
     </Container>
   </>
