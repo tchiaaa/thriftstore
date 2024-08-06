@@ -30,6 +30,7 @@ import ReviewOrderDeliveryManager from './manager/reviewOrderDelivery';
 import PresensiManager from './manager/presensi';
 import PresensiSupervisor from './supervisor/presensi';
 import Live from './admin/live';
+import ForgotPassword from './forgotPassword'
 
 function AppWrapper() {
   const navigate = useNavigate();
@@ -39,6 +40,7 @@ function AppWrapper() {
         <Route path="/" element={<Navigate to="/login" />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot" element={<ForgotPassword />} />
 
         {/* ADMIN */}
         <Route element={<PrivateRoute roles={[1]} />}>

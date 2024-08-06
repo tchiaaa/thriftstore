@@ -182,7 +182,7 @@ function LoginPage() {
               <Button style={btnLogin} fullWidth onClick={handleSubmit}>Login</Button>
             </Grid>
           </Grid>
-          <Typography sx={{ color: '#FE8A01', marginTop: 3, textAlign: 'left', cursor: 'pointer' }}>Forgot Password ?</Typography>
+          <Typography sx={{ color: '#FE8A01', marginTop: 3, textAlign: 'left', cursor: 'pointer' }}><a href='/forgot' style={{ color: '#FE8A01', textDecoration: 'none' }}>Forgot Password?</a></Typography>
         </Box>
     </Container>
   </>
